@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'ui/shell/app_shell.dart';
 import 'ui/theme/app_theme.dart';
 
 class CarCareApp extends StatelessWidget {
@@ -21,9 +22,7 @@ class CarCareApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const Scaffold(
-        body: Center(child: Text('Mis Vehículos')),
-      ),
+      home: const AppShell(),
     );
   }
 }
