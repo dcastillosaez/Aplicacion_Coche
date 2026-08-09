@@ -10,7 +10,7 @@ void main() {
   setUp(() => db = AppDatabase.forTesting(NativeDatabase.memory()));
   tearDown(() => db.close());
 
-  VehiclesCompanion _mercedes() => const VehiclesCompanion(
+  VehiclesCompanion mercedes() => const VehiclesCompanion(
         marca: Value('Mercedes-Benz'),
         modelo: Value('Clase B'),
         version: Value('B 180'),
@@ -20,7 +20,7 @@ void main() {
       );
 
   test('inserta un vehiculo y lo recupera por id', () async {
-    final id = await db.vehicleDao.insertar(_mercedes());
+    final id = await db.vehicleDao.insertar(mercedes());
 
     final guardado = await db.vehicleDao.getById(id);
 
@@ -31,7 +31,7 @@ void main() {
   });
 
   test('watchActivos emite los vehiculos no archivados', () async {
-    await db.vehicleDao.insertar(_mercedes());
+    await db.vehicleDao.insertar(mercedes());
 
     final activos = await db.vehicleDao.watchActivos().first;
 
@@ -40,7 +40,7 @@ void main() {
   });
 
   test('archivar excluye el vehiculo de watchActivos', () async {
-    final id = await db.vehicleDao.insertar(_mercedes());
+    final id = await db.vehicleDao.insertar(mercedes());
 
     await db.vehicleDao.archivar(id);
     final activos = await db.vehicleDao.watchActivos().first;
