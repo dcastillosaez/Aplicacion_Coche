@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/providers.dart';
 import '../common/empty_state.dart';
+import '../vehicle/vehicle_form_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -34,6 +35,13 @@ class HomeScreen extends ConsumerWidget {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const VehicleFormScreen()),
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('Vehículo'),
       ),
     );
   }
