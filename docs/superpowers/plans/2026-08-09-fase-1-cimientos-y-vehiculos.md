@@ -103,13 +103,23 @@ El `sdkmanager` exige que las herramientas cuelguen de `cmdline-tools\latest`; c
 
 - [ ] **Paso 4: Instalar los componentes del SDK de Android y aceptar las licencias**
 
+El `sdkmanager` pide confirmación por la entrada estándar, y en una consola no interactiva esa entrada está anulada: un pipe de PowerShell no le llega y el proceso se queda esperando. La forma que sí funciona es redirigir un fichero real a través de `cmd`, que crea su propia entrada estándar.
+
 ```powershell
-$env:JAVA_HOME = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Filter 'jdk-17*' | Select-Object -First 1).FullName
+$env:JAVA_HOME = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Filter 'jdk-17*' -Directory | Select-Object -First 1).FullName
 $sdk = 'F:\dev\android-sdk'
 $mgr = "$sdk\cmdline-tools\latest\bin\sdkmanager.bat"
-'y'*20 -split '' | & $mgr --sdk_root=$sdk --licenses
-& $mgr --sdk_root=$sdk "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+$yes = "$env:TEMP\yes.txt"
+Set-Content -Path $yes -Value (@('y') * 40) -Encoding ascii
+cmd /c "`"$mgr`" --sdk_root=`"$sdk`" --licenses < `"$yes`""
+cmd /c "`"$mgr`" --sdk_root=`"$sdk`" platform-tools `"platforms;android-36`" `"build-tools;36.0.0`""
 ```
+
+Esperado: `All SDK package licenses accepted` y siete ficheros en `F:\dev\android-sdk\licenses`.
+
+La versión de la plataforma tiene que coincidir con la que exija tu Flutter: la 3.44.9 pide la 36. Si `flutter doctor` reclama otra, instálala con el mismo comando cambiando el número.
+
+El `sdkmanager` avisa de que está obsoleto en favor del nuevo binario `android`; sigue funcionando y es lo que espera `flutter doctor`.
 
 - [ ] **Paso 5: Dejar las rutas en el PATH del usuario**
 
