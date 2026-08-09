@@ -16,6 +16,9 @@ android/key.properties
 *.jks
 *.keystore
 
+# Progreso local de ejecución de planes
+.superpowers/
+
 # IDE
 .idea/
 .vscode/
