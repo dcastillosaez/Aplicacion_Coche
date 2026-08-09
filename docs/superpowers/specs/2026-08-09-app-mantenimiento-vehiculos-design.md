@@ -144,9 +144,11 @@ Restricción: al menos uno de `intervalKm` o `intervalMeses` debe tener valor.
 
 Al guardar un registro se crea también una `MileageReading` con origen `mantenimiento`, salvo que ya exista una lectura igual o superior ese mismo día.
 
-**Tablas definidas pero sin interfaz en la v1**
+**Tablas de fases posteriores**
 
-`Component` y `Invoice`, con la estructura del borrador original. Se crean en el esquema inicial para evitar una migración en la v2.
+`MaintenanceSchedule` y `MaintenanceRecord` llegan con los mantenimientos; `Component` e `Invoice` con el inventario y las facturas. Cada una entra en su fase con su paso de migración y el test correspondiente, en lugar de crear tablas vacías por adelantado: las migraciones de Drift son baratas y hay que probarlas de todos modos.
+
+`MaintenanceRecord` sí incluirá desde el primer momento los campos de coste, taller e `invoiceId`, para que los datos registrados sirvan a la pantalla de gastos sin migrar nada.
 
 **Settings**, tabla Drift de una única fila con identificador fijo, para que los ajustes viajen en la copia de seguridad junto al resto de los datos: `avisoKmPorDefecto` = 1.000, `avisoDiasPorDefecto` = 30, `diasRecordatorioLectura` = 15, `tema` = automático, `fechaUltimaCopia` = nulo.
 

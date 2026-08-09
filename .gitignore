@@ -4,11 +4,10 @@
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
-pubspec.lock
 
-# Código generado (Drift, freezed, json_serializable)
-*.g.dart
-*.freezed.dart
+# pubspec.lock y el código generado por Drift SÍ se versionan:
+# es una aplicación, no una librería, y así el repositorio
+# siempre compila sin ejecutar build_runner antes.
 
 # Android
 android/.gradle/
