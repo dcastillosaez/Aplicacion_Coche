@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'daos/mileage_dao.dart';
 import 'daos/vehicle_dao.dart';
 import 'tables/mileage_readings.dart';
 import 'tables/settings.dart';
@@ -14,7 +15,7 @@ part 'database.g.dart';
 
 @DriftDatabase(
   tables: [Vehicles, MileageReadings, Settings],
-  daos: [VehicleDao],
+  daos: [VehicleDao, MileageDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_abrirConexion());
