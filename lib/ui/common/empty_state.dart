@@ -4,14 +4,12 @@ class EmptyState extends StatelessWidget {
   final IconData icono;
   final String titulo;
   final String descripcion;
-  final Widget? accion;
 
   const EmptyState({
     super.key,
     required this.icono,
     required this.titulo,
     required this.descripcion,
-    this.accion,
   });
 
   @override
@@ -34,10 +32,6 @@ class EmptyState extends StatelessWidget {
               style: tema.textTheme.bodyMedium
                   ?.copyWith(color: tema.colorScheme.outline),
             ),
-            if (accion != null) ...[
-              const SizedBox(height: 24),
-              accion!,
-            ],
           ],
         ),
       ),

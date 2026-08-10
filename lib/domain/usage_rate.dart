@@ -47,7 +47,21 @@ class UsageRate {
     if (ventana.length >= 2) {
       final primera = ventana.first;
       final ultima = ventana.last;
-      final dias = ultima.fecha.difference(primera.fecha).inDays;
+      // Se normaliza a medianoche UTC antes de restar: dos medianoches
+      // locales separadas por un cambio de horario (p.ej. el de marzo)
+      // distan una cantidad de horas que no es múltiplo de 24, e inDays
+      // truncaría un día de más o de menos.
+      final diaPrimera = DateTime.utc(
+        primera.fecha.year,
+        primera.fecha.month,
+        primera.fecha.day,
+      );
+      final diaUltima = DateTime.utc(
+        ultima.fecha.year,
+        ultima.fecha.month,
+        ultima.fecha.day,
+      );
+      final dias = diaUltima.difference(diaPrimera).inDays;
       final km = ultima.km - primera.km;
 
       if (dias >= kMinDiasEntreLecturas && km >= 0) {

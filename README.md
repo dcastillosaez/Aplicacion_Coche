@@ -1,17 +1,18 @@
-# car_care
+# Car Care
 
-Seguimiento de mantenimientos de vehiculos
+Aplicación Android hecha con Flutter para llevar el mantenimiento de los vehículos de casa: kilometraje, revisiones, ITV y avisos, todo en un mismo sitio. Esta fase 1 cubre el alta de vehículos y el registro de kilometraje.
 
-## Getting Started
+## Tests y analizador
 
-This project is a starting point for a Flutter application.
+```
+flutter test
+flutter analyze
+```
 
-A few resources to get you started if this is your first Flutter project:
+El analizador debe devolver `No issues found!`.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Gradle no arranca en este equipo
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+En este Windows, `flutter build`, `flutter run` y `flutter install` fallan porque Gradle no consigue levantar el daemon: hay un fallo conocido con los sockets AF_UNIX de Windows, ajeno al proyecto. Queda pendiente de probar como solución un `netsh winsock reset` desde una consola con permisos de administrador seguido de un reinicio del equipo.
+
+Mientras tanto, la forma de verificar los cambios es `flutter analyze` y `flutter test`.

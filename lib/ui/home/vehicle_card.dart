@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/photo_storage.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 import '../theme/app_theme.dart';
@@ -36,7 +37,7 @@ class VehicleCard extends ConsumerWidget {
                 height: 160,
                 width: double.infinity,
                 child: Image.file(
-                  File(vehiculo.fotoPath!),
+                  File(PhotoStorage.absoluta(vehiculo.fotoPath!)),
                   fit: BoxFit.cover,
                   // Si el fichero ya no está en disco, no se rompe la tarjeta.
                   errorBuilder: (_, _, _) => Container(
@@ -68,7 +69,10 @@ class VehicleCard extends ConsumerWidget {
                   const SizedBox(height: 16),
                   lectura.when(
                     loading: () => const SizedBox(height: 40),
-                    error: (e, _) => Text('Error: $e'),
+                    error: (e, st) {
+                      debugPrint('Error al cargar el kilometraje: $e\n$st');
+                      return const Text('No se ha podido cargar');
+                    },
                     data: (l) => Text(
                       l == null ? 'Sin kilometraje' : formatearKm(l.km),
                       style: tema.textTheme.headlineMedium?.merge(

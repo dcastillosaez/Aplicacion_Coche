@@ -19,7 +19,29 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Mis vehículos')),
       body: vehiculos.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error al cargar: $e')),
+        error: (e, st) {
+          debugPrint('Error al cargar los vehículos: $e\n$st');
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'No se han podido cargar los vehículos. '
+                    'Inténtalo de nuevo.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => ref.invalidate(databaseProvider),
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
         data: (lista) {
           if (lista.isEmpty) {
             return const EmptyState(
@@ -48,6 +70,7 @@ class HomeScreen extends ConsumerWidget {
                 label: const Text('Vehículo'),
               )
             : Row(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FloatingActionButton.small(

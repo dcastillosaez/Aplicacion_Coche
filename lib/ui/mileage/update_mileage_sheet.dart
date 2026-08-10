@@ -15,11 +15,11 @@ Future<void> mostrarHojaKilometraje(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (_) => Padding(
+    builder: (contextHoja) => Padding(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: MediaQuery.viewInsetsOf(contextHoja).bottom,
       ),
-      child: _HojaKilometraje(vehiculo: vehiculo),
+      child: SafeArea(child: _HojaKilometraje(vehiculo: vehiculo)),
     ),
   );
 }
@@ -53,23 +53,50 @@ class _HojaKilometrajeState extends ConsumerState<_HojaKilometraje> {
   }
 
   Future<void> _guardar() async {
+    // El botón se deshabilita al guardar, pero onSubmitted del teclado es
+    // un segundo disparador: sin esta guarda, dos pulsaciones rápidas
+    // ejecutarían el método dos veces en paralelo.
+    if (_guardando) return;
+
     final km = int.tryParse(_controlador.text.trim().replaceAll('.', ''));
     if (km == null || km <= 0) {
       setState(() => _error = 'Introduce un número de kilómetros válido');
       return;
     }
 
+    setState(() {
+      _guardando = true;
+      _error = null;
+    });
+
     final dao = ref.read(databaseProvider).mileageDao;
-    final anterior = await dao.ultimaLectura(widget.vehiculo.id);
+    MileageReading? anterior;
+    try {
+      anterior = await dao.ultimaLectura(widget.vehiculo.id);
+    } catch (e) {
+      debugPrint('Error al comprobar el kilometraje anterior: $e');
+      if (!mounted) return;
+      setState(() => _guardando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se ha podido comprobar el kilometraje anterior. '
+            'Inténtalo de nuevo.',
+          ),
+        ),
+      );
+      return;
+    }
     if (!mounted) return;
 
     if (anterior != null && km < anterior.km) {
       final seguir = await _confirmarRetroceso(anterior.km, km);
       if (!mounted) return;
-      if (seguir != true) return;
+      if (seguir != true) {
+        setState(() => _guardando = false);
+        return;
+      }
     }
-
-    setState(() => _guardando = true);
 
     try {
       await dao.registrar(

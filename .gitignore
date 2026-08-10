@@ -28,7 +28,3 @@ android/key.properties
 Thumbs.db
 desktop.ini
 .DS_Store
-
-# DLL nativa de SQLite para poder ejecutar los tests de Drift en Windows
-# (sqlite3_flutter_libs no aplica fuera de Android). No se distribuye con la app.
-sqlite3.dll

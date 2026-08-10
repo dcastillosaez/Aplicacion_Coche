@@ -4,13 +4,13 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../../data/database.dart';
+import '../../data/photo_storage.dart';
 import '../../data/tables/vehicles.dart';
 import '../../providers/providers.dart';
+import '../common/formatters.dart';
 
 const Map<FuelType, String> etiquetasCombustible = {
   FuelType.gasolina: 'Gasolina',
@@ -31,7 +31,6 @@ class VehicleFormScreen extends ConsumerStatefulWidget {
 
 class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _formatoFecha = DateFormat('dd/MM/yyyy', 'es_ES');
 
   late final TextEditingController _marca;
   late final TextEditingController _modelo;
@@ -70,8 +69,13 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     _color = TextEditingController(text: v?.color ?? '');
     _combustible = v?.combustible ?? FuelType.diesel;
     _fechaMatriculacion = v?.fechaMatriculacion;
-    _fotoPath = v?.fotoPath;
-    _fotoOriginal = v?.fotoPath;
+    // En base de datos la foto se guarda como ruta relativa; en el estado
+    // del formulario se trabaja con la ruta absoluta, que es la que
+    // necesitan File e Image.file.
+    final fotoInicial =
+        v?.fotoPath == null ? null : PhotoStorage.absoluta(v!.fotoPath!);
+    _fotoPath = fotoInicial;
+    _fotoOriginal = fotoInicial;
   }
 
   @override
@@ -105,9 +109,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     );
     if (elegida == null) return;
 
-    final dir = await getApplicationDocumentsDirectory();
-    final carpeta = Directory(p.join(dir.path, 'fotos'));
-    await carpeta.create(recursive: true);
+    final carpeta = await PhotoStorage.carpetaFotos();
 
     final destino = p.join(
       carpeta.path,
@@ -148,6 +150,11 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     final dao = ref.read(databaseProvider).vehicleDao;
     String? textoONulo(TextEditingController c) =>
         c.text.trim().isEmpty ? null : c.text.trim();
+    // Se persiste la ruta relativa: la absoluta solo vale en este
+    // dispositivo y no sobrevive a una restauración desde copia de
+    // seguridad.
+    final fotoPathRelativo =
+        _fotoPath == null ? null : PhotoStorage.relativa(_fotoPath!);
 
     try {
       if (_esEdicion) {
@@ -161,7 +168,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             combustible: _combustible,
             fechaMatriculacion: Value(_fechaMatriculacion),
             color: Value(textoONulo(_color)),
-            fotoPath: Value(_fotoPath),
+            fotoPath: Value(fotoPathRelativo),
           ),
         );
       } else {
@@ -175,7 +182,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             combustible: Value(_combustible),
             fechaMatriculacion: Value(_fechaMatriculacion),
             color: Value(textoONulo(_color)),
-            fotoPath: Value(_fotoPath),
+            fotoPath: Value(fotoPathRelativo),
           ),
         );
       }
@@ -283,7 +290,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
               subtitle: Text(
                 _fechaMatriculacion == null
                     ? 'Sin indicar — hace falta para calcular la ITV'
-                    : _formatoFecha.format(_fechaMatriculacion!),
+                    : formatearFecha(_fechaMatriculacion!),
               ),
               trailing: const Icon(Icons.calendar_today_outlined),
               onTap: _elegirFechaMatriculacion,

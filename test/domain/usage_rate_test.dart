@@ -102,4 +102,24 @@ void main() {
     expect(r.esPorDefecto, isTrue);
     expect(r.kmPorDia, greaterThan(0));
   });
+
+  test(
+      'una ventana que cruza el cambio de hora de primavera cuenta dias '
+      'naturales, no horas', () {
+    // Del 1 de marzo al 1 de abril de 2026 hay 31 dias naturales, pero el
+    // cambio al horario de verano (ultimo domingo de marzo) hace que esas
+    // dos medianoches locales disten solo 30 dias y 23 horas.
+    final r = UsageRate.calcular(
+      lecturas: [
+        MileagePoint(fecha: DateTime(2026, 3, 1), km: 90000),
+        MileagePoint(fecha: DateTime(2026, 4, 1), km: 93100),
+      ],
+      ahora: DateTime(2026, 4, 5),
+    );
+
+    // 3.100 km en 31 dias naturales = 100 km/dia exactos. Con el defecto
+    // (inDays truncando 30d23h a 30) saldrian ~103,3 km/dia.
+    expect(r.kmPorDia, closeTo(100.0, 0.001));
+    expect(r.esPorDefecto, isFalse);
+  });
 }

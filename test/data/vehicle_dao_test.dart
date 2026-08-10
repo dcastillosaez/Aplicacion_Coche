@@ -49,6 +49,24 @@ void main() {
     expect((await db.vehicleDao.getById(id))!.archivado, isTrue);
   });
 
+  test('actualizar persiste los cambios de un vehiculo existente', () async {
+    final id = await db.vehicleDao.insertar(mercedes());
+    final original = (await db.vehicleDao.getById(id))!;
+
+    final actualizado = original.copyWith(
+      marca: 'Seat',
+      modelo: 'León',
+      color: const Value('Azul'),
+    );
+    final ok = await db.vehicleDao.actualizar(actualizado);
+
+    expect(ok, isTrue);
+    final guardado = await db.vehicleDao.getById(id);
+    expect(guardado!.marca, 'Seat');
+    expect(guardado.modelo, 'León');
+    expect(guardado.color, 'Azul');
+  });
+
   test('la fila de ajustes se crea con los valores por defecto', () async {
     final ajustes = await db.select(db.settings).getSingle();
 
