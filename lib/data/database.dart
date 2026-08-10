@@ -23,10 +23,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          // v1 -> v2: se añade el tono del color (entero ARGB) junto al
+          // nombre de color ya existente, para poder pintar un distintivo
+          // en la tarjeta del vehículo sin perder el nombre editable.
+          if (from < 2) {
+            await m.addColumn(vehicles, vehicles.colorValor);
+          }
+        },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
           if (details.wasCreated) {

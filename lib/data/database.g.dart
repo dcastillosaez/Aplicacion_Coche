@@ -107,6 +107,17 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _colorValorMeta = const VerificationMeta(
+    'colorValor',
+  );
+  @override
+  late final GeneratedColumn<int> colorValor = GeneratedColumn<int>(
+    'color_valor',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _fotoPathMeta = const VerificationMeta(
     'fotoPath',
   );
@@ -174,6 +185,7 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
     combustible,
     fechaMatriculacion,
     color,
+    colorValor,
     fotoPath,
     vin,
     notas,
@@ -242,6 +254,12 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
       context.handle(
         _colorMeta,
         color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
+    if (data.containsKey('color_valor')) {
+      context.handle(
+        _colorValorMeta,
+        colorValor.isAcceptableOrUnknown(data['color_valor']!, _colorValorMeta),
       );
     }
     if (data.containsKey('foto_path')) {
@@ -321,6 +339,10 @@ class $VehiclesTable extends Vehicles with TableInfo<$VehiclesTable, Vehicle> {
         DriftSqlType.string,
         data['${effectivePrefix}color'],
       ),
+      colorValor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color_valor'],
+      ),
       fotoPath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}foto_path'],
@@ -363,6 +385,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
   final FuelType combustible;
   final DateTime? fechaMatriculacion;
   final String? color;
+  final int? colorValor;
   final String? fotoPath;
   final String? vin;
   final String? notas;
@@ -378,6 +401,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     required this.combustible,
     this.fechaMatriculacion,
     this.color,
+    this.colorValor,
     this.fotoPath,
     this.vin,
     this.notas,
@@ -409,6 +433,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     }
     if (!nullToAbsent || color != null) {
       map['color'] = Variable<String>(color);
+    }
+    if (!nullToAbsent || colorValor != null) {
+      map['color_valor'] = Variable<int>(colorValor);
     }
     if (!nullToAbsent || fotoPath != null) {
       map['foto_path'] = Variable<String>(fotoPath);
@@ -443,6 +470,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       color: color == null && nullToAbsent
           ? const Value.absent()
           : Value(color),
+      colorValor: colorValor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(colorValor),
       fotoPath: fotoPath == null && nullToAbsent
           ? const Value.absent()
           : Value(fotoPath),
@@ -474,6 +504,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
         json['fechaMatriculacion'],
       ),
       color: serializer.fromJson<String?>(json['color']),
+      colorValor: serializer.fromJson<int?>(json['colorValor']),
       fotoPath: serializer.fromJson<String?>(json['fotoPath']),
       vin: serializer.fromJson<String?>(json['vin']),
       notas: serializer.fromJson<String?>(json['notas']),
@@ -496,6 +527,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
       ),
       'fechaMatriculacion': serializer.toJson<DateTime?>(fechaMatriculacion),
       'color': serializer.toJson<String?>(color),
+      'colorValor': serializer.toJson<int?>(colorValor),
       'fotoPath': serializer.toJson<String?>(fotoPath),
       'vin': serializer.toJson<String?>(vin),
       'notas': serializer.toJson<String?>(notas),
@@ -514,6 +546,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     FuelType? combustible,
     Value<DateTime?> fechaMatriculacion = const Value.absent(),
     Value<String?> color = const Value.absent(),
+    Value<int?> colorValor = const Value.absent(),
     Value<String?> fotoPath = const Value.absent(),
     Value<String?> vin = const Value.absent(),
     Value<String?> notas = const Value.absent(),
@@ -531,6 +564,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
         ? fechaMatriculacion.value
         : this.fechaMatriculacion,
     color: color.present ? color.value : this.color,
+    colorValor: colorValor.present ? colorValor.value : this.colorValor,
     fotoPath: fotoPath.present ? fotoPath.value : this.fotoPath,
     vin: vin.present ? vin.value : this.vin,
     notas: notas.present ? notas.value : this.notas,
@@ -552,6 +586,9 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           ? data.fechaMatriculacion.value
           : this.fechaMatriculacion,
       color: data.color.present ? data.color.value : this.color,
+      colorValor: data.colorValor.present
+          ? data.colorValor.value
+          : this.colorValor,
       fotoPath: data.fotoPath.present ? data.fotoPath.value : this.fotoPath,
       vin: data.vin.present ? data.vin.value : this.vin,
       notas: data.notas.present ? data.notas.value : this.notas,
@@ -572,6 +609,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           ..write('combustible: $combustible, ')
           ..write('fechaMatriculacion: $fechaMatriculacion, ')
           ..write('color: $color, ')
+          ..write('colorValor: $colorValor, ')
           ..write('fotoPath: $fotoPath, ')
           ..write('vin: $vin, ')
           ..write('notas: $notas, ')
@@ -592,6 +630,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
     combustible,
     fechaMatriculacion,
     color,
+    colorValor,
     fotoPath,
     vin,
     notas,
@@ -611,6 +650,7 @@ class Vehicle extends DataClass implements Insertable<Vehicle> {
           other.combustible == this.combustible &&
           other.fechaMatriculacion == this.fechaMatriculacion &&
           other.color == this.color &&
+          other.colorValor == this.colorValor &&
           other.fotoPath == this.fotoPath &&
           other.vin == this.vin &&
           other.notas == this.notas &&
@@ -628,6 +668,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
   final Value<FuelType> combustible;
   final Value<DateTime?> fechaMatriculacion;
   final Value<String?> color;
+  final Value<int?> colorValor;
   final Value<String?> fotoPath;
   final Value<String?> vin;
   final Value<String?> notas;
@@ -643,6 +684,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     this.combustible = const Value.absent(),
     this.fechaMatriculacion = const Value.absent(),
     this.color = const Value.absent(),
+    this.colorValor = const Value.absent(),
     this.fotoPath = const Value.absent(),
     this.vin = const Value.absent(),
     this.notas = const Value.absent(),
@@ -659,6 +701,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     required FuelType combustible,
     this.fechaMatriculacion = const Value.absent(),
     this.color = const Value.absent(),
+    this.colorValor = const Value.absent(),
     this.fotoPath = const Value.absent(),
     this.vin = const Value.absent(),
     this.notas = const Value.absent(),
@@ -677,6 +720,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     Expression<String>? combustible,
     Expression<DateTime>? fechaMatriculacion,
     Expression<String>? color,
+    Expression<int>? colorValor,
     Expression<String>? fotoPath,
     Expression<String>? vin,
     Expression<String>? notas,
@@ -693,6 +737,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
       if (combustible != null) 'combustible': combustible,
       if (fechaMatriculacion != null) 'fecha_matriculacion': fechaMatriculacion,
       if (color != null) 'color': color,
+      if (colorValor != null) 'color_valor': colorValor,
       if (fotoPath != null) 'foto_path': fotoPath,
       if (vin != null) 'vin': vin,
       if (notas != null) 'notas': notas,
@@ -711,6 +756,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     Value<FuelType>? combustible,
     Value<DateTime?>? fechaMatriculacion,
     Value<String?>? color,
+    Value<int?>? colorValor,
     Value<String?>? fotoPath,
     Value<String?>? vin,
     Value<String?>? notas,
@@ -727,6 +773,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
       combustible: combustible ?? this.combustible,
       fechaMatriculacion: fechaMatriculacion ?? this.fechaMatriculacion,
       color: color ?? this.color,
+      colorValor: colorValor ?? this.colorValor,
       fotoPath: fotoPath ?? this.fotoPath,
       vin: vin ?? this.vin,
       notas: notas ?? this.notas,
@@ -767,6 +814,9 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
     if (color.present) {
       map['color'] = Variable<String>(color.value);
     }
+    if (colorValor.present) {
+      map['color_valor'] = Variable<int>(colorValor.value);
+    }
     if (fotoPath.present) {
       map['foto_path'] = Variable<String>(fotoPath.value);
     }
@@ -797,6 +847,7 @@ class VehiclesCompanion extends UpdateCompanion<Vehicle> {
           ..write('combustible: $combustible, ')
           ..write('fechaMatriculacion: $fechaMatriculacion, ')
           ..write('color: $color, ')
+          ..write('colorValor: $colorValor, ')
           ..write('fotoPath: $fotoPath, ')
           ..write('vin: $vin, ')
           ..write('notas: $notas, ')
@@ -1630,6 +1681,7 @@ typedef $$VehiclesTableCreateCompanionBuilder =
       required FuelType combustible,
       Value<DateTime?> fechaMatriculacion,
       Value<String?> color,
+      Value<int?> colorValor,
       Value<String?> fotoPath,
       Value<String?> vin,
       Value<String?> notas,
@@ -1647,6 +1699,7 @@ typedef $$VehiclesTableUpdateCompanionBuilder =
       Value<FuelType> combustible,
       Value<DateTime?> fechaMatriculacion,
       Value<String?> color,
+      Value<int?> colorValor,
       Value<String?> fotoPath,
       Value<String?> vin,
       Value<String?> notas,
@@ -1731,6 +1784,11 @@ class $$VehiclesTableFilterComposer
 
   ColumnFilters<String> get color => $composableBuilder(
     column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get colorValor => $composableBuilder(
+    column: $table.colorValor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1839,6 +1897,11 @@ class $$VehiclesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get colorValor => $composableBuilder(
+    column: $table.colorValor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get fotoPath => $composableBuilder(
     column: $table.fotoPath,
     builder: (column) => ColumnOrderings(column),
@@ -1905,6 +1968,11 @@ class $$VehiclesTableAnnotationComposer
 
   GeneratedColumn<String> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<int> get colorValor => $composableBuilder(
+    column: $table.colorValor,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get fotoPath =>
       $composableBuilder(column: $table.fotoPath, builder: (column) => column);
@@ -1984,6 +2052,7 @@ class $$VehiclesTableTableManager
                 Value<FuelType> combustible = const Value.absent(),
                 Value<DateTime?> fechaMatriculacion = const Value.absent(),
                 Value<String?> color = const Value.absent(),
+                Value<int?> colorValor = const Value.absent(),
                 Value<String?> fotoPath = const Value.absent(),
                 Value<String?> vin = const Value.absent(),
                 Value<String?> notas = const Value.absent(),
@@ -1999,6 +2068,7 @@ class $$VehiclesTableTableManager
                 combustible: combustible,
                 fechaMatriculacion: fechaMatriculacion,
                 color: color,
+                colorValor: colorValor,
                 fotoPath: fotoPath,
                 vin: vin,
                 notas: notas,
@@ -2016,6 +2086,7 @@ class $$VehiclesTableTableManager
                 required FuelType combustible,
                 Value<DateTime?> fechaMatriculacion = const Value.absent(),
                 Value<String?> color = const Value.absent(),
+                Value<int?> colorValor = const Value.absent(),
                 Value<String?> fotoPath = const Value.absent(),
                 Value<String?> vin = const Value.absent(),
                 Value<String?> notas = const Value.absent(),
@@ -2031,6 +2102,7 @@ class $$VehiclesTableTableManager
                 combustible: combustible,
                 fechaMatriculacion: fechaMatriculacion,
                 color: color,
+                colorValor: colorValor,
                 fotoPath: fotoPath,
                 vin: vin,
                 notas: notas,

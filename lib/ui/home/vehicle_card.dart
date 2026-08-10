@@ -56,9 +56,21 @@ class VehicleCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${vehiculo.marca} ${vehiculo.modelo}',
-                    style: tema.textTheme.titleMedium,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${vehiculo.marca} ${vehiculo.modelo}',
+                          style: tema.textTheme.titleMedium,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (vehiculo.colorValor != null) ...[
+                        const SizedBox(width: 8),
+                        _DistintivoColor(valor: vehiculo.colorValor!),
+                      ],
+                    ],
                   ),
                   if (vehiculo.version != null)
                     Text(
@@ -99,6 +111,32 @@ class VehicleCard extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Distintivo discreto con el tono del vehículo. El color en esta app se
+/// reserva para comunicar estado de mantenimiento, así que aquí es
+/// deliberadamente pequeño: un punto junto al nombre, no un fondo.
+class _DistintivoColor extends StatelessWidget {
+  final int valor;
+
+  const _DistintivoColor({required this.valor});
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    return Semantics(
+      label: 'Color del vehículo',
+      child: Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color(valor),
+          border: Border.all(color: tema.colorScheme.outlineVariant),
         ),
       ),
     );

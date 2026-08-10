@@ -12,6 +12,7 @@ class Vehicles extends Table {
   TextColumn get combustible => textEnum<FuelType>()();
   DateTimeColumn get fechaMatriculacion => dateTime().nullable()();
   TextColumn get color => text().nullable()();
+  IntColumn get colorValor => integer().nullable()();
   TextColumn get fotoPath => text().nullable()();
   TextColumn get vin => text().nullable()();
   TextColumn get notas => text().nullable()();

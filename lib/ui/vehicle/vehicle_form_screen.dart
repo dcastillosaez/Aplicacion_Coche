@@ -9,6 +9,8 @@ import 'package:path/path.dart' as p;
 import '../../data/database.dart';
 import '../../data/photo_storage.dart';
 import '../../data/tables/vehicles.dart';
+import '../../domain/catalogo_vehiculos.dart';
+import '../../domain/colores_vehiculo.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 
@@ -38,6 +40,14 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   late final TextEditingController _anio;
   late final TextEditingController _matricula;
   late final TextEditingController _color;
+
+  final _marcaFocus = FocusNode();
+  final _modeloFocus = FocusNode();
+
+  /// Tono ARGB elegido en la paleta. Independiente del texto de [_color]:
+  /// así, tras elegir una muestra, el nombre se puede reescribir a mano
+  /// (p. ej. "azul mystery") sin perder el tono ya seleccionado.
+  int? _colorValor;
 
   FuelType _combustible = FuelType.diesel;
   DateTime? _fechaMatriculacion;
@@ -73,6 +83,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     _anio = TextEditingController(text: v?.anio?.toString() ?? '');
     _matricula = TextEditingController(text: v?.matricula ?? '');
     _color = TextEditingController(text: v?.color ?? '');
+    _colorValor = v?.colorValor;
     _combustible = v?.combustible ?? FuelType.diesel;
     _fechaMatriculacion = v?.fechaMatriculacion;
     // En base de datos la foto se guarda como ruta relativa; en el estado
@@ -89,6 +100,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     for (final c in [_marca, _modelo, _version, _anio, _matricula, _color]) {
       c.dispose();
     }
+    _marcaFocus.dispose();
+    _modeloFocus.dispose();
     for (final ruta in _fotosDeLaSesion) {
       if (_guardadoConExito && ruta == _fotoPath) continue;
       _borrarFoto(ruta);
@@ -105,6 +118,23 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     } catch (e) {
       debugPrint('No se pudo borrar la foto $ruta: $e');
     }
+  }
+
+  /// Marcas del catálogo que empiezan o contienen el texto escrito. Vacío el
+  /// texto, se sugieren todas.
+  Iterable<String> _opcionesMarca(TextEditingValue value) {
+    final texto = value.text.trim().toLowerCase();
+    if (texto.isEmpty) return marcasConocidas;
+    return marcasConocidas.where((m) => m.toLowerCase().contains(texto));
+  }
+
+  /// Modelos sugeridos para la marca actualmente escrita. Si la marca no
+  /// está en el catálogo, no hay sugerencias y el campo es texto libre.
+  Iterable<String> _opcionesModelo(TextEditingValue value) {
+    final modelos = modelosDe(_marca.text);
+    final texto = value.text.trim().toLowerCase();
+    if (texto.isEmpty) return modelos;
+    return modelos.where((m) => m.toLowerCase().contains(texto));
   }
 
   Future<void> _elegirFoto() async {
@@ -174,6 +204,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             combustible: _combustible,
             fechaMatriculacion: Value(_fechaMatriculacion),
             color: Value(textoONulo(_color)),
+            colorValor: Value(_colorValor),
             fotoPath: Value(fotoPathRelativo),
           ),
         );
@@ -188,6 +219,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             combustible: Value(_combustible),
             fechaMatriculacion: Value(_fechaMatriculacion),
             color: Value(textoONulo(_color)),
+            colorValor: Value(_colorValor),
             fotoPath: Value(fotoPathRelativo),
           ),
         );
@@ -294,20 +326,44 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
           children: [
             _SelectorFoto(ruta: _fotoPath, onPulsar: _elegirFoto),
             const SizedBox(height: 24),
-            TextFormField(
-              controller: _marca,
-              decoration: const InputDecoration(labelText: 'Marca'),
-              textCapitalization: TextCapitalization.words,
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Indica la marca' : null,
+            Autocomplete<String>(
+              textEditingController: _marca,
+              focusNode: _marcaFocus,
+              optionsBuilder: _opcionesMarca,
+              // La lista solo sugiere: si la marca no está en el catálogo,
+              // el campo se comporta como texto libre normal.
+              fieldViewBuilder: (context, controller, focusNode, _) {
+                return TextFormField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: const InputDecoration(labelText: 'Marca'),
+                  textCapitalization: TextCapitalization.words,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Indica la marca'
+                      : null,
+                );
+              },
+              // No se toca el modelo ya escrito al cambiar de marca: la
+              // lista de sugerencias del modelo se actualiza para la marca
+              // nueva, pero el texto libre que ya hubiera se respeta.
+              onSelected: (_) => setState(() {}),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _modelo,
-              decoration: const InputDecoration(labelText: 'Modelo'),
-              textCapitalization: TextCapitalization.words,
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Indica el modelo' : null,
+            Autocomplete<String>(
+              textEditingController: _modelo,
+              focusNode: _modeloFocus,
+              optionsBuilder: _opcionesModelo,
+              fieldViewBuilder: (context, controller, focusNode, _) {
+                return TextFormField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: const InputDecoration(labelText: 'Modelo'),
+                  textCapitalization: TextCapitalization.words,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Indica el modelo'
+                      : null,
+                );
+              },
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -350,9 +406,25 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
               textCapitalization: TextCapitalization.characters,
             ),
             const SizedBox(height: 12),
+            _PaletaColor(
+              colorValorSeleccionado: _colorValor,
+              onSeleccionar: (c) => setState(() {
+                if (c == null) {
+                  _color.clear();
+                  _colorValor = null;
+                } else {
+                  _color.text = c.nombre;
+                  _colorValor = c.valor;
+                }
+              }),
+            ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _color,
-              decoration: const InputDecoration(labelText: 'Color'),
+              decoration: const InputDecoration(
+                labelText: 'Color',
+                hintText: 'Editable: p. ej. "azul mystery"',
+              ),
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 12),
@@ -420,6 +492,135 @@ class _SelectorFoto extends StatelessWidget {
         const SizedBox(height: 8),
         Text('Añadir foto', style: tema.textTheme.bodyMedium),
       ],
+    );
+  }
+}
+
+/// Paleta visual de colores habituales de carrocería. Al pulsar una muestra
+/// se comunican nombre y tono a la vez; el nombre se puede seguir editando
+/// después en el campo de texto de debajo sin perder el tono elegido.
+class _PaletaColor extends StatelessWidget {
+  final int? colorValorSeleccionado;
+  final ValueChanged<ColorVehiculo?> onSeleccionar;
+
+  const _PaletaColor({
+    required this.colorValorSeleccionado,
+    required this.onSeleccionar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final c in coloresVehiculo)
+          _MuestraColor(
+            color: Color(c.valor),
+            etiqueta: c.nombre,
+            seleccionada: colorValorSeleccionado == c.valor,
+            onPulsar: () => onSeleccionar(c),
+          ),
+        _MuestraSinColor(
+          seleccionada: colorValorSeleccionado == null,
+          onPulsar: () => onSeleccionar(null),
+        ),
+      ],
+    );
+  }
+}
+
+class _MuestraColor extends StatelessWidget {
+  final Color color;
+  final String etiqueta;
+  final bool seleccionada;
+  final VoidCallback onPulsar;
+
+  const _MuestraColor({
+    required this.color,
+    required this.etiqueta,
+    required this.seleccionada,
+    required this.onPulsar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    // El check se pinta blanco o negro según la luminancia de la muestra,
+    // para que se vea tanto sobre tonos claros como oscuros.
+    final marcaClara =
+        ThemeData.estimateBrightnessForColor(color) == Brightness.dark;
+
+    return Tooltip(
+      message: etiqueta,
+      child: InkWell(
+        onTap: onPulsar,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: seleccionada
+                  ? tema.colorScheme.primary
+                  : tema.colorScheme.outlineVariant,
+              width: seleccionada ? 3 : 1,
+            ),
+          ),
+          child: seleccionada
+              ? Icon(
+                  Icons.check,
+                  size: 18,
+                  color: marcaClara ? Colors.white : Colors.black,
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Muestra para dejar el vehículo sin color, que es el estado de los
+/// vehículos dados de alta antes de esta paleta.
+class _MuestraSinColor extends StatelessWidget {
+  final bool seleccionada;
+  final VoidCallback onPulsar;
+
+  const _MuestraSinColor({
+    required this.seleccionada,
+    required this.onPulsar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    return Tooltip(
+      message: 'Sin color',
+      child: InkWell(
+        onTap: onPulsar,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: tema.colorScheme.surface,
+            border: Border.all(
+              color: seleccionada
+                  ? tema.colorScheme.primary
+                  : tema.colorScheme.outlineVariant,
+              width: seleccionada ? 3 : 1,
+            ),
+          ),
+          child: Icon(
+            Icons.close,
+            size: 18,
+            color: tema.colorScheme.outline,
+          ),
+        ),
+      ),
     );
   }
 }
