@@ -88,6 +88,17 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     );
     await File(elegida.path).copy(destino);
 
+    final anterior = _fotoPath;
+    if (anterior != null && anterior != destino) {
+      try {
+        await File(anterior).delete();
+      } catch (_) {
+        // Un fichero ya inexistente o un borrado fallido no debe impedir
+        // guardar la foto nueva.
+      }
+    }
+
+    if (!mounted) return;
     setState(() => _fotoPath = destino);
   }
 
@@ -99,7 +110,9 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
       lastDate: DateTime.now(),
       locale: const Locale('es', 'ES'),
     );
-    if (elegida != null) setState(() => _fechaMatriculacion = elegida);
+    if (elegida == null) return;
+    if (!mounted) return;
+    setState(() => _fechaMatriculacion = elegida);
   }
 
   Future<void> _guardar() async {
@@ -110,34 +123,47 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     String? textoONulo(TextEditingController c) =>
         c.text.trim().isEmpty ? null : c.text.trim();
 
-    if (_esEdicion) {
-      await dao.actualizar(
-        widget.vehiculo!.copyWith(
-          marca: _marca.text.trim(),
-          modelo: _modelo.text.trim(),
-          version: Value(textoONulo(_version)),
-          anio: Value(int.tryParse(_anio.text.trim())),
-          matricula: Value(textoONulo(_matricula)),
-          combustible: _combustible,
-          fechaMatriculacion: Value(_fechaMatriculacion),
-          color: Value(textoONulo(_color)),
-          fotoPath: Value(_fotoPath),
+    try {
+      if (_esEdicion) {
+        await dao.actualizar(
+          widget.vehiculo!.copyWith(
+            marca: _marca.text.trim(),
+            modelo: _modelo.text.trim(),
+            version: Value(textoONulo(_version)),
+            anio: Value(int.tryParse(_anio.text.trim())),
+            matricula: Value(textoONulo(_matricula)),
+            combustible: _combustible,
+            fechaMatriculacion: Value(_fechaMatriculacion),
+            color: Value(textoONulo(_color)),
+            fotoPath: Value(_fotoPath),
+          ),
+        );
+      } else {
+        await dao.insertar(
+          VehiclesCompanion(
+            marca: Value(_marca.text.trim()),
+            modelo: Value(_modelo.text.trim()),
+            version: Value(textoONulo(_version)),
+            anio: Value(int.tryParse(_anio.text.trim())),
+            matricula: Value(textoONulo(_matricula)),
+            combustible: Value(_combustible),
+            fechaMatriculacion: Value(_fechaMatriculacion),
+            color: Value(textoONulo(_color)),
+            fotoPath: Value(_fotoPath),
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _guardando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se ha podido guardar el vehículo. Inténtalo de nuevo.',
+          ),
         ),
       );
-    } else {
-      await dao.insertar(
-        VehiclesCompanion(
-          marca: Value(_marca.text.trim()),
-          modelo: Value(_modelo.text.trim()),
-          version: Value(textoONulo(_version)),
-          anio: Value(int.tryParse(_anio.text.trim())),
-          matricula: Value(textoONulo(_matricula)),
-          combustible: Value(_combustible),
-          fechaMatriculacion: Value(_fechaMatriculacion),
-          color: Value(textoONulo(_color)),
-          fotoPath: Value(_fotoPath),
-        ),
-      );
+      return;
     }
 
     if (mounted) Navigator.of(context).pop();
@@ -253,27 +279,35 @@ class _SelectorFoto extends StatelessWidget {
 
     return GestureDetector(
       onTap: onPulsar,
-      child: Container(
-        height: 180,
-        decoration: BoxDecoration(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 180,
+          width: double.infinity,
           color: tema.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(20),
-          image: ruta == null
-              ? null
-              : DecorationImage(image: FileImage(File(ruta!)), fit: BoxFit.cover),
+          child: ruta == null
+              ? _marcador(tema)
+              : Image.file(
+                  File(ruta!),
+                  fit: BoxFit.cover,
+                  // Si el fichero ya no está en disco, se ofrece añadir otra
+                  // foto en lugar de romper la pantalla.
+                  errorBuilder: (_, _, _) => _marcador(tema),
+                ),
         ),
-        child: ruta != null
-            ? null
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_a_photo_outlined,
-                      size: 32, color: tema.colorScheme.outline),
-                  const SizedBox(height: 8),
-                  Text('Añadir foto', style: tema.textTheme.bodyMedium),
-                ],
-              ),
       ),
+    );
+  }
+
+  Widget _marcador(ThemeData tema) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_a_photo_outlined,
+            size: 32, color: tema.colorScheme.outline),
+        const SizedBox(height: 8),
+        Text('Añadir foto', style: tema.textTheme.bodyMedium),
+      ],
     );
   }
 }
