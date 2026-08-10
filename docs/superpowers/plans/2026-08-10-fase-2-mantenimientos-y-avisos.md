@@ -818,18 +818,14 @@ void main() {
     expect(v.proximaFecha, DateTime(2026, 2, 28));
   });
 
-  test('el cambio de horario no altera los dias restantes', () {
-    // Del 1 de marzo al 1 de abril hay 31 días naturales aunque el reloj
-    // se adelante una hora por el medio.
-    final v = calcular(
-      intervalMeses: 1,
-      ultimoKm: 99000,
-      ultimaFecha: DateTime(2026, 3, 1),
-    );
-
-    expect(v.proximaFecha, DateTime(2026, 4, 1));
-    expect(v.diasRestantes, DateTime(2026, 4, 1).difference(ahora).inDays.abs(),
-        reason: 'los dias se cuentan como naturales, no por horas');
+  test(
+      'diasNaturalesEntre no pierde un dia en el cambio de hora de '
+      'primavera', () {
+    // El cambio de hora de 2026 en España es el 29 de marzo: los relojes
+    // adelantan de 02:00 a 03:00. Sin normalizar a UTC, la resta de dos
+    // medianoches locales pierde esa hora y el resultado trunca a 30 en
+    // vez de 31.
+    expect(diasNaturalesEntre(DateTime(2026, 3, 1), DateTime(2026, 4, 1)), 31);
   });
 }
 ```
