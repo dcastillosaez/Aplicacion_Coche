@@ -55,7 +55,13 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
 
   bool _guardadoConExito = false;
 
+  /// Si se está archivando el vehículo (independiente de _guardando: no
+  /// pueden darse a la vez, cada acción deshabilita el botón de la otra).
+  bool _archivando = false;
+
   bool get _esEdicion => widget.vehiculo != null;
+
+  bool get _ocupado => _guardando || _archivando;
 
   @override
   void initState() {
@@ -209,11 +215,77 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  Future<void> _confirmarArchivar() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Quitar vehículo'),
+        content: const Text(
+          'Dejará de aparecer en la lista de Inicio. Sus datos no se '
+          'borran: el vehículo se archiva en la base de datos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Quitar vehículo'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true) return;
+    if (!mounted) return;
+    await _archivar();
+  }
+
+  Future<void> _archivar() async {
+    final vehiculo = widget.vehiculo;
+    if (vehiculo == null) return;
+    setState(() => _archivando = true);
+
+    final dao = ref.read(databaseProvider).vehicleDao;
+    try {
+      await dao.archivar(vehiculo.id);
+    } catch (e) {
+      debugPrint('Error al archivar el vehículo: $e');
+      if (!mounted) return;
+      setState(() => _archivando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se ha podido quitar el vehículo. Inténtalo de nuevo.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // A propósito no se marca _guardadoConExito: archivar no cambia la foto
+    // que la fila referencia en base de datos (sigue siendo _fotoOriginal),
+    // así que dispose() debe limpiar cualquier foto elegida en esta sesión
+    // y debe dejar _fotoOriginal intacta, igual que en una edición cancelada.
+    if (mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_esEdicion ? 'Editar vehículo' : 'Nuevo vehículo'),
+        actions: [
+          if (_esEdicion)
+            IconButton(
+              onPressed: _ocupado ? null : _confirmarArchivar,
+              icon: const Icon(Icons.archive_outlined),
+              tooltip: 'Quitar vehículo',
+            ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -297,7 +369,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             ),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: _guardando ? null : _guardar,
+              onPressed: _ocupado ? null : _guardar,
               child: Text(_esEdicion ? 'Guardar cambios' : 'Crear vehículo'),
             ),
           ],
