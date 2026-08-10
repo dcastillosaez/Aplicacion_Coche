@@ -45,6 +45,17 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   String? _fotoPath;
   bool _guardando = false;
 
+  /// Foto que la base de datos referencia al entrar. No se borra del disco
+  /// hasta que un guardado con éxito la sustituya: si se cancela la edición,
+  /// la fila sigue apuntando a ella.
+  String? _fotoOriginal;
+
+  /// Fotos copiadas durante esta sesión del formulario. Las que no acaben
+  /// guardadas se borran al salir para no dejar basura en el almacenamiento.
+  final Set<String> _fotosDeLaSesion = {};
+
+  bool _guardadoConExito = false;
+
   bool get _esEdicion => widget.vehiculo != null;
 
   @override
@@ -60,6 +71,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     _combustible = v?.combustible ?? FuelType.diesel;
     _fechaMatriculacion = v?.fechaMatriculacion;
     _fotoPath = v?.fotoPath;
+    _fotoOriginal = v?.fotoPath;
   }
 
   @override
@@ -67,7 +79,22 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     for (final c in [_marca, _modelo, _version, _anio, _matricula, _color]) {
       c.dispose();
     }
+    for (final ruta in _fotosDeLaSesion) {
+      if (_guardadoConExito && ruta == _fotoPath) continue;
+      _borrarFoto(ruta);
+    }
     super.dispose();
+  }
+
+  /// Borra una foto del almacenamiento interno. Que el fichero ya no exista
+  /// o que el borrado falle nunca debe interrumpir el flujo.
+  void _borrarFoto(String ruta) {
+    try {
+      final fichero = File(ruta);
+      if (fichero.existsSync()) fichero.deleteSync();
+    } catch (e) {
+      debugPrint('No se pudo borrar la foto $ruta: $e');
+    }
   }
 
   Future<void> _elegirFoto() async {
@@ -88,15 +115,14 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     );
     await File(elegida.path).copy(destino);
 
+    // Solo se borra al vuelo lo que se copió en esta misma sesión. La foto
+    // original sigue en disco hasta que el guardado la sustituya de verdad.
     final anterior = _fotoPath;
-    if (anterior != null && anterior != destino) {
-      try {
-        await File(anterior).delete();
-      } catch (_) {
-        // Un fichero ya inexistente o un borrado fallido no debe impedir
-        // guardar la foto nueva.
-      }
+    if (anterior != null && anterior != destino &&
+        _fotosDeLaSesion.remove(anterior)) {
+      _borrarFoto(anterior);
     }
+    _fotosDeLaSesion.add(destino);
 
     if (!mounted) return;
     setState(() => _fotoPath = destino);
@@ -153,7 +179,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error al guardar el vehículo: $e');
       if (!mounted) return;
       setState(() => _guardando = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -165,6 +192,12 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
       );
       return;
     }
+
+    _guardadoConExito = true;
+
+    // Ahora que la fila ya no la referencia, la foto que había antes puede irse.
+    final original = _fotoOriginal;
+    if (original != null && original != _fotoPath) _borrarFoto(original);
 
     if (mounted) Navigator.of(context).pop();
   }
