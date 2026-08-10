@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'daos/maintenance_dao.dart';
 import 'daos/mileage_dao.dart';
 import 'daos/vehicle_dao.dart';
 import 'tables/maintenance_records.dart';
@@ -23,7 +24,7 @@ part 'database.g.dart';
     MaintenanceSchedules,
     MaintenanceRecords,
   ],
-  daos: [VehicleDao, MileageDao],
+  daos: [VehicleDao, MileageDao, MaintenanceDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_abrirConexion());
