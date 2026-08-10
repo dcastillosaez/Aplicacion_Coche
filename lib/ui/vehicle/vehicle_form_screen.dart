@@ -191,6 +191,11 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     // seguridad.
     final fotoPathRelativo =
         _fotoPath == null ? null : PhotoStorage.relativa(_fotoPath!);
+    // Un coche sin nombre de color tampoco tiene tono: si no, la tarjeta
+    // pintaría un distintivo de color para un vehículo que, según su ficha,
+    // no lo tiene.
+    final nombreColor = textoONulo(_color);
+    final colorValor = nombreColor == null ? null : _colorValor;
 
     try {
       if (_esEdicion) {
@@ -203,8 +208,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             matricula: Value(textoONulo(_matricula)),
             combustible: _combustible,
             fechaMatriculacion: Value(_fechaMatriculacion),
-            color: Value(textoONulo(_color)),
-            colorValor: Value(_colorValor),
+            color: Value(nombreColor),
+            colorValor: Value(colorValor),
             fotoPath: Value(fotoPathRelativo),
           ),
         );
@@ -218,8 +223,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             matricula: Value(textoONulo(_matricula)),
             combustible: Value(_combustible),
             fechaMatriculacion: Value(_fechaMatriculacion),
-            color: Value(textoONulo(_color)),
-            colorValor: Value(_colorValor),
+            color: Value(nombreColor),
+            colorValor: Value(colorValor),
             fotoPath: Value(fotoPathRelativo),
           ),
         );
