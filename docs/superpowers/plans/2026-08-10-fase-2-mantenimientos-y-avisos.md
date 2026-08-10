@@ -1374,9 +1374,8 @@ class MantenimientoConVencimiento {
 }
 
 final ajustesProvider = FutureProvider<Setting>((ref) {
-  return ref.watch(databaseProvider).select(
-        ref.watch(databaseProvider).settings,
-      ).getSingle();
+  final db = ref.watch(databaseProvider);
+  return db.select(db.settings).getSingle();
 });
 
 final schedulesProvider =
