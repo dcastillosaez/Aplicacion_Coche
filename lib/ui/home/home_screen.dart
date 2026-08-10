@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/providers.dart';
 import '../common/empty_state.dart';
 import '../vehicle/vehicle_form_screen.dart';
+import 'vehicle_card.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -27,12 +28,11 @@ class HomeScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
             itemCount: lista.length,
-            itemBuilder: (context, i) => ListTile(
-              title: Text('${lista[i].marca} ${lista[i].modelo}'),
-            ),
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
+            itemBuilder: (context, i) => VehicleCard(vehiculo: lista[i]),
           );
         },
       ),
