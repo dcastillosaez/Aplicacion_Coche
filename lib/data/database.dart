@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 
 import 'daos/mileage_dao.dart';
 import 'daos/vehicle_dao.dart';
+import 'tables/maintenance_records.dart';
+import 'tables/maintenance_schedules.dart';
 import 'tables/mileage_readings.dart';
 import 'tables/settings.dart';
 import 'tables/vehicles.dart';
@@ -14,7 +16,13 @@ import 'tables/vehicles.dart';
 part 'database.g.dart';
 
 @DriftDatabase(
-  tables: [Vehicles, MileageReadings, Settings],
+  tables: [
+    Vehicles,
+    MileageReadings,
+    Settings,
+    MaintenanceSchedules,
+    MaintenanceRecords,
+  ],
   daos: [VehicleDao, MileageDao],
 )
 class AppDatabase extends _$AppDatabase {
@@ -23,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -33,6 +41,12 @@ class AppDatabase extends _$AppDatabase {
           // en la tarjeta del vehículo sin perder el nombre editable.
           if (from < 2) {
             await m.addColumn(vehicles, vehicles.colorValor);
+          }
+          // v2 -> v3: se añaden las tablas de mantenimientos configurados y
+          // realizados.
+          if (from < 3) {
+            await m.createTable(maintenanceSchedules);
+            await m.createTable(maintenanceRecords);
           }
         },
         beforeOpen: (details) async {
