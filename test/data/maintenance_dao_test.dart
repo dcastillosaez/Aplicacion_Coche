@@ -67,13 +67,13 @@ void main() {
         combustible: Value(FuelType.diesel),
       ),
     );
-    await crearSchedule(nombre: 'Frenos', orden: 2);
-    await crearSchedule(nombre: 'Aceite', orden: 1);
+    await crearSchedule(nombre: 'Aceite', orden: 2);
+    await crearSchedule(nombre: 'Frenos', orden: 1);
     await crearSchedule(nombre: 'De otro coche', vehiculo: otroVehiculo);
 
     final lista = await db.maintenanceDao.watchSchedules(vehicleId).first;
 
-    expect(lista.map((s) => s.nombre), ['Aceite', 'Frenos']);
+    expect(lista.map((s) => s.nombre), ['Frenos', 'Aceite']);
   });
 
   test('ultimoRecordDe devuelve el de fecha mas reciente', () async {
@@ -89,8 +89,8 @@ void main() {
   test('ultimosRecordsPorSchedule da el mas reciente de cada uno', () async {
     final aceite = await crearSchedule(nombre: 'Aceite');
     final frenos = await crearSchedule(nombre: 'Frenos');
-    await crearRecord(aceite, DateTime(2025, 1, 1), 80000);
     await crearRecord(aceite, DateTime(2026, 5, 1), 95000);
+    await crearRecord(aceite, DateTime(2025, 1, 1), 80000);
     await crearRecord(frenos, DateTime(2024, 3, 1), 60000);
 
     final mapa =
