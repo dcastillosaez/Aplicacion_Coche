@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../data/photo_storage.dart';
+import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
+import '../common/estado_chip.dart';
 import '../common/formatters.dart';
 import '../theme/app_theme.dart';
-import '../vehicle/vehicle_form_screen.dart';
+import '../vehicle/vehicle_detail_screen.dart';
 
 class VehicleCard extends ConsumerWidget {
   final Vehicle vehiculo;
@@ -20,13 +22,14 @@ class VehicleCard extends ConsumerWidget {
     final tema = Theme.of(context);
     final lectura = ref.watch(ultimaLecturaProvider(vehiculo.id));
     final ritmo = ref.watch(ritmoUsoProvider(vehiculo.id));
+    final estado = ref.watch(estadoVehiculoProvider(vehiculo.id));
 
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => VehicleFormScreen(vehiculo: vehiculo),
+            builder: (_) => VehicleDetailScreen(vehiculo: vehiculo),
           ),
         ),
         child: Column(
@@ -79,21 +82,43 @@ class VehicleCard extends ConsumerWidget {
                           ?.copyWith(color: tema.colorScheme.outline),
                     ),
                   const SizedBox(height: 16),
-                  lectura.when(
-                    loading: () => const SizedBox(height: 40),
-                    error: (e, st) {
-                      debugPrint('Error al cargar el kilometraje: $e\n$st');
-                      return const Text('No se ha podido cargar');
-                    },
-                    data: (l) => Text(
-                      l == null ? 'Sin kilometraje' : formatearKm(l.km),
-                      style: tema.textTheme.headlineMedium?.merge(
-                        AppTheme.cifras.copyWith(
-                          color: tema.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: lectura.when(
+                          loading: () => const SizedBox(height: 40),
+                          error: (e, st) {
+                            debugPrint(
+                              'Error al cargar el kilometraje: $e\n$st',
+                            );
+                            return const Text('No se ha podido cargar');
+                          },
+                          data: (l) => Text(
+                            l == null ? 'Sin kilometraje' : formatearKm(l.km),
+                            style: tema.textTheme.headlineMedium?.merge(
+                              AppTheme.cifras.copyWith(
+                                color: tema.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      // Distintivo de estado general: se oculta en carga o
+                      // error, igual que el ritmo de uso de más abajo, sin
+                      // romper el resto de la tarjeta. El detalle del error
+                      // sigue siendo visible en la ficha del vehículo.
+                      estado.when(
+                        loading: () => const SizedBox.shrink(),
+                        error: (e, st) {
+                          debugPrint('Error al cargar el estado: $e\n$st');
+                          return const SizedBox.shrink();
+                        },
+                        data: (e) => EstadoChip(estado: e),
+                      ),
+                    ],
                   ),
                   ritmo.maybeWhen(
                     data: (r) => r.esPorDefecto
