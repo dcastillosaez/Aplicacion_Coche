@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'mantenimiento_providers.dart';
 import 'providers.dart';
 
 /// Providers que se recalculan cada vez que la app vuelve a primer plano,
@@ -8,6 +9,8 @@ import 'providers.dart';
 /// aplicación". En la fase 2, el motor de vencimientos se añade aquí.
 final providersARecalcularAlReanudar = <ProviderOrFamily>[
   ritmoUsoProvider,
+  vencimientosProvider,
+  estadoVehiculoProvider,
 ];
 
 /// Widget sin apariencia propia que observa el ciclo de vida de la app e
