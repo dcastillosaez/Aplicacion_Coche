@@ -1,18 +1,9 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/maintenance_category.dart';
 import 'vehicles.dart';
 
-enum MaintenanceCategory {
-  motor,
-  frenos,
-  neumaticos,
-  electricidad,
-  suspension,
-  transmision,
-  carroceria,
-  itv,
-  otro,
-}
+export '../../domain/maintenance_category.dart';
 
 class MaintenanceSchedules extends Table {
   IntColumn get id => integer().autoIncrement()();

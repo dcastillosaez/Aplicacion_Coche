@@ -13,6 +13,7 @@ import '../../domain/catalogo_vehiculos.dart';
 import '../../domain/colores_vehiculo.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
+import '../maintenance/plantillas_screen.dart';
 
 const Map<FuelType, String> etiquetasCombustible = {
   FuelType.gasolina: 'Gasolina',
@@ -197,6 +198,11 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     final nombreColor = textoONulo(_color);
     final colorValor = nombreColor == null ? null : _colorValor;
 
+    // Solo se rellena al crear un vehículo nuevo: es lo que decide si tras
+    // guardar se ofrecen las plantillas de mantenimiento o se vuelve
+    // directamente a la pantalla anterior.
+    int? idNuevoVehiculo;
+
     try {
       if (_esEdicion) {
         await dao.actualizar(
@@ -214,7 +220,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
           ),
         );
       } else {
-        await dao.insertar(
+        idNuevoVehiculo = await dao.insertar(
           VehiclesCompanion(
             marca: Value(_marca.text.trim()),
             modelo: Value(_modelo.text.trim()),
@@ -249,7 +255,19 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     final original = _fotoOriginal;
     if (original != null && original != _fotoPath) _borrarFoto(original);
 
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    if (idNuevoVehiculo != null) {
+      // Se reemplaza esta pantalla en vez de apilarse: al terminar con las
+      // plantillas (o saltarlas), se vuelve directamente a Inicio, no al
+      // formulario ya guardado.
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => PlantillasScreen(vehicleId: idNuevoVehiculo!),
+        ),
+      );
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> _confirmarArchivar() async {

@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 
-enum FuelType { gasolina, diesel, hibrido, electrico, glp }
+import '../../domain/fuel_type.dart';
+
+export '../../domain/fuel_type.dart';
 
 class Vehicles extends Table {
   IntColumn get id => integer().autoIncrement()();
