@@ -227,6 +227,21 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
       );
 
     if (pendientes.isEmpty) {
+      // "Todo al día" solo puede decirse de lo que sí está configurado: un
+      // vehículo sin ningún mantenimiento no genera pendientes porque no hay
+      // nada que calcular, no porque esté cuidado. Si el banner callara esto,
+      // le daría al usuario permiso para no mirar justo lo que debería mirar.
+      final sinConfigurar = <Vehicle>[
+        for (var i = 0; i < vehiculos.length; i++)
+          if ((estados[i].value ?? const []).isEmpty) vehiculos[i],
+      ];
+
+      final mensaje = sinConfigurar.isEmpty
+          ? 'Todo al día. No hay ningún mantenimiento pendiente.'
+          : 'Todo al día en lo configurado. ${_nombresVehiculos(sinConfigurar)} '
+              '${sinConfigurar.length == 1 ? 'todavía no tiene' : 'todavía no tienen'} '
+              'ningún mantenimiento configurado.';
+
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -235,10 +250,7 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
               const EstadoChip(estado: EstadoMantenimiento.ok),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'Todo al día. No hay ningún mantenimiento pendiente.',
-                  style: tema.textTheme.bodyMedium,
-                ),
+                child: Text(mensaje, style: tema.textTheme.bodyMedium),
               ),
             ],
           ),
@@ -283,6 +295,14 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Los nombres de una lista de vehículos en una frase legible: "Seat León
+/// ST", "Seat León ST y BMW X3" o "Seat León ST, BMW X3 y Audi A4".
+String _nombresVehiculos(List<Vehicle> vehiculos) {
+  final nombres = vehiculos.map((v) => '${v.marca} ${v.modelo}').toList();
+  if (nombres.length == 1) return nombres.single;
+  return '${nombres.sublist(0, nombres.length - 1).join(', ')} y ${nombres.last}';
 }
 
 /// Una fila de la lista global: igual que una fila de mantenimiento de la

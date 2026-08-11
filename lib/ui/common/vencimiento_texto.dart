@@ -75,8 +75,12 @@ const String avisoRitmoSupuesto =
     'lecturas suficientes para medirlo.';
 
 /// Si, entre los vencimientos dados, hace falta mostrar [avisoRitmoSupuesto]:
-/// solo cuando hay alguna cifra estimada por kilómetros y esa estimación se
-/// apoya en el ritmo por defecto.
+/// solo cuando el mismo vencimiento tiene una cifra estimada por kilómetros
+/// y esa estimación concreta se apoya en el ritmo por defecto. No basta con
+/// que dos vencimientos distintos cumplan cada condición por separado: en
+/// una colección que mezcla varios vehículos, cada uno con su propio ritmo
+/// (la lista global de Inicio, a diferencia de la ficha o la tarjeta, donde
+/// todos comparten vehículo y ritmo), eso señalaría como dudosa la cifra
+/// fiable de un coche por culpa del ritmo supuesto de otro.
 bool necesitaAvisoRitmoSupuesto(Iterable<Vencimiento> vencimientos) =>
-    vencimientos.any((v) => v.kmRestantes != null) &&
-    vencimientos.any((v) => v.estimacionEsSupuesta);
+    vencimientos.any((v) => v.kmRestantes != null && v.estimacionEsSupuesta);
