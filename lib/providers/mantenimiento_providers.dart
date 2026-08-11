@@ -96,7 +96,9 @@ final vencimientosProvider =
     );
   }
 
-  resultado.sort((a, b) => _urgencia(a).compareTo(_urgencia(b)));
+  resultado.sort(
+    (a, b) => urgenciaVencimiento(a).compareTo(urgenciaVencimiento(b)),
+  );
   return resultado;
 });
 
@@ -121,7 +123,11 @@ final estadoVehiculoProvider =
 /// atención, y dentro de cada grupo lo que antes llega de las dos vías —no
 /// solo la de tiempo, que dejaría empatados (y al final del grupo) a todos
 /// los mantenimientos que van solo por kilómetros.
-int _urgencia(MantenimientoConVencimiento m) {
+///
+/// Pública porque también la usa Inicio para ordenar la lista global de
+/// próximos vencimientos, que combina mantenimientos de varios vehículos: es
+/// el mismo criterio de urgencia, no una copia.
+int urgenciaVencimiento(MantenimientoConVencimiento m) {
   final base = switch (m.vencimiento.estado) {
     EstadoMantenimiento.vencido => 0,
     EstadoMantenimiento.atencion => 1000000,

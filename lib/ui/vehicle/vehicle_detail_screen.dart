@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../data/photo_storage.dart';
-import '../../domain/maintenance_due.dart';
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
 import '../common/estado_chip.dart';
 import '../common/formatters.dart';
+import '../common/vencimiento_texto.dart';
 import '../maintenance/maintenance_form_screen.dart';
 import '../maintenance/register_maintenance_sheet.dart';
 import '../theme/app_theme.dart';
@@ -250,9 +250,8 @@ class _ContenidoMantenimientos extends StatelessWidget {
     // primero es lo más próximo, tanto para destacarlo como para encabezar
     // la lista completa de abajo.
     final destacado = lista.first;
-    final hayCifraEstimada =
-        lista.any((m) => m.vencimiento.kmRestantes != null);
-    final ritmoSupuesto = lista.any((m) => m.vencimiento.estimacionEsSupuesta);
+    final avisoRitmo =
+        necesitaAvisoRitmoSupuesto(lista.map((m) => m.vencimiento));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,11 +259,10 @@ class _ContenidoMantenimientos extends StatelessWidget {
         Text('Lo más próximo', style: tema.textTheme.titleSmall),
         const SizedBox(height: 8),
         _TarjetaDestacada(item: destacado),
-        if (hayCifraEstimada && ritmoSupuesto) ...[
+        if (avisoRitmo) ...[
           const SizedBox(height: 8),
           Text(
-            'Las cifras con ≈ se basan en un ritmo de uso supuesto: '
-            'todavía no hay lecturas suficientes para medirlo.',
+            avisoRitmoSupuesto,
             style: tema.textTheme.bodySmall
                 ?.copyWith(color: tema.colorScheme.outline),
           ),
@@ -292,11 +290,11 @@ class _TarjetaDestacada extends StatelessWidget {
     final tema = Theme.of(context);
     final v = item.vencimiento;
     final lineas = [
-      _textoKmRestantes(v),
-      _textoDiasRestantes(v),
-      _textoDiasEstimadosPorKm(v),
-      _textoProximoKm(v),
-      _textoProximaFecha(v),
+      textoKmRestantes(v),
+      textoDiasRestantes(v),
+      textoDiasEstimadosPorKm(v),
+      textoProximoKm(v),
+      textoProximaFecha(v),
     ].whereType<String>().toList();
 
     return Card(
@@ -348,11 +346,7 @@ class _FilaMantenimiento extends StatelessWidget {
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
     final v = item.vencimiento;
-    final resumen = [
-      _textoKmRestantes(v),
-      _textoDiasRestantes(v),
-      _textoDiasEstimadosPorKm(v),
-    ].whereType<String>().join(' · ');
+    final resumen = resumenVencimiento(v);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -401,50 +395,3 @@ class _FilaMantenimiento extends StatelessWidget {
     );
   }
 }
-
-/// Kilómetros que faltan hasta el próximo cambio, proyectados a partir de la
-/// última lectura real y el ritmo de uso: siempre una estimación, siempre
-/// marcada con ≈. Negativo (vencido) se expresa como "hace" en vez de
-/// "faltan".
-String? _textoKmRestantes(Vencimiento v) {
-  final km = v.kmRestantes;
-  if (km == null) return null;
-  final cifra = formatearKm(km.abs());
-  return km >= 0 ? '≈ Faltan $cifra' : '≈ Vencido hace $cifra';
-}
-
-/// Días naturales hasta la fecha de vencimiento: a diferencia del
-/// kilometraje, no depende de ningún ritmo supuesto, así que no lleva ≈.
-String? _textoDiasRestantes(Vencimiento v) {
-  final dias = v.diasRestantes;
-  if (dias == null) return null;
-  final abs = dias.abs();
-  final unidad = abs == 1 ? 'día' : 'días';
-  return dias >= 0 ? 'Faltan $abs $unidad' : 'Vencido hace $abs $unidad';
-}
-
-/// Días hasta el vencimiento para un mantenimiento que solo va por
-/// kilómetros: no hay una fecha real que consultar, así que se traduce el
-/// kilometraje restante a días al ritmo de uso actual. Es una proyección
-/// como [_textoKmRestantes], así que lleva ≈. Solo aporta algo cuando no
-/// existe ya una vía de tiempo real: si [Vencimiento.diasRestantes] no es
-/// nulo, esa es la cifra que manda y esta quedaría fuera.
-String? _textoDiasEstimadosPorKm(Vencimiento v) {
-  if (v.diasRestantes != null) return null;
-  final dias = v.diasHastaVencimiento;
-  if (dias == null) return null;
-  final abs = dias.abs();
-  final unidad = abs == 1 ? 'día' : 'días';
-  return dias >= 0 ? '≈ Faltan $abs $unidad' : '≈ Vencido hace $abs $unidad';
-}
-
-/// Kilometraje exacto al que toca, calculado a partir del último real más el
-/// intervalo: no es una proyección, así que no lleva ≈.
-String? _textoProximoKm(Vencimiento v) => v.proximoKm == null
-    ? null
-    : 'Próximo cambio: ${formatearKm(v.proximoKm!)}';
-
-/// Fecha exacta a la que toca: tampoco es una estimación.
-String? _textoProximaFecha(Vencimiento v) => v.proximaFecha == null
-    ? null
-    : 'Próxima fecha: ${formatearFecha(v.proximaFecha!)}';
