@@ -13,6 +13,13 @@ final vehiculosProvider = StreamProvider<List<Vehicle>>((ref) {
   return ref.watch(databaseProvider).vehicleDao.watchActivos();
 });
 
+/// Todos los vehículos, activos y archivados: para pantallas que necesitan
+/// nombrar cualquier vehículo que aparezca en sus datos, como el historial,
+/// no solo los que se gestionan hoy desde Inicio.
+final vehiculosTodosProvider = StreamProvider<List<Vehicle>>((ref) {
+  return ref.watch(databaseProvider).vehicleDao.watchTodos();
+});
+
 final ultimaLecturaProvider =
     StreamProvider.family<MileageReading?, int>((ref, vehicleId) {
   return ref.watch(databaseProvider).mileageDao.watchUltima(vehicleId);

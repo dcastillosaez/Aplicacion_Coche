@@ -16,6 +16,15 @@ class VehicleDao extends DatabaseAccessor<AppDatabase> with _$VehicleDaoMixin {
         .watch();
   }
 
+  /// Todos los vehículos, activos y archivados. Para pantallas que necesitan
+  /// nombrar cualquier vehículo —como el historial—, no solo los que se
+  /// gestionan hoy desde Inicio.
+  Stream<List<Vehicle>> watchTodos() {
+    return (select(vehicles)
+          ..orderBy([(v) => OrderingTerm(expression: v.creadoEn)]))
+        .watch();
+  }
+
   Future<Vehicle?> getById(int id) {
     return (select(vehicles)..where((v) => v.id.equals(id))).getSingleOrNull();
   }

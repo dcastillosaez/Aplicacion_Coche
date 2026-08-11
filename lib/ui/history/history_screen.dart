@@ -27,7 +27,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final historial = ref.watch(historialProvider);
-    final vehiculos = ref.watch(vehiculosProvider);
+    // Todos los vehículos, no solo los activos: un registro de historial
+    // puede pertenecer a un vehículo archivado (p. ej. vendido), y sigue
+    // teniendo derecho a mostrar su marca y modelo reales.
+    final vehiculos = ref.watch(vehiculosTodosProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Historial')),
@@ -49,7 +52,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               mensaje:
                   'No se han podido cargar los vehículos. Inténtalo de '
                   'nuevo.',
-              onReintentar: () => ref.invalidate(vehiculosProvider),
+              onReintentar: () => ref.invalidate(vehiculosTodosProvider),
             );
           },
           data: (listaVehiculos) => _ContenidoHistorial(
@@ -116,11 +119,47 @@ class _ContenidoHistorial extends ConsumerWidget {
     // de datos pone su scheduleId a nulo. Así que basta con mirar los
     // mantenimientos actuales de cada vehículo, no hace falta guardar nada
     // de los borrados.
+    //
+    // Cada stream de mantenimientos se resuelve por separado (uno por
+    // vehículo), así que no basta con el `.when` de un único provider: hay
+    // que esperar a que todos hayan emitido antes de afirmar el nombre de un
+    // registro. Mientras alguno siga cargando, un registro con mantenimiento
+    // vivo podría mostrarse falsamente como "Reparación puntual".
+    final estadosSchedules = [
+      for (final v in vehiculos) ref.watch(schedulesProvider(v.id)),
+    ];
+
+    if (estadosSchedules.any((s) => !s.hasValue && !s.hasError)) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    AsyncValue<List<MaintenanceSchedule>>? conError;
+    for (final estado in estadosSchedules) {
+      if (estado.hasError) {
+        conError = estado;
+        break;
+      }
+    }
+    if (conError != null) {
+      debugPrint(
+        'Error al cargar los mantenimientos: '
+        '${conError.error}\n${conError.stackTrace}',
+      );
+      return _ErrorConReintento(
+        mensaje:
+            'No se han podido cargar los mantenimientos. Inténtalo de '
+            'nuevo.',
+        onReintentar: () {
+          for (final v in vehiculos) {
+            ref.invalidate(schedulesProvider(v.id));
+          }
+        },
+      );
+    }
+
     final schedulesPorId = <int, MaintenanceSchedule>{};
-    for (final v in vehiculos) {
-      final schedules =
-          ref.watch(schedulesProvider(v.id)).valueOrNull ?? const [];
-      for (final s in schedules) {
+    for (final estado in estadosSchedules) {
+      for (final s in estado.value ?? const []) {
         schedulesPorId[s.id] = s;
       }
     }
@@ -172,6 +211,14 @@ class _ContenidoHistorial extends ConsumerWidget {
   }
 }
 
+/// Nombre a mostrar de un vehículo. Si está archivado (p. ej. vendido) se
+/// marca con un sufijo discreto: sigue teniendo historial, pero no hay que
+/// dar a entender que el coche continúa en uso.
+String _nombreVehiculo(Vehicle v) {
+  final nombre = '${v.marca} ${v.modelo}';
+  return v.archivado ? '$nombre (archivado)' : nombre;
+}
+
 /// Filtro simple y siempre visible: "Todos" más un distintivo por coche.
 class _FiltroVehiculo extends StatelessWidget {
   final List<Vehicle> vehiculos;
@@ -200,7 +247,7 @@ class _FiltroVehiculo extends StatelessWidget {
             for (final v in vehiculos) ...[
               const SizedBox(width: 8),
               ChoiceChip(
-                label: Text('${v.marca} ${v.modelo}'),
+                label: Text(_nombreVehiculo(v)),
                 selected: seleccionado == v.id,
                 onSelected: (_) => onChanged(v.id),
               ),
@@ -285,7 +332,7 @@ class _FilaHistorial extends StatelessWidget {
                   icono: Icons.directions_car_outlined,
                   texto: vehiculo == null
                       ? 'Vehículo no disponible'
-                      : '${vehiculo!.marca} ${vehiculo!.modelo}',
+                      : _nombreVehiculo(vehiculo!),
                 ),
               ],
             ),
