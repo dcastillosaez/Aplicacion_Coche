@@ -26,6 +26,11 @@ final schedulesProvider =
   return ref.watch(databaseProvider).maintenanceDao.watchSchedules(vehicleId);
 });
 
+/// Todo lo registrado, de todos los vehículos, para el historial.
+final historialProvider = StreamProvider<List<MaintenanceRecord>>((ref) {
+  return ref.watch(databaseProvider).maintenanceDao.watchTodosLosRecords();
+});
+
 /// Mantenimientos de un vehículo con su vencimiento ya calculado, ordenados
 /// por urgencia: lo más vencido primero.
 final vencimientosProvider =

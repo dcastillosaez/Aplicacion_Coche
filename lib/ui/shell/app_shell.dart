@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../history/history_screen.dart';
 import '../home/home_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -14,10 +15,7 @@ class _AppShellState extends State<AppShell> {
 
   static const _pantallas = [
     HomeScreen(),
-    _PendienteFase2(
-      titulo: 'Historial',
-      descripcion: 'El historial de mantenimientos llega en la próxima fase.',
-    ),
+    HistoryScreen(),
     _PendienteFase2(
       titulo: 'Ajustes',
       descripcion: 'Los ajustes llegan en la próxima fase.',
