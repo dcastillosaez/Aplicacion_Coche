@@ -741,7 +741,7 @@ void main() {
   });
 
   test('gana el vencimiento que llegue antes de los dos', () {
-    // Por kilómetros faltarían 10.000 (200 días al ritmo actual), pero por
+    // Por kilómetros faltarían 5.000 (100 días al ritmo actual), pero por
     // fecha vence en 10 días.
     final v = calcular(
       intervalKm: 15000,
@@ -826,6 +826,23 @@ void main() {
     // medianoches locales pierde esa hora y el resultado trunca a 30 en
     // vez de 31.
     expect(diasNaturalesEntre(DateTime(2026, 3, 1), DateTime(2026, 4, 1)), 31);
+  });
+
+  test('diasNaturalesEntre ignora la hora del dia, no solo el huso horario',
+      () {
+    // Lo que garantiza la función es que normaliza ambos extremos a
+    // medianoche antes de restar. Con horas dispares (23:59 y 00:01) una
+    // resta de instantes sin normalizar daría un resultado distinto de los
+    // días naturales reales, en cualquier zona horaria — a diferencia del
+    // test anterior, esta aserción no depende de que la máquina que
+    // ejecuta los tests tenga el cambio de hora español.
+    expect(
+      diasNaturalesEntre(
+        DateTime(2026, 3, 1, 23, 59),
+        DateTime(2026, 4, 1, 0, 1),
+      ),
+      31,
+    );
   });
 }
 ```
@@ -1079,6 +1096,15 @@ void main() {
       expect(mesesEntreItv(DateTime(2016, 8, 10), DateTime(2026, 8, 10)), 12);
       expect(mesesEntreItv(DateTime(2016, 8, 11), DateTime(2026, 8, 10)), 24);
     });
+
+    test(
+        'un vehiculo matriculado el 29 de febrero no desborda el aniversario '
+        'a marzo', () {
+      // 2016 fue bisiesto y 2026 no: el aniversario de los diez años cae el
+      // 28 de febrero, no se desborda al 1 de marzo.
+      expect(mesesEntreItv(DateTime(2016, 2, 29), DateTime(2026, 2, 28)), 12);
+      expect(mesesEntreItv(DateTime(2016, 2, 29), DateTime(2026, 2, 27)), 24);
+    });
   });
 
   group('proxima inspeccion', () {
@@ -1113,6 +1139,21 @@ void main() {
         DateTime(2027, 6, 15),
       );
     });
+
+    test(
+        'con una ultima itv incoherente anterior a la exencion, la primera '
+        'es fija a los cuatro anios', () {
+      // Matriculado 2024-01-01: el coche seguía exento el 2027-09-01, así
+      // que esa fecha no puede ser el punto de partida. La primera ITV
+      // obligatoria es 2028-01-01, independientemente de ultimaItv.
+      expect(
+        proximaItv(
+          fechaMatriculacion: DateTime(2024, 1, 1),
+          ultimaItv: DateTime(2027, 9, 1),
+        ),
+        DateTime(2028, 1, 1),
+      );
+    });
   });
 }
 ```
@@ -1137,16 +1178,10 @@ import 'maintenance_due.dart' show sumarMeses;
 ///
 /// Hasta los 4 años: exento. De 4 a 10: cada 2 años. A partir de 10: anual.
 int mesesEntreItv(DateTime fechaMatriculacion, DateTime enFecha) {
-  final diezAnios = DateTime(
-    fechaMatriculacion.year + 10,
-    fechaMatriculacion.month,
-    fechaMatriculacion.day,
-  );
-  final cuatroAnios = DateTime(
-    fechaMatriculacion.year + 4,
-    fechaMatriculacion.month,
-    fechaMatriculacion.day,
-  );
+  // sumarMeses recorta al último día real del mes de destino: sin ella, un
+  // coche matriculado el 29 de febrero desborda el aniversario a marzo.
+  final diezAnios = sumarMeses(fechaMatriculacion, 120);
+  final cuatroAnios = sumarMeses(fechaMatriculacion, 48);
 
   if (enFecha.isBefore(cuatroAnios)) return 0;
   return enFecha.isBefore(diezAnios) ? 24 : 12;
@@ -1154,8 +1189,11 @@ int mesesEntreItv(DateTime fechaMatriculacion, DateTime enFecha) {
 
 /// Fecha de la próxima inspección.
 ///
-/// Sin inspecciones previas se toma la primera obligatoria, a los cuatro
-/// años de matricular. Con una previa, se le suma la periodicidad que
+/// Sin inspecciones previas, o si la periodicidad calculada en la última
+/// inspección es 0 (el vehículo seguía exento en esa fecha, algo que puede
+/// pasar con una fecha incoherente o una inspección voluntaria), se toma la
+/// primera obligatoria: fija, a los cuatro años de matricular, sin depender
+/// de ultimaItv. Con una previa coherente, se le suma la periodicidad que
 /// correspondía a la antigüedad del vehículo en esa inspección — es una
 /// simplificación deliberada: la normativa mira la antigüedad en el momento
 /// de inspeccionar, no en el de la anterior, y en el año de transición
@@ -1168,15 +1206,14 @@ DateTime? proximaItv({
   if (fechaMatriculacion == null) return null;
 
   if (ultimaItv == null) {
-    return DateTime(
-      fechaMatriculacion.year + 4,
-      fechaMatriculacion.month,
-      fechaMatriculacion.day,
-    );
+    return sumarMeses(fechaMatriculacion, 48);
   }
 
   final meses = mesesEntreItv(fechaMatriculacion, ultimaItv);
-  return sumarMeses(ultimaItv, meses == 0 ? 24 : meses);
+  if (meses == 0) {
+    return sumarMeses(fechaMatriculacion, 48);
+  }
+  return sumarMeses(ultimaItv, meses);
 }
 ```
 

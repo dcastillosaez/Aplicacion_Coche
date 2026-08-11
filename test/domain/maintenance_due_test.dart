@@ -126,7 +126,7 @@ void main() {
   });
 
   test('gana el vencimiento que llegue antes de los dos', () {
-    // Por kilómetros faltarían 10.000 (200 días al ritmo actual), pero por
+    // Por kilómetros faltarían 5.000 (100 días al ritmo actual), pero por
     // fecha vence en 10 días.
     final v = calcular(
       intervalKm: 15000,
@@ -211,5 +211,20 @@ void main() {
     // medianoches locales pierde esa hora y el resultado trunca a 30 en
     // vez de 31.
     expect(diasNaturalesEntre(DateTime(2026, 3, 1), DateTime(2026, 4, 1)), 31);
+  });
+
+  test('diasNaturalesEntre ignora la hora del dia, no solo el huso horario',
+      () {
+    // Lo que garantiza la función es que normaliza ambos extremos a
+    // medianoche antes de restar. Con horas dispares (23:59 y 00:01) una
+    // resta de instantes sin normalizar daría un resultado distinto de los
+    // días naturales reales, en cualquier zona horaria.
+    expect(
+      diasNaturalesEntre(
+        DateTime(2026, 3, 1, 23, 59),
+        DateTime(2026, 4, 1, 0, 1),
+      ),
+      31,
+    );
   });
 }

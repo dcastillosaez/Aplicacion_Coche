@@ -5,16 +5,10 @@ import 'maintenance_due.dart' show sumarMeses;
 ///
 /// Hasta los 4 años: exento. De 4 a 10: cada 2 años. A partir de 10: anual.
 int mesesEntreItv(DateTime fechaMatriculacion, DateTime enFecha) {
-  final diezAnios = DateTime(
-    fechaMatriculacion.year + 10,
-    fechaMatriculacion.month,
-    fechaMatriculacion.day,
-  );
-  final cuatroAnios = DateTime(
-    fechaMatriculacion.year + 4,
-    fechaMatriculacion.month,
-    fechaMatriculacion.day,
-  );
+  // sumarMeses recorta al último día real del mes de destino: sin ella, un
+  // coche matriculado el 29 de febrero desborda el aniversario a marzo.
+  final diezAnios = sumarMeses(fechaMatriculacion, 120);
+  final cuatroAnios = sumarMeses(fechaMatriculacion, 48);
 
   if (enFecha.isBefore(cuatroAnios)) return 0;
   return enFecha.isBefore(diezAnios) ? 24 : 12;
@@ -36,13 +30,15 @@ DateTime? proximaItv({
   if (fechaMatriculacion == null) return null;
 
   if (ultimaItv == null) {
-    return DateTime(
-      fechaMatriculacion.year + 4,
-      fechaMatriculacion.month,
-      fechaMatriculacion.day,
-    );
+    return sumarMeses(fechaMatriculacion, 48);
   }
 
   final meses = mesesEntreItv(fechaMatriculacion, ultimaItv);
-  return sumarMeses(ultimaItv, meses == 0 ? 24 : meses);
+  if (meses == 0) {
+    // ultimaItv es anterior a que el vehículo cumpliera los cuatro años
+    // (fecha incoherente o inspección voluntaria): la primera ITV
+    // obligatoria es fija y no depende de ella.
+    return sumarMeses(fechaMatriculacion, 48);
+  }
+  return sumarMeses(ultimaItv, meses);
 }
