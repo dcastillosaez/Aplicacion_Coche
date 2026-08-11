@@ -84,6 +84,89 @@ void main() {
     expect(recientes.single.km, 97000);
   });
 
+  test(
+      'una lectura anterior a la ultima conocida no es coherente aunque '
+      'lecturasDesde no vea nada desde su fecha', () async {
+    // La unica lectura es de hace 8 meses, a 13000 km. Se intenta registrar
+    // un mantenimiento de hace 6 meses a 12500 km: lecturasDesde(hace 6
+    // meses) no devuelve nada porque la unica lectura es anterior a ese
+    // umbral, pero aceptar este valor haria retroceder el kilometraje del
+    // coche.
+    await db.mileageDao.registrar(
+      vehicleId: vehicleId,
+      fecha: DateTime(2026, 1, 1),
+      km: 13000,
+    );
+
+    final coherente = await db.mileageDao
+        .esLecturaCoherente(vehicleId, DateTime(2026, 3, 1), 12500);
+
+    expect(coherente, isFalse);
+  });
+
+  test('una lectura coherente con el historico se acepta', () async {
+    await db.mileageDao.registrar(
+      vehicleId: vehicleId,
+      fecha: DateTime(2026, 1, 1),
+      km: 13000,
+    );
+
+    final coherente = await db.mileageDao
+        .esLecturaCoherente(vehicleId, DateTime(2026, 3, 1), 13500);
+
+    expect(coherente, isTrue);
+  });
+
+  test('una lectura mayor que una posterior ya registrada no es coherente',
+      () async {
+    await db.mileageDao.registrar(
+      vehicleId: vehicleId,
+      fecha: DateTime(2026, 6, 1),
+      km: 15000,
+    );
+
+    final coherente = await db.mileageDao
+        .esLecturaCoherente(vehicleId, DateTime(2026, 3, 1), 16000);
+
+    expect(coherente, isFalse);
+  });
+
+  test(
+      'el mismo dia con una lectura menor a la ya guardada no es coherente '
+      '(equivalente al caso ya cubierto antes de la correccion)', () async {
+    await db.mileageDao.registrar(
+      vehicleId: vehicleId,
+      fecha: DateTime(2026, 8, 1),
+      km: 98500,
+    );
+
+    final coherente = await db.mileageDao
+        .esLecturaCoherente(vehicleId, DateTime(2026, 8, 1), 98420);
+
+    expect(coherente, isFalse);
+  });
+
+  test('el mismo dia con una lectura mayor o igual si es coherente',
+      () async {
+    await db.mileageDao.registrar(
+      vehicleId: vehicleId,
+      fecha: DateTime(2026, 8, 1),
+      km: 98420,
+    );
+
+    final coherente = await db.mileageDao
+        .esLecturaCoherente(vehicleId, DateTime(2026, 8, 1), 98500);
+
+    expect(coherente, isTrue);
+  });
+
+  test('sin ninguna lectura previa, cualquier valor es coherente', () async {
+    final coherente = await db.mileageDao
+        .esLecturaCoherente(vehicleId, DateTime(2026, 8, 1), 50000);
+
+    expect(coherente, isTrue);
+  });
+
   test('borrar el vehiculo arrastra sus lecturas', () async {
     await db.mileageDao
         .registrar(vehicleId: vehicleId, fecha: DateTime(2026, 8, 1), km: 98420);

@@ -160,19 +160,15 @@ class _HojaRegistroMantenimientoState
           ),
         );
 
-        // MileageDao.registrar sustituye la lectura existente de ese mismo
-        // día (hay una única lectura posible por día y vehículo). Si ese día
-        // ya tiene una lectura mayor que el kilometraje del mantenimiento,
-        // sobrescribirla la rebajaría y falsearía el dato: se omite el
-        // registro de kilometraje y solo queda el mantenimiento.
-        final lecturasDelDia =
-            await db.mileageDao.lecturasDesde(widget.vehicleId, fecha);
-        final huboLecturaEseDia = lecturasDelDia.isNotEmpty &&
-            DateUtils.isSameDay(lecturasDelDia.first.fecha, fecha);
-        final kmLecturaEseDia =
-            huboLecturaEseDia ? lecturasDelDia.first.km : null;
-
-        if (kmLecturaEseDia == null || km >= kmLecturaEseDia) {
+        // Una lectura solo se registra si es coherente con el histórico: no
+        // puede ser menor que las lecturas anteriores a su fecha ni mayor
+        // que las posteriores (un coche no desanda kilómetros). Si no lo
+        // es, el mantenimiento se guarda igual -es un hecho real- pero el
+        // kilometraje del coche se deja como está; se avisa al usuario
+        // fuera de la transacción.
+        final coherente = await db.mileageDao
+            .esLecturaCoherente(widget.vehicleId, fecha, km);
+        if (coherente) {
           await db.mileageDao.registrar(
             vehicleId: widget.vehicleId,
             fecha: fecha,
@@ -205,6 +201,20 @@ class _HojaRegistroMantenimientoState
     // de verdad se ha tocado el kilometraje.
     if (seRegistroKm) {
       ref.invalidate(ritmoUsoProvider(widget.vehicleId));
+    } else {
+      // El mantenimiento se ha guardado, pero el kilometraje indicado no
+      // encajaba con el histórico del coche (vería un retroceso), así que
+      // no se ha tocado. Se avisa antes de cerrar la hoja: el
+      // ScaffoldMessenger vive por encima de la hoja modal y sigue en pie
+      // aunque esta se cierre justo después.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Mantenimiento guardado. No se ha actualizado el kilometraje '
+            'del coche porque no coincide con lo que ya tenías registrado.',
+          ),
+        ),
+      );
     }
     ref.invalidate(vencimientosProvider(widget.vehicleId));
     ref.invalidate(estadoVehiculoProvider(widget.vehicleId));
