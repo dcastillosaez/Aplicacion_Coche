@@ -244,6 +244,10 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
       ),
       body: Form(
         key: _formKey,
+        // Los dos intervalos se validan en pareja: si no, al rellenar uno de
+        // ellos el error del otro seguiría en pantalla hasta volver a pulsar
+        // Guardar, diciendo que falta algo que ya se ha corregido.
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
