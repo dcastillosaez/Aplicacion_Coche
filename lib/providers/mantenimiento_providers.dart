@@ -40,8 +40,29 @@ final vencimientosProvider =
   final ultimos = await db.maintenanceDao.ultimosRecordsPorSchedule(vehicleId);
 
   final ahora = DateTime.now();
-  final kmActual = ultimaLectura?.km ?? 0;
-  final fechaLectura = ultimaLectura?.fecha ?? ahora;
+
+  // Kilometraje de referencia: lo mejor que la app sabe del coche. Un
+  // vehículo recién dado de alta no tiene lecturas, pero si se le han
+  // sembrado mantenimientos con su último cambio a un kilometraje dado, el
+  // coche no puede tener menos km que ese: es un suelo fiable. Entre todos
+  // los candidatos (la lectura y el último registro de cada mantenimiento)
+  // se toma el de mayor kilometraje, junto con SU fecha, para que la
+  // proyección por ritmo cuente los días transcurridos desde ese dato y no
+  // desde hoy mismo.
+  final candidatos = [
+    if (ultimaLectura != null) (km: ultimaLectura.km, fecha: ultimaLectura.fecha),
+    for (final r in ultimos.values) (km: r.km, fecha: r.fecha),
+  ];
+  final int kmActual;
+  final DateTime fechaLectura;
+  if (candidatos.isEmpty) {
+    kmActual = 0;
+    fechaLectura = ahora;
+  } else {
+    final mejor = candidatos.reduce((a, b) => a.km >= b.km ? a : b);
+    kmActual = mejor.km;
+    fechaLectura = mejor.fecha;
+  }
 
   final resultado = <MantenimientoConVencimiento>[];
   for (final s in schedules.where((s) => s.activo)) {
@@ -92,7 +113,9 @@ final estadoVehiculoProvider =
 });
 
 /// Orden de urgencia para la lista: primero lo vencido, después lo que pide
-/// atención, y dentro de cada grupo lo que antes llega.
+/// atención, y dentro de cada grupo lo que antes llega de las dos vías —no
+/// solo la de tiempo, que dejaría empatados (y al final del grupo) a todos
+/// los mantenimientos que van solo por kilómetros.
 int _urgencia(MantenimientoConVencimiento m) {
   final base = switch (m.vencimiento.estado) {
     EstadoMantenimiento.vencido => 0,
@@ -101,6 +124,6 @@ int _urgencia(MantenimientoConVencimiento m) {
     EstadoMantenimiento.ok => 3000000,
     EstadoMantenimiento.sinConfigurar => 4000000,
   };
-  final dias = m.vencimiento.diasRestantes ?? 9999;
+  final dias = m.vencimiento.diasHastaVencimiento ?? 9999;
   return base + dias.clamp(-9999, 9999);
 }

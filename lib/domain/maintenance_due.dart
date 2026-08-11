@@ -61,6 +61,15 @@ class Vencimiento {
   /// De las dos vías, cuál llega antes. Nulo si solo hay una.
   final bool? venceAntesPorFecha;
 
+  /// Días naturales hasta el vencimiento que llega antes de las dos vías: el
+  /// menor entre [diasRestantes] y los días hasta [fechaEstimadaPorKm].
+  /// Es la magnitud que refleja la severidad real del mantenimiento (más
+  /// negativo cuanto más vencido), a diferencia de mirar solo [diasRestantes]
+  /// que ignora los mantenimientos que van únicamente por kilómetros. Nulo
+  /// cuando ninguna vía tiene una fecha calculable: por ejemplo, un
+  /// mantenimiento solo por kilómetros con el coche parado.
+  final int? diasHastaVencimiento;
+
   const Vencimiento({
     required this.estado,
     required this.kmProyectado,
@@ -71,6 +80,7 @@ class Vencimiento {
     this.fechaEstimadaPorKm,
     this.estimacionEsSupuesta = false,
     this.venceAntesPorFecha,
+    this.diasHastaVencimiento,
   });
 }
 
@@ -160,6 +170,21 @@ Vencimiento calcularVencimiento({
     venceAntesPorFecha = proximaFecha.isBefore(fechaEstimadaPorKm);
   }
 
+  // Misma idea que venceAntesPorFecha, pero como cantidad: cuántos días
+  // faltan hasta la vía que llega antes. Se necesita para ordenar por
+  // severidad real, no solo por la vía de tiempo.
+  final diasHastaVencimientoPorKm = fechaEstimadaPorKm != null
+      ? diasNaturalesEntre(ahora, fechaEstimadaPorKm)
+      : null;
+  final int? diasHastaVencimiento;
+  if (diasRestantes != null && diasHastaVencimientoPorKm != null) {
+    diasHastaVencimiento = diasRestantes <= diasHastaVencimientoPorKm
+        ? diasRestantes
+        : diasHastaVencimientoPorKm;
+  } else {
+    diasHastaVencimiento = diasRestantes ?? diasHastaVencimientoPorKm;
+  }
+
   return Vencimiento(
     estado: estado,
     kmProyectado: kmProyectado,
@@ -170,5 +195,6 @@ Vencimiento calcularVencimiento({
     fechaEstimadaPorKm: fechaEstimadaPorKm,
     estimacionEsSupuesta: ritmo.esPorDefecto,
     venceAntesPorFecha: venceAntesPorFecha,
+    diasHastaVencimiento: diasHastaVencimiento,
   );
 }

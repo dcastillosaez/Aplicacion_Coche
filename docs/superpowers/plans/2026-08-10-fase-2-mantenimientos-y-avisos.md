@@ -752,6 +752,48 @@ void main() {
 
     expect(v.estado, EstadoMantenimiento.atencion);
     expect(v.venceAntesPorFecha, isTrue);
+    // De las dos vías gana la de fecha (10 días), no la de km (100 días).
+    expect(v.diasHastaVencimiento, 10);
+  });
+
+  test('diasHastaVencimiento usa la via de kilometros cuando solo hay '
+      'intervalo de kilometros', () {
+    // kmRestantes = 95.000 - 96.000 = -1.000; al ritmo de 50 km/día son
+    // 20 días de retraso.
+    final v = calcular(intervalKm: 15000, ultimoKm: 80000,
+        ultimaFecha: DateTime(2025, 1, 1), kmActual: 96000);
+
+    expect(v.diasRestantes, isNull);
+    expect(v.diasHastaVencimiento, -20);
+  });
+
+  test('diasHastaVencimiento usa los dias cuando solo hay intervalo de '
+      'tiempo', () {
+    // Mismo caso que el de atención por días: quedan 20.
+    final v = calcular(
+      intervalMeses: 12,
+      ultimoKm: 99000,
+      ultimaFecha: DateTime(2025, 8, 30),
+    );
+
+    expect(v.diasHastaVencimiento, v.diasRestantes);
+    expect(v.diasHastaVencimiento, 20);
+  });
+
+  test('sin fecha estimada por ninguna via, diasHastaVencimiento queda nulo',
+      () {
+    // Solo va por km y el coche está parado: no hay fechaEstimadaPorKm ni
+    // diasRestantes con los que calcular un vencimiento efectivo.
+    final v = calcular(
+      intervalKm: 15000,
+      ultimoKm: 90000,
+      ultimaFecha: DateTime(2026, 1, 1),
+      ritmo: cocheParado,
+    );
+
+    expect(v.fechaEstimadaPorKm, isNull);
+    expect(v.diasRestantes, isNull);
+    expect(v.diasHastaVencimiento, isNull);
   });
 
   test('proyecta los kilometros desde la ultima lectura con el ritmo', () {
@@ -923,6 +965,15 @@ class Vencimiento {
   /// De las dos vías, cuál llega antes. Nulo si solo hay una.
   final bool? venceAntesPorFecha;
 
+  /// Días naturales hasta el vencimiento que llega antes de las dos vías: el
+  /// menor entre [diasRestantes] y los días hasta [fechaEstimadaPorKm].
+  /// Es la magnitud que refleja la severidad real del mantenimiento (más
+  /// negativo cuanto más vencido), a diferencia de mirar solo [diasRestantes]
+  /// que ignora los mantenimientos que van únicamente por kilómetros. Nulo
+  /// cuando ninguna vía tiene una fecha calculable: por ejemplo, un
+  /// mantenimiento solo por kilómetros con el coche parado.
+  final int? diasHastaVencimiento;
+
   const Vencimiento({
     required this.estado,
     required this.kmProyectado,
@@ -933,6 +984,7 @@ class Vencimiento {
     this.fechaEstimadaPorKm,
     this.estimacionEsSupuesta = false,
     this.venceAntesPorFecha,
+    this.diasHastaVencimiento,
   });
 }
 
@@ -1022,6 +1074,21 @@ Vencimiento calcularVencimiento({
     venceAntesPorFecha = proximaFecha.isBefore(fechaEstimadaPorKm);
   }
 
+  // Misma idea que venceAntesPorFecha, pero como cantidad: cuántos días
+  // faltan hasta la vía que llega antes. Se necesita para ordenar por
+  // severidad real, no solo por la vía de tiempo.
+  final diasHastaVencimientoPorKm = fechaEstimadaPorKm != null
+      ? diasNaturalesEntre(ahora, fechaEstimadaPorKm)
+      : null;
+  final int? diasHastaVencimiento;
+  if (diasRestantes != null && diasHastaVencimientoPorKm != null) {
+    diasHastaVencimiento = diasRestantes <= diasHastaVencimientoPorKm
+        ? diasRestantes
+        : diasHastaVencimientoPorKm;
+  } else {
+    diasHastaVencimiento = diasRestantes ?? diasHastaVencimientoPorKm;
+  }
+
   return Vencimiento(
     estado: estado,
     kmProyectado: kmProyectado,
@@ -1032,6 +1099,7 @@ Vencimiento calcularVencimiento({
     fechaEstimadaPorKm: fechaEstimadaPorKm,
     estimacionEsSupuesta: ritmo.esPorDefecto,
     venceAntesPorFecha: venceAntesPorFecha,
+    diasHastaVencimiento: diasHastaVencimiento,
   );
 }
 ```
@@ -1376,7 +1444,7 @@ git add -A && git commit -q -m "Añadir los colores y el distintivo de los estad
 ## Tarea 6: Providers de mantenimientos
 
 **Ficheros:**
-- Crear: `lib/providers/mantenimiento_providers.dart`
+- Crear: `lib/providers/mantenimiento_providers.dart`, `test/providers/mantenimiento_providers_test.dart`
 - Modificar: `lib/providers/recalculo_al_reanudar.dart`
 
 **Interfaces:**
@@ -1430,8 +1498,29 @@ final vencimientosProvider =
   final ultimos = await db.maintenanceDao.ultimosRecordsPorSchedule(vehicleId);
 
   final ahora = DateTime.now();
-  final kmActual = ultimaLectura?.km ?? 0;
-  final fechaLectura = ultimaLectura?.fecha ?? ahora;
+
+  // Kilometraje de referencia: lo mejor que la app sabe del coche. Un
+  // vehículo recién dado de alta no tiene lecturas, pero si se le han
+  // sembrado mantenimientos con su último cambio a un kilometraje dado, el
+  // coche no puede tener menos km que ese: es un suelo fiable. Entre todos
+  // los candidatos (la lectura y el último registro de cada mantenimiento)
+  // se toma el de mayor kilometraje, junto con SU fecha, para que la
+  // proyección por ritmo cuente los días transcurridos desde ese dato y no
+  // desde hoy mismo.
+  final candidatos = [
+    if (ultimaLectura != null) (km: ultimaLectura.km, fecha: ultimaLectura.fecha),
+    for (final r in ultimos.values) (km: r.km, fecha: r.fecha),
+  ];
+  final int kmActual;
+  final DateTime fechaLectura;
+  if (candidatos.isEmpty) {
+    kmActual = 0;
+    fechaLectura = ahora;
+  } else {
+    final mejor = candidatos.reduce((a, b) => a.km >= b.km ? a : b);
+    kmActual = mejor.km;
+    fechaLectura = mejor.fecha;
+  }
 
   final resultado = <MantenimientoConVencimiento>[];
   for (final s in schedules.where((s) => s.activo)) {
@@ -1482,7 +1571,9 @@ final estadoVehiculoProvider =
 });
 
 /// Orden de urgencia para la lista: primero lo vencido, después lo que pide
-/// atención, y dentro de cada grupo lo que antes llega.
+/// atención, y dentro de cada grupo lo que antes llega de las dos vías —no
+/// solo la de tiempo, que dejaría empatados (y al final del grupo) a todos
+/// los mantenimientos que van solo por kilómetros.
 int _urgencia(MantenimientoConVencimiento m) {
   final base = switch (m.vencimiento.estado) {
     EstadoMantenimiento.vencido => 0,
@@ -1491,18 +1582,30 @@ int _urgencia(MantenimientoConVencimiento m) {
     EstadoMantenimiento.ok => 3000000,
     EstadoMantenimiento.sinConfigurar => 4000000,
   };
-  final dias = m.vencimiento.diasRestantes ?? 9999;
+  final dias = m.vencimiento.diasHastaVencimiento ?? 9999;
   return base + dias.clamp(-9999, 9999);
 }
 ```
 
 Nota sobre `ajustesProvider`: si la expresión encadenada resulta confusa, escríbela en dos líneas leyendo `databaseProvider` en una variable local. Lo importante es que devuelva la única fila de `Settings`.
 
-- [ ] **Paso 2: Registrar el recálculo al volver a primer plano**
+Dos puntos delicados de esta tarea, con su prueba correspondiente en `test/providers/mantenimiento_providers_test.dart`:
+
+- **Ordenar por `diasRestantes` deja fuera a los mantenimientos que solo van por km** (aceite, frenos, neumáticos: los más habituales). `diasRestantes` es nulo cuando el mantenimiento no tiene intervalo por tiempo, así que todos caían al sentinela `9999` y quedaban empatados al final de su grupo, sin reflejar su severidad real. Por eso `_urgencia` usa `diasHastaVencimiento` (Tarea 3), que resuelve primero cuál de las dos vías vence antes, igual que ya hacía el estado.
+- **Sin lecturas de kilometraje, el kilometraje de referencia no puede ser 0.** Un vehículo recién dado de alta no tiene ninguna lectura; si se le siembran mantenimientos con su último cambio a, por ejemplo, 48.000 km, el coche no puede tener menos km que eso. Por eso `kmActual` (y la fecha que lo acompaña para la proyección por ritmo) se toma del candidato con más kilómetros entre la última lectura y el último registro de cada mantenimiento, no solo de la lectura.
+
+- [ ] **Paso 2: Escribir los tests de los providers**
+
+`test/providers/mantenimiento_providers_test.dart` cubre, sobre una base de datos en memoria (`AppDatabase.forTesting(NativeDatabase.memory())`) con `databaseProvider` sobrescrito en un `ProviderContainer`:
+
+- Con varios mantenimientos vencidos por distintas vías (dos solo por km con severidad muy distinta, uno solo por tiempo, uno por ambas vías), `vencimientosProvider` los ordena de más a menos vencido según `diasHastaVencimiento`, no según `diasRestantes`.
+- Un vehículo sin ninguna lectura de kilometraje, con un mantenimiento sembrado muy por debajo de donde tocaría el siguiente cambio, no aparece como "al día".
+
+- [ ] **Paso 3: Registrar el recálculo al volver a primer plano**
 
 En `lib/providers/recalculo_al_reanudar.dart`, añade `vencimientosProvider` y `estadoVehiculoProvider` a la lista `providersARecalcularAlReanudar`, con el import correspondiente. Los vencimientos dependen de la fecha de hoy, así que si la aplicación pasa días en segundo plano se quedarían obsoletos igual que el ritmo de uso.
 
-- [ ] **Paso 3: Verificar**
+- [ ] **Paso 4: Verificar**
 
 ```powershell
 flutter analyze
@@ -1511,7 +1614,7 @@ flutter test --reporter=failures-only
 
 Esperado: `No issues found!` y todos los tests pasando.
 
-- [ ] **Paso 4: Commit**
+- [ ] **Paso 5: Commit**
 
 ```bash
 git add -A && git commit -q -m "Añadir los providers de mantenimientos y vencimientos"

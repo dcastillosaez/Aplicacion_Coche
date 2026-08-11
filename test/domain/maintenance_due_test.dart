@@ -137,6 +137,48 @@ void main() {
 
     expect(v.estado, EstadoMantenimiento.atencion);
     expect(v.venceAntesPorFecha, isTrue);
+    // De las dos vías gana la de fecha (10 días), no la de km (100 días).
+    expect(v.diasHastaVencimiento, 10);
+  });
+
+  test('diasHastaVencimiento usa la via de kilometros cuando solo hay '
+      'intervalo de kilometros', () {
+    // kmRestantes = 95.000 - 96.000 = -1.000; al ritmo de 50 km/día son
+    // 20 días de retraso.
+    final v = calcular(intervalKm: 15000, ultimoKm: 80000,
+        ultimaFecha: DateTime(2025, 1, 1), kmActual: 96000);
+
+    expect(v.diasRestantes, isNull);
+    expect(v.diasHastaVencimiento, -20);
+  });
+
+  test('diasHastaVencimiento usa los dias cuando solo hay intervalo de '
+      'tiempo', () {
+    // Mismo caso que el de atención por días: quedan 20.
+    final v = calcular(
+      intervalMeses: 12,
+      ultimoKm: 99000,
+      ultimaFecha: DateTime(2025, 8, 30),
+    );
+
+    expect(v.diasHastaVencimiento, v.diasRestantes);
+    expect(v.diasHastaVencimiento, 20);
+  });
+
+  test('sin fecha estimada por ninguna via, diasHastaVencimiento queda nulo',
+      () {
+    // Solo va por km y el coche está parado: no hay fechaEstimadaPorKm ni
+    // diasRestantes con los que calcular un vencimiento efectivo.
+    final v = calcular(
+      intervalKm: 15000,
+      ultimoKm: 90000,
+      ultimaFecha: DateTime(2026, 1, 1),
+      ritmo: cocheParado,
+    );
+
+    expect(v.fechaEstimadaPorKm, isNull);
+    expect(v.diasRestantes, isNull);
+    expect(v.diasHastaVencimiento, isNull);
   });
 
   test('proyecta los kilometros desde la ultima lectura con el ritmo', () {
