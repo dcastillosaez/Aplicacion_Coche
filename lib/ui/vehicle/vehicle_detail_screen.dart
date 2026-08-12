@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../data/photo_storage.dart';
+import '../../domain/maintenance_grouping.dart';
 import '../../domain/origen_mantenimiento.dart';
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
@@ -280,12 +281,87 @@ class _ContenidoMantenimientos extends StatelessWidget {
         const SizedBox(height: 24),
         Text('Mantenimientos', style: tema.textTheme.titleSmall),
         const SizedBox(height: 8),
-        for (final item in lista)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _FilaMantenimiento(vehiculo: vehiculo, item: item),
-          ),
+        for (final grupo in agruparPorProximidad(
+          lista.map((m) => m.vencimiento).toList(),
+          const MaintenanceGroupingPolicy(),
+        ))
+          if (grupo.length == 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _FilaMantenimiento(
+                vehiculo: vehiculo,
+                item: lista[grupo.single],
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _GrupoMantenimientos(
+                vehiculo: vehiculo,
+                items: [for (final i in grupo) lista[i]],
+              ),
+            ),
       ],
+    );
+  }
+}
+
+/// Varios mantenimientos cuyos vencimientos caen lo bastante cerca (según
+/// [agruparPorProximidad]) como para convenir hacerlos en la misma visita
+/// al taller. Reutiliza [_FilaMantenimiento] tal cual para cada uno —misma
+/// tarjeta, mismo comportamiento al tocarla— y añade un marco y una
+/// cabecera que los presenta como conjunto.
+class _GrupoMantenimientos extends StatelessWidget {
+  final Vehicle vehiculo;
+  final List<MantenimientoConVencimiento> items;
+
+  const _GrupoMantenimientos({required this.vehiculo, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: tema.colorScheme.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: tema.colorScheme.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.merge_type,
+                  size: 18,
+                  color: tema.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Puedes hacer esto junto y ahorrar una visita al taller',
+                    style: tema.textTheme.bodySmall?.copyWith(
+                      color: tema.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _FilaMantenimiento(vehiculo: vehiculo, item: item),
+            ),
+        ],
+      ),
     );
   }
 }
