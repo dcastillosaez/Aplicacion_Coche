@@ -167,8 +167,9 @@ class _HojaKilometrajeState extends ConsumerState<_HojaKilometraje> {
               l == null
                   ? 'Todavía sin kilometraje registrado'
                   : 'Última lectura: ${formatearKm(l.km)}',
-              style: tema.textTheme.bodySmall
-                  ?.copyWith(color: tema.colorScheme.outline),
+              style: tema.textTheme.bodySmall?.copyWith(
+                color: tema.colorScheme.outline,
+              ),
             ),
             orElse: () => const SizedBox.shrink(),
           ),

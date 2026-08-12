@@ -36,9 +36,10 @@ class _PlantillasScreenState extends ConsumerState<PlantillasScreen> {
   @override
   void initState() {
     super.initState();
-    _vehiculoFuture = ref.read(databaseProvider).vehicleDao.getById(
-          widget.vehicleId,
-        );
+    _vehiculoFuture = ref
+        .read(databaseProvider)
+        .vehicleDao
+        .getById(widget.vehicleId);
   }
 
   void _recalcularPlantillas(Vehicle vehiculo) {
@@ -178,7 +179,7 @@ class _PlantillasScreenState extends ConsumerState<PlantillasScreen> {
                   _marcados.isEmpty
                       ? 'Continuar sin añadir ninguno'
                       : 'Añadir ${_marcados.length} '
-                          'mantenimiento${_marcados.length == 1 ? '' : 's'}',
+                            'mantenimiento${_marcados.length == 1 ? '' : 's'}',
                 ),
               ),
               const SizedBox(height: 8),
@@ -218,8 +219,9 @@ class _AvisoOrientativo extends StatelessWidget {
               'Los intervalos son orientativos, no cifras oficiales del '
               'fabricante. Ajústalos con el libro de mantenimiento del '
               'coche delante.',
-              style: tema.textTheme.bodyMedium
-                  ?.copyWith(color: tema.colorScheme.onSurfaceVariant),
+              style: tema.textTheme.bodyMedium?.copyWith(
+                color: tema.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],

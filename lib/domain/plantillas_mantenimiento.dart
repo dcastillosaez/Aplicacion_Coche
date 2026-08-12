@@ -50,7 +50,8 @@ List<PlantillaMantenimiento> plantillasPara({
   final esDiesel = combustible == FuelType.diesel;
   // Los motores de gasolina llevan bujías, tanto si son puros como si
   // forman parte de un híbrido o queman GLP.
-  final llevaBujias = combustible == FuelType.gasolina ||
+  final llevaBujias =
+      combustible == FuelType.gasolina ||
       combustible == FuelType.hibrido ||
       combustible == FuelType.glp;
 

@@ -36,9 +36,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         color: claro ? _superficieClara : _superficieOscura,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       appBarTheme: AppBarTheme(
         centerTitle: false,

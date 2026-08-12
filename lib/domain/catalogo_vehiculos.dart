@@ -267,7 +267,15 @@ const Map<String, List<String>> catalogoVehiculos = {
     'RCZ',
   ],
   'Polestar': ['2', '3', '4'],
-  'Porsche': ['911', '718 Cayman', '718 Boxster', 'Macan', 'Cayenne', 'Panamera', 'Taycan'],
+  'Porsche': [
+    '911',
+    '718 Cayman',
+    '718 Boxster',
+    'Macan',
+    'Cayenne',
+    'Panamera',
+    'Taycan',
+  ],
   'Renault': [
     'Twingo',
     'Clio',

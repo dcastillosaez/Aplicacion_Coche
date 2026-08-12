@@ -140,9 +140,7 @@ void main() {
     },
   );
 
-  testWidgets('el filtro por vehiculo deja solo sus registros', (
-    tester,
-  ) async {
+  testWidgets('el filtro por vehiculo deja solo sus registros', (tester) async {
     final registroSeat = MaintenanceRecord(
       id: 1,
       vehicleId: 1,
@@ -221,8 +219,10 @@ void main() {
       // El nombre y la categoría del mantenimiento se resuelven aunque el
       // vehículo esté archivado: no hay razón para perderlos.
       expect(find.text('Revisión general'), findsOneWidget);
-      expect(find.text(etiquetasCategoria[MaintenanceCategory.motor]!),
-          findsOneWidget);
+      expect(
+        find.text(etiquetasCategoria[MaintenanceCategory.motor]!),
+        findsOneWidget,
+      );
       // La marca y el modelo reales, no "Vehículo no disponible".
       expect(find.text('Vehículo no disponible'), findsNothing);
       expect(find.text('Reparación puntual'), findsNothing);
@@ -247,8 +247,7 @@ void main() {
 
       final historialCompleter = Completer<List<MaintenanceRecord>>();
       final vehiculosCompleter = Completer<List<Vehicle>>();
-      final schedulesController =
-          StreamController<List<MaintenanceSchedule>>();
+      final schedulesController = StreamController<List<MaintenanceSchedule>>();
       addTearDown(schedulesController.close);
 
       await tester.pumpWidget(

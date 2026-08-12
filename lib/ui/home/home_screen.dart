@@ -122,11 +122,13 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: vehiculos
-              .map((v) => ListTile(
-                    leading: const Icon(Icons.directions_car_outlined),
-                    title: Text('${v.marca} ${v.modelo}'),
-                    onTap: () => Navigator.of(context).pop(v),
-                  ))
+              .map(
+                (v) => ListTile(
+                  leading: const Icon(Icons.directions_car_outlined),
+                  title: Text('${v.marca} ${v.modelo}'),
+                  onTap: () => Navigator.of(context).pop(v),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -215,16 +217,16 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
     // configurarlo. No es lo mismo que "todo al día" y no debe leerse así.
     if (todos.isEmpty) return const SizedBox.shrink();
 
-    final pendientes = todos.where((par) {
-      final estado = par.$2.vencimiento.estado;
-      return estado == EstadoMantenimiento.vencido ||
-          estado == EstadoMantenimiento.atencion ||
-          estado == EstadoMantenimiento.proximo;
-    }).toList()
-      ..sort(
-        (a, b) =>
-            urgenciaVencimiento(a.$2).compareTo(urgenciaVencimiento(b.$2)),
-      );
+    final pendientes =
+        todos.where((par) {
+          final estado = par.$2.vencimiento.estado;
+          return estado == EstadoMantenimiento.vencido ||
+              estado == EstadoMantenimiento.atencion ||
+              estado == EstadoMantenimiento.proximo;
+        }).toList()..sort(
+          (a, b) =>
+              urgenciaVencimiento(a.$2).compareTo(urgenciaVencimiento(b.$2)),
+        );
 
     if (pendientes.isEmpty) {
       // "Todo al día" solo puede decirse de lo que sí está configurado: un
@@ -239,8 +241,8 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
       final mensaje = sinConfigurar.isEmpty
           ? 'Todo al día. No hay ningún mantenimiento pendiente.'
           : 'Todo al día en lo configurado. ${_nombresVehiculos(sinConfigurar)} '
-              '${sinConfigurar.length == 1 ? 'todavía no tiene' : 'todavía no tienen'} '
-              'ningún mantenimiento configurado.';
+                '${sinConfigurar.length == 1 ? 'todavía no tiene' : 'todavía no tienen'} '
+                'ningún mantenimiento configurado.';
 
       return Card(
         child: Padding(
@@ -249,9 +251,7 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
             children: [
               const EstadoChip(estado: EstadoMantenimiento.ok),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(mensaje, style: tema.textTheme.bodyMedium),
-              ),
+              Expanded(child: Text(mensaje, style: tema.textTheme.bodyMedium)),
             ],
           ),
         ),
@@ -281,16 +281,18 @@ class _ProximosMantenimientosGlobal extends ConsumerWidget {
               restantes == 1
                   ? 'Y 1 mantenimiento más pendiente, en su ficha.'
                   : 'Y $restantes mantenimientos más pendientes, en cada '
-                      'ficha.',
-              style: tema.textTheme.bodySmall
-                  ?.copyWith(color: tema.colorScheme.outline),
+                        'ficha.',
+              style: tema.textTheme.bodySmall?.copyWith(
+                color: tema.colorScheme.outline,
+              ),
             ),
           ),
         if (avisoRitmo)
           Text(
             avisoRitmoSupuesto,
-            style: tema.textTheme.bodySmall
-                ?.copyWith(color: tema.colorScheme.outline),
+            style: tema.textTheme.bodySmall?.copyWith(
+              color: tema.colorScheme.outline,
+            ),
           ),
       ],
     );
@@ -336,21 +338,20 @@ class _FilaVencimientoGlobal extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.schedule.nombre,
-                      style: tema.textTheme.bodyLarge,
-                    ),
+                    Text(item.schedule.nombre, style: tema.textTheme.bodyLarge),
                     const SizedBox(height: 2),
                     Text(
                       '${vehiculo.marca} ${vehiculo.modelo}',
-                      style: tema.textTheme.bodySmall
-                          ?.copyWith(color: tema.colorScheme.outline),
+                      style: tema.textTheme.bodySmall?.copyWith(
+                        color: tema.colorScheme.outline,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       resumen.isEmpty ? 'Sin datos todavía' : resumen,
-                      style: tema.textTheme.bodySmall
-                          ?.copyWith(color: tema.colorScheme.outline),
+                      style: tema.textTheme.bodySmall?.copyWith(
+                        color: tema.colorScheme.outline,
+                      ),
                     ),
                   ],
                 ),

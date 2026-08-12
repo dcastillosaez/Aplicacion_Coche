@@ -157,8 +157,9 @@ class _VehicleSpecificationScreenState
 
   @override
   Widget build(BuildContext context) {
-    final especificacion =
-        ref.watch(vehicleSpecificationProvider(widget.vehicleId));
+    final especificacion = ref.watch(
+      vehicleSpecificationProvider(widget.vehicleId),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Identidad técnica')),

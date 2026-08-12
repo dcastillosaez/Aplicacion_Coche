@@ -36,23 +36,24 @@ class ColoresEstado {
   );
 
   Color de(EstadoMantenimiento estado) => switch (estado) {
-        EstadoMantenimiento.ok => ok,
-        EstadoMantenimiento.proximo => proximo,
-        EstadoMantenimiento.atencion => atencion,
-        EstadoMantenimiento.vencido => vencido,
-        EstadoMantenimiento.sinConfigurar => sinConfigurar,
-      };
+    EstadoMantenimiento.ok => ok,
+    EstadoMantenimiento.proximo => proximo,
+    EstadoMantenimiento.atencion => atencion,
+    EstadoMantenimiento.vencido => vencido,
+    EstadoMantenimiento.sinConfigurar => sinConfigurar,
+  };
 }
 
 extension ColoresEstadoDelTema on ThemeData {
-  ColoresEstado get coloresEstado =>
-      brightness == Brightness.light ? ColoresEstado.claro : ColoresEstado.oscuro;
+  ColoresEstado get coloresEstado => brightness == Brightness.light
+      ? ColoresEstado.claro
+      : ColoresEstado.oscuro;
 }
 
 String etiquetaEstado(EstadoMantenimiento estado) => switch (estado) {
-      EstadoMantenimiento.ok => 'Al día',
-      EstadoMantenimiento.proximo => 'Próximo',
-      EstadoMantenimiento.atencion => 'Conviene hacerlo',
-      EstadoMantenimiento.vencido => 'Vencido',
-      EstadoMantenimiento.sinConfigurar => 'Sin datos',
-    };
+  EstadoMantenimiento.ok => 'Al día',
+  EstadoMantenimiento.proximo => 'Próximo',
+  EstadoMantenimiento.atencion => 'Conviene hacerlo',
+  EstadoMantenimiento.vencido => 'Vencido',
+  EstadoMantenimiento.sinConfigurar => 'Sin datos',
+};

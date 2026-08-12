@@ -92,16 +92,24 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     // En base de datos la foto se guarda como ruta relativa; en el estado
     // del formulario se trabaja con la ruta absoluta, que es la que
     // necesitan File e Image.file.
-    final fotoInicial =
-        v?.fotoPath == null ? null : PhotoStorage.absoluta(v!.fotoPath!);
+    final fotoInicial = v?.fotoPath == null
+        ? null
+        : PhotoStorage.absoluta(v!.fotoPath!);
     _fotoPath = fotoInicial;
     _fotoOriginal = fotoInicial;
   }
 
   @override
   void dispose() {
-    for (final c
-        in [_marca, _modelo, _version, _anio, _matricula, _color, _vin]) {
+    for (final c in [
+      _marca,
+      _modelo,
+      _version,
+      _anio,
+      _matricula,
+      _color,
+      _vin,
+    ]) {
       c.dispose();
     }
     _marcaFocus.dispose();
@@ -160,7 +168,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     // Solo se borra al vuelo lo que se copió en esta misma sesión. La foto
     // original sigue en disco hasta que el guardado la sustituya de verdad.
     final anterior = _fotoPath;
-    if (anterior != null && anterior != destino &&
+    if (anterior != null &&
+        anterior != destino &&
         _fotosDeLaSesion.remove(anterior)) {
       _borrarFoto(anterior);
     }
@@ -193,8 +202,9 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     // Se persiste la ruta relativa: la absoluta solo vale en este
     // dispositivo y no sobrevive a una restauración desde copia de
     // seguridad.
-    final fotoPathRelativo =
-        _fotoPath == null ? null : PhotoStorage.relativa(_fotoPath!);
+    final fotoPathRelativo = _fotoPath == null
+        ? null
+        : PhotoStorage.relativa(_fotoPath!);
     // Un coche sin nombre de color tampoco tiene tono: si no, la tarjeta
     // pintaría un distintivo de color para un vehículo que, según su ficha,
     // no lo tiene.
@@ -406,10 +416,12 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
               initialValue: _combustible,
               decoration: const InputDecoration(labelText: 'Combustible'),
               items: FuelType.values
-                  .map((f) => DropdownMenuItem(
-                        value: f,
-                        child: Text(etiquetasCombustible[f]!),
-                      ))
+                  .map(
+                    (f) => DropdownMenuItem(
+                      value: f,
+                      child: Text(etiquetasCombustible[f]!),
+                    ),
+                  )
                   .toList(),
               onChanged: (f) => setState(() => _combustible = f!),
             ),
@@ -438,7 +450,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
               controller: _vin,
               decoration: const InputDecoration(
                 labelText: 'VIN (número de bastidor)',
-                helperText: 'Lo encuentras en el parabrisas del lado del '
+                helperText:
+                    'Lo encuentras en el parabrisas del lado del '
                     'conductor o en el permiso de circulación',
               ),
               maxLength: 17,
@@ -526,8 +539,11 @@ class _SelectorFoto extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.add_a_photo_outlined,
-            size: 32, color: tema.colorScheme.outline),
+        Icon(
+          Icons.add_a_photo_outlined,
+          size: 32,
+          color: tema.colorScheme.outline,
+        ),
         const SizedBox(height: 8),
         Text('Añadir foto', style: tema.textTheme.bodyMedium),
       ],
@@ -627,10 +643,7 @@ class _MuestraSinColor extends StatelessWidget {
   final bool seleccionada;
   final VoidCallback onPulsar;
 
-  const _MuestraSinColor({
-    required this.seleccionada,
-    required this.onPulsar,
-  });
+  const _MuestraSinColor({required this.seleccionada, required this.onPulsar});
 
   @override
   Widget build(BuildContext context) {
@@ -653,11 +666,7 @@ class _MuestraSinColor extends StatelessWidget {
               width: seleccionada ? 3 : 1,
             ),
           ),
-          child: Icon(
-            Icons.close,
-            size: 18,
-            color: tema.colorScheme.outline,
-          ),
+          child: Icon(Icons.close, size: 18, color: tema.colorScheme.outline),
         ),
       ),
     );

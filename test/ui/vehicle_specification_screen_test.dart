@@ -49,19 +49,18 @@ void main() {
     },
   );
 
-  testWidgets(
-    'al escribir la potencia en kW, aparece el CV calculado',
-    (tester) async {
-      await tester.pumpWidget(envolver(null));
-      await tester.pumpAndSettle();
+  testWidgets('al escribir la potencia en kW, aparece el CV calculado', (
+    tester,
+  ) async {
+    await tester.pumpWidget(envolver(null));
+    await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Potencia (kW)'),
-        '140',
-      );
-      await tester.pump();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Potencia (kW)'),
+      '140',
+    );
+    await tester.pump();
 
-      expect(find.text('≈ 190 CV'), findsOneWidget);
-    },
-  );
+    expect(find.text('≈ 190 CV'), findsOneWidget);
+  });
 }

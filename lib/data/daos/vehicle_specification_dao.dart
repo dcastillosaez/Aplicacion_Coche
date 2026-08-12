@@ -11,15 +11,15 @@ class VehicleSpecificationDao extends DatabaseAccessor<AppDatabase>
   VehicleSpecificationDao(super.db);
 
   Stream<VehicleSpecification?> watchFor(int vehicleId) {
-    return (select(vehicleSpecifications)
-          ..where((s) => s.vehicleId.equals(vehicleId)))
-        .watchSingleOrNull();
+    return (select(
+      vehicleSpecifications,
+    )..where((s) => s.vehicleId.equals(vehicleId))).watchSingleOrNull();
   }
 
   Future<VehicleSpecification?> getFor(int vehicleId) {
-    return (select(vehicleSpecifications)
-          ..where((s) => s.vehicleId.equals(vehicleId)))
-        .getSingleOrNull();
+    return (select(
+      vehicleSpecifications,
+    )..where((s) => s.vehicleId.equals(vehicleId))).getSingleOrNull();
   }
 
   /// Inserta la ficha técnica si el vehículo no tenía ninguna, o la

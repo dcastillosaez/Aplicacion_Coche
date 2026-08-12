@@ -157,9 +157,7 @@ class _Cabecera extends ConsumerWidget {
                   loading: () => const SizedBox(height: 40),
                   error: (e, st) {
                     debugPrint('Error al cargar el kilometraje: $e\n$st');
-                    return const Text(
-                      'No se ha podido cargar el kilometraje',
-                    );
+                    return const Text('No se ha podido cargar el kilometraje');
                   },
                   data: (l) => Text(
                     l == null ? 'Sin kilometraje' : formatearKm(l.km),
@@ -189,14 +187,14 @@ class _Cabecera extends ConsumerWidget {
   }
 
   Widget _marcador(ThemeData tema) => Container(
-        color: tema.colorScheme.surfaceContainerHighest,
-        alignment: Alignment.center,
-        child: Icon(
-          Icons.directions_car_outlined,
-          size: 40,
-          color: tema.colorScheme.outline,
-        ),
-      );
+    color: tema.colorScheme.surfaceContainerHighest,
+    alignment: Alignment.center,
+    child: Icon(
+      Icons.directions_car_outlined,
+      size: 40,
+      color: tema.colorScheme.outline,
+    ),
+  );
 }
 
 /// Cuerpo de la ficha una vez resueltos los vencimientos: o bien la
@@ -206,10 +204,7 @@ class _ContenidoMantenimientos extends StatelessWidget {
   final Vehicle vehiculo;
   final List<MantenimientoConVencimiento> lista;
 
-  const _ContenidoMantenimientos({
-    required this.vehiculo,
-    required this.lista,
-  });
+  const _ContenidoMantenimientos({required this.vehiculo, required this.lista});
 
   @override
   Widget build(BuildContext context) {
@@ -238,15 +233,15 @@ class _ContenidoMantenimientos extends StatelessWidget {
               'Añade los mantenimientos habituales del coche para saber qué '
               'toca y cuándo.',
               textAlign: TextAlign.center,
-              style: tema.textTheme.bodyMedium
-                  ?.copyWith(color: tema.colorScheme.outline),
+              style: tema.textTheme.bodyMedium?.copyWith(
+                color: tema.colorScheme.outline,
+              ),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) =>
-                      MaintenanceFormScreen(vehicleId: vehiculo.id),
+                  builder: (_) => MaintenanceFormScreen(vehicleId: vehiculo.id),
                 ),
               ),
               icon: const Icon(Icons.add),
@@ -261,8 +256,9 @@ class _ContenidoMantenimientos extends StatelessWidget {
     // primero es lo más próximo, tanto para destacarlo como para encabezar
     // la lista completa de abajo.
     final destacado = lista.first;
-    final avisoRitmo =
-        necesitaAvisoRitmoSupuesto(lista.map((m) => m.vencimiento));
+    final avisoRitmo = necesitaAvisoRitmoSupuesto(
+      lista.map((m) => m.vencimiento),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,8 +270,9 @@ class _ContenidoMantenimientos extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             avisoRitmoSupuesto,
-            style: tema.textTheme.bodySmall
-                ?.copyWith(color: tema.colorScheme.outline),
+            style: tema.textTheme.bodySmall?.copyWith(
+              color: tema.colorScheme.outline,
+            ),
           ),
         ],
         const SizedBox(height: 24),
@@ -331,8 +328,9 @@ class _TarjetaDestacada extends StatelessWidget {
               Text(
                 'Aún no se ha registrado. Sin un primer dato no se puede '
                 'calcular cuándo toca.',
-                style: tema.textTheme.bodyMedium
-                    ?.copyWith(color: tema.colorScheme.outline),
+                style: tema.textTheme.bodyMedium?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
               )
             else
               for (final linea in lineas)
@@ -382,8 +380,9 @@ class _FilaMantenimiento extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       resumen.isEmpty ? 'Sin datos todavía' : resumen,
-                      style: tema.textTheme.bodySmall
-                          ?.copyWith(color: tema.colorScheme.outline),
+                      style: tema.textTheme.bodySmall?.copyWith(
+                        color: tema.colorScheme.outline,
+                      ),
                     ),
                   ],
                 ),

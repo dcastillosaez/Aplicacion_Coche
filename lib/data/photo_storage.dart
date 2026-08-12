@@ -46,9 +46,7 @@ class PhotoStorage {
   static String absoluta(String rutaRelativa) {
     final base = _directorioBase;
     if (base == null) {
-      throw StateError(
-        'PhotoStorage.inicializar() no se ha llamado todavía.',
-      );
+      throw StateError('PhotoStorage.inicializar() no se ha llamado todavía.');
     }
     return p.join(base, rutaRelativa);
   }

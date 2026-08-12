@@ -22,10 +22,7 @@ void main() {
 
   test('sin ficha guardada, getFor y watchFor devuelven null', () async {
     expect(await db.vehicleSpecificationDao.getFor(vehicleId), isNull);
-    expect(
-      await db.vehicleSpecificationDao.watchFor(vehicleId).first,
-      isNull,
-    );
+    expect(await db.vehicleSpecificationDao.watchFor(vehicleId).first, isNull);
   });
 
   test('guardar crea la ficha la primera vez', () async {

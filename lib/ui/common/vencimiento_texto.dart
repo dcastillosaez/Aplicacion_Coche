@@ -47,9 +47,8 @@ String? textoDiasEstimadosPorKm(Vencimiento v) {
 
 /// Kilometraje exacto al que toca, calculado a partir del último real más el
 /// intervalo: no es una proyección, así que no lleva ≈.
-String? textoProximoKm(Vencimiento v) => v.proximoKm == null
-    ? null
-    : 'Próximo cambio: ${formatearKm(v.proximoKm!)}';
+String? textoProximoKm(Vencimiento v) =>
+    v.proximoKm == null ? null : 'Próximo cambio: ${formatearKm(v.proximoKm!)}';
 
 /// Fecha exacta a la que toca: tampoco es una estimación.
 String? textoProximaFecha(Vencimiento v) => v.proximaFecha == null
@@ -62,10 +61,10 @@ String? textoProximaFecha(Vencimiento v) => v.proximaFecha == null
 /// el que calcular nada (por ejemplo, recién configurado y sin registrar
 /// todavía).
 String resumenVencimiento(Vencimiento v) => [
-      textoKmRestantes(v),
-      textoDiasRestantes(v),
-      textoDiasEstimadosPorKm(v),
-    ].whereType<String>().join(' · ');
+  textoKmRestantes(v),
+  textoDiasRestantes(v),
+  textoDiasEstimadosPorKm(v),
+].whereType<String>().join(' · ');
 
 /// Aviso a mostrar cuando, entre las cifras visibles, alguna estimación se
 /// apoya en el ritmo de uso por defecto en vez de en lecturas reales: no

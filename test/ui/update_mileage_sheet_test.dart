@@ -73,8 +73,9 @@ void main() {
       final vista = tester.view;
       final alturaPantalla = vista.physicalSize.height / vista.devicePixelRatio;
 
-      final bordeInferiorContenido =
-          tester.getBottomLeft(find.widgetWithText(FilledButton, 'Guardar')).dy;
+      final bordeInferiorContenido = tester
+          .getBottomLeft(find.widgetWithText(FilledButton, 'Guardar'))
+          .dy;
 
       // El borde inferior del contenido de la hoja debe quedar por encima
       // del teclado simulado, no detrás de él.

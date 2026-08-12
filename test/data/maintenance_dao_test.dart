@@ -93,8 +93,7 @@ void main() {
     await crearRecord(aceite, DateTime(2025, 1, 1), 80000);
     await crearRecord(frenos, DateTime(2024, 3, 1), 60000);
 
-    final mapa =
-        await db.maintenanceDao.ultimosRecordsPorSchedule(vehicleId);
+    final mapa = await db.maintenanceDao.ultimosRecordsPorSchedule(vehicleId);
 
     expect(mapa[aceite]!.km, 95000);
     expect(mapa[frenos]!.km, 60000);

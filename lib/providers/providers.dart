@@ -20,18 +20,25 @@ final vehiculosTodosProvider = StreamProvider<List<Vehicle>>((ref) {
   return ref.watch(databaseProvider).vehicleDao.watchTodos();
 });
 
-final ultimaLecturaProvider =
-    StreamProvider.family<MileageReading?, int>((ref, vehicleId) {
+final ultimaLecturaProvider = StreamProvider.family<MileageReading?, int>((
+  ref,
+  vehicleId,
+) {
   return ref.watch(databaseProvider).mileageDao.watchUltima(vehicleId);
 });
 
 final vehicleSpecificationProvider =
     StreamProvider.family<VehicleSpecification?, int>((ref, vehicleId) {
-  return ref.watch(databaseProvider).vehicleSpecificationDao.watchFor(vehicleId);
-});
+      return ref
+          .watch(databaseProvider)
+          .vehicleSpecificationDao
+          .watchFor(vehicleId);
+    });
 
-final ritmoUsoProvider =
-    FutureProvider.family<UsageRateResult, int>((ref, vehicleId) async {
+final ritmoUsoProvider = FutureProvider.family<UsageRateResult, int>((
+  ref,
+  vehicleId,
+) async {
   final db = ref.watch(databaseProvider);
   final ahora = DateTime.now();
   final lecturas = await db.mileageDao.lecturasDesde(

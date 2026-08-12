@@ -22,8 +22,9 @@ class MaintenanceDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<MaintenanceSchedule?> getSchedule(int id) {
-    return (select(maintenanceSchedules)..where((s) => s.id.equals(id)))
-        .getSingleOrNull();
+    return (select(
+      maintenanceSchedules,
+    )..where((s) => s.id.equals(id))).getSingleOrNull();
   }
 
   Future<int> insertarSchedule(MaintenanceSchedulesCompanion schedule) {
@@ -48,10 +49,9 @@ class MaintenanceDao extends DatabaseAccessor<AppDatabase>
   }
 
   Stream<List<MaintenanceRecord>> watchTodosLosRecords() {
-    return (select(maintenanceRecords)
-          ..orderBy([
-            (r) => OrderingTerm(expression: r.fecha, mode: OrderingMode.desc),
-          ]))
+    return (select(maintenanceRecords)..orderBy([
+          (r) => OrderingTerm(expression: r.fecha, mode: OrderingMode.desc),
+        ]))
         .watch();
   }
 
@@ -70,10 +70,13 @@ class MaintenanceDao extends DatabaseAccessor<AppDatabase>
   Future<Map<int, MaintenanceRecord>> ultimosRecordsPorSchedule(
     int vehicleId,
   ) async {
-    final todos = await (select(maintenanceRecords)
-          ..where((r) => r.vehicleId.equals(vehicleId) & r.scheduleId.isNotNull())
-          ..orderBy([(r) => OrderingTerm(expression: r.fecha)]))
-        .get();
+    final todos =
+        await (select(maintenanceRecords)
+              ..where(
+                (r) => r.vehicleId.equals(vehicleId) & r.scheduleId.isNotNull(),
+              )
+              ..orderBy([(r) => OrderingTerm(expression: r.fecha)]))
+            .get();
 
     // Al ir en orden ascendente, el último que se escribe de cada clave es
     // el más reciente.
