@@ -34,7 +34,7 @@ class VehicleDetailScreen extends ConsumerWidget {
         title: Text('${vehiculo.marca} ${vehiculo.modelo}'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.build_outlined),
+            icon: const Icon(Icons.badge_outlined),
             tooltip: 'Identidad técnica',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(

@@ -127,12 +127,32 @@ class _VehicleSpecificationScreenState
     Navigator.of(context).pop();
   }
 
-  /// Vacío es válido (el campo es opcional); si hay texto, tiene que ser un
-  /// número, o quien lo escriba nunca sabría que se guardó como si no
-  /// hubiera puesto nada.
-  String? _validarNumeroOpcional(String? valor) {
+  /// Vacío es válido (el campo es opcional); con texto, tiene que ser un
+  /// número dentro de un rango razonable, o quien lo escriba nunca sabría
+  /// que se guardó como si no hubiera puesto nada, o vería un dato absurdo
+  /// reflejado después (una potencia negativa, por ejemplo).
+  String? _validarCilindrada(String? valor) {
     if (valor == null || valor.trim().isEmpty) return null;
-    return int.tryParse(valor.trim()) == null ? 'Tiene que ser un número' : null;
+    final n = int.tryParse(valor.trim());
+    if (n == null) return 'Tiene que ser un número';
+    if (n < 1 || n > 10000) return 'No parece una cilindrada real';
+    return null;
+  }
+
+  String? _validarPotencia(String? valor) {
+    if (valor == null || valor.trim().isEmpty) return null;
+    final n = int.tryParse(valor.trim());
+    if (n == null) return 'Tiene que ser un número';
+    if (n < 1 || n > 2000) return 'No parece una potencia real';
+    return null;
+  }
+
+  String? _validarMarchas(String? valor) {
+    if (valor == null || valor.trim().isEmpty) return null;
+    final n = int.tryParse(valor.trim());
+    if (n == null) return 'Tiene que ser un número';
+    if (n < 1 || n > 12) return 'No parece un número de marchas real';
+    return null;
   }
 
   @override
@@ -190,7 +210,7 @@ class _VehicleSpecificationScreenState
             controller: _cilindradaCc,
             decoration: const InputDecoration(labelText: 'Cilindrada (cc)'),
             keyboardType: TextInputType.number,
-            validator: _validarNumeroOpcional,
+            validator: _validarCilindrada,
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -200,7 +220,7 @@ class _VehicleSpecificationScreenState
               helperText: kw == null ? null : '≈ ${kwACv(kw)} CV',
             ),
             keyboardType: TextInputType.number,
-            validator: _validarNumeroOpcional,
+            validator: _validarPotencia,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
@@ -226,7 +246,7 @@ class _VehicleSpecificationScreenState
             controller: _numeroMarchas,
             decoration: const InputDecoration(labelText: 'Número de marchas'),
             keyboardType: TextInputType.number,
-            validator: _validarNumeroOpcional,
+            validator: _validarMarchas,
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<Traccion?>(

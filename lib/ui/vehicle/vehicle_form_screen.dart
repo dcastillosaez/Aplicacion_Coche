@@ -438,9 +438,10 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
               controller: _vin,
               decoration: const InputDecoration(
                 labelText: 'VIN (número de bastidor)',
-                hintText: 'Lo encuentras en el parabrisas del lado del '
+                helperText: 'Lo encuentras en el parabrisas del lado del '
                     'conductor o en el permiso de circulación',
               ),
+              maxLength: 17,
               textCapitalization: TextCapitalization.characters,
             ),
             const SizedBox(height: 12),
