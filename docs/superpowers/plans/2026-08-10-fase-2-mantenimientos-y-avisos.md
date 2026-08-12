@@ -1978,6 +1978,6 @@ git add -A && git commit -q -m "Mostrar los próximos vencimientos en la pantall
 
 ---
 
-## Qué queda para la fase 3
+## Qué queda después de esta fase
 
-Notificaciones locales con el permiso `POST_NOTIFICATIONS`, el recordatorio periódico de lectura del kilometraje, la pantalla de Ajustes real con el selector de tema y los márgenes de aviso, y la copia de seguridad en `.zip`. Después, la fase 4 con componentes, facturas y gastos.
+**Superseded.** El boceto original de este apartado (notificaciones, ajustes, backup como fase 3; componentes/facturas/gastos como fase 4) queda deprioritizado sin fecha. El roadmap real a partir de aquí es otro, y está documentado en detalle en `docs/superpowers/specs/2026-08-12-roadmap-identidad-tecnica-catalogo-piezas.md`: identidad técnica del vehículo, motor de recomendaciones, catálogo de piezas, integración mantenimiento↔piezas y, más adelante, compra. Notificaciones/ajustes/backup se retoman cuando ese roadmap esté maduro.

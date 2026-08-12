@@ -15,8 +15,9 @@ App Android en Flutter para llevar el mantenimiento de dos coches: kilometraje, 
 ## Estado del proyecto
 
 - **Fase 1** (cimientos) y **Fase 2** (mantenimientos y avisos): completas y fusionadas. 94 tests, `flutter analyze` limpio.
-- **Fase 3** (notificaciones, ajustes reales, copia de seguridad) y **Fase 4** (componentes, facturas, gastos): sin implementar. Sin plan de implementación todavía.
+- **Roadmap a partir de la fase 3**: identidad técnica del vehículo → motor de recomendaciones → catálogo de piezas → integración mantenimiento/piezas → compra. Notificaciones/ajustes/backup y componentes/facturas/gastos quedan deprioritizados, sin fase asignada. Sin plan de implementación todavía — solo el documento de visión.
 - Repositorio: `https://github.com/dcastillosaez/Aplicacion_Coche` (privado). Rama de trabajo: `fase-1` (histórica; en ella se han implementado también las fases 2 en adelante). PR #1 abierto contra `main`.
+- La app es **offline por diseño** (sin permiso `INTERNET`). Se mantiene así hasta la fase del catálogo de piezas, donde se convierte en una decisión explícita a tomar, no un descuido — ver el roadmap.
 
 ## Dónde está cada cosa
 
@@ -24,10 +25,11 @@ App Android en Flutter para llevar el mantenimiento de dos coches: kilometraje, 
 |---|---|
 | Diseño original (modelo de datos, decisiones, alcance) | `docs/superpowers/specs/2026-08-09-app-mantenimiento-vehiculos-design.md` |
 | Plan de implementación, Fase 1 | `docs/superpowers/plans/2026-08-09-fase-1-cimientos-y-vehiculos.md` |
-| Plan de implementación, Fase 2 | `docs/superpowers/plans/2026-08-10-fase-2-mantenimientos-y-avisos.md` (última sección: qué queda para las fases 3 y 4) |
+| Plan de implementación, Fase 2 | `docs/superpowers/plans/2026-08-10-fase-2-mantenimientos-y-avisos.md` |
+| **Roadmap fase 3 en adelante** (identidad técnica, motor de recomendaciones, catálogo de piezas) | `docs/superpowers/specs/2026-08-12-roadmap-identidad-tecnica-catalogo-piezas.md` |
 | Progreso de la ejecución tarea a tarea | `.superpowers/sdd/progress.md` (no versionado) |
 
-Antes de planificar la fase 3, léete el diseño original — ya cubre notificaciones (§7) y copia de seguridad (§11) a alto nivel.
+Antes de planificar cualquier tarea de la fase 3, lee el roadmap completo — fija el modelo de datos objetivo (`VehicleSpecifications`, y más adelante `Parts`/`PartCompatibility`) y qué queda deliberadamente fuera hasta que el catálogo de piezas lo justifique.
 
 ## Arquitectura
 
@@ -80,7 +82,7 @@ Criterios ya asentados en el código, que cualquier pantalla nueva debe seguir (
 - Escrituras en `try`/`catch`: mensaje claro en español al usuario (`SnackBar`), detalle técnico solo por `debugPrint`, nunca la excepción cruda en pantalla.
 - Inserciones múltiples relacionadas van en `db.transaction(...)`.
 - Al pintar una foto desde disco, `errorBuilder` (el fichero puede no existir).
-- Fotos se guardan como ruta **relativa** vía `PhotoStorage`, nunca absoluta (rompería la copia de seguridad de la fase 3).
+- Fotos se guardan como ruta **relativa** vía `PhotoStorage`, nunca absoluta (rompería cualquier copia de seguridad futura entre dispositivos).
 - Providers cuyo resultado depende de "hoy" se registran en `lib/providers/recalculo_al_reanudar.dart`.
 - Tests de widget que abren la app real: sobrescriben el provider de datos en vez de abrir una base de datos Drift real (los streams de Drift dejan temporizadores vivos que rompen `testWidgets`). Ver `test/ui/*_test.dart` como patrón.
 
