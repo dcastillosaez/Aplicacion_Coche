@@ -11,10 +11,14 @@ build/
 
 # Android
 android/.gradle/
+android/.kotlin/
 android/local.properties
 android/key.properties
 *.jks
 *.keystore
+
+# Progreso local de ejecución de planes
+.superpowers/
 
 # IDE
 .idea/

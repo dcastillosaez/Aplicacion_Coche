@@ -53,57 +53,90 @@
 
 No hay tests: es instalación. La verificación es `flutter doctor`.
 
+Flutter no necesita Android Studio, solo el SDK de Android. Instalando únicamente las *command-line tools* se baja de unos 8 GB a unos 3 y todo el proceso es automatizable, sin asistentes gráficos.
+
+Todo se instala en `F:\dev`, no bajo el perfil del usuario: la ruta del perfil contiene espacios y Gradle y el SDK de Android los llevan mal.
+
 **Ficheros:** ninguno.
 
 - [ ] **Paso 1: Instalar el JDK 17**
 
-El Java instalado es el 8 y Android Gradle Plugin necesita el 17.
+El Java del sistema es el 8 y el plugin de Gradle para Android necesita el 17.
 
-```bash
-winget install --silent EclipseAdoptium.Temurin.17.JDK
+`winget` no está en el PATH de una consola no interactiva, así que se invoca por su ruta completa:
+
+```powershell
+& "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe" install --id EclipseAdoptium.Temurin.17.JDK --silent --accept-package-agreements --accept-source-agreements --disable-interactivity
 ```
 
-Cierra y reabre la terminal después.
+Esperado: termina con `Instalado correctamente`.
 
-- [ ] **Paso 2: Verificar el JDK**
+- [ ] **Paso 2: Descargar el SDK de Flutter y las command-line tools de Android**
 
-```bash
-java -version 2>&1 | head -1
+La versión estable de Flutter se consulta en el índice oficial de versiones, para no fijar una URL que caduque:
+
+```powershell
+$ProgressPreference='SilentlyContinue'
+$dl = "$env:TEMP\claude-dl"; New-Item -ItemType Directory -Force -Path $dl | Out-Null
+$j = Invoke-RestMethod -Uri 'https://storage.googleapis.com/flutter_infra_release/releases/releases_windows.json' -UseBasicParsing
+$rel = $j.releases | Where-Object { $_.hash -eq $j.current_release.stable -and $_.channel -eq 'stable' } | Select-Object -First 1
+Invoke-WebRequest -Uri "$($j.base_url)/$($rel.archive)" -OutFile "$dl\flutter.zip" -UseBasicParsing
+Invoke-WebRequest -Uri 'https://dl.google.com/android/repository/commandlinetools-win-15859902_latest.zip' -OutFile "$dl\cmdline-tools.zip" -UseBasicParsing
 ```
 
-Esperado: una línea que contiene `17.` — por ejemplo `openjdk version "17.0.11"`. Si sigue saliendo `1.8.0`, ajusta la variable `JAVA_HOME` para que apunte a la carpeta de Temurin 17 y reabre la terminal.
+Son unos 1,8 GB y 148 MB. Tarda varios minutos.
 
-- [ ] **Paso 3: Instalar Android Studio**
+- [ ] **Paso 3: Extraer**
 
-Trae el SDK de Android, las platform-tools y el gestor de dispositivos. Es la vía más corta.
+`tar` viene con Windows 11 y descomprime zip mucho más rápido que `Expand-Archive`.
 
-```bash
-winget install --silent Google.AndroidStudio
+```powershell
+$dl = "$env:TEMP\claude-dl"
+New-Item -ItemType Directory -Force -Path 'F:\dev' | Out-Null
+tar -xf "$dl\flutter.zip" -C 'F:\dev'
+tar -xf "$dl\cmdline-tools.zip" -C $dl
+New-Item -ItemType Directory -Force -Path 'F:\dev\android-sdk\cmdline-tools' | Out-Null
+Move-Item "$dl\cmdline-tools" 'F:\dev\android-sdk\cmdline-tools\latest'
 ```
 
-Ábrelo una vez y completa el asistente inicial, que descarga el SDK. Sal cuando llegues a la pantalla de bienvenida.
+El `sdkmanager` exige que las herramientas cuelguen de `cmdline-tools\latest`; con cualquier otro nombre de carpeta falla.
 
-- [ ] **Paso 4: Instalar el SDK de Flutter**
+- [ ] **Paso 4: Instalar los componentes del SDK de Android y aceptar las licencias**
 
-Descarga el paquete estable para Windows desde `https://docs.flutter.dev/get-started/install/windows` y extráelo en `C:\src\flutter`. No lo pongas en una ruta con espacios ni dentro de `Archivos de programa`.
+El `sdkmanager` pide confirmación por la entrada estándar, y en una consola no interactiva esa entrada está anulada: un pipe de PowerShell no le llega y el proceso se queda esperando. La forma que sí funciona es redirigir un fichero real a través de `cmd`, que crea su propia entrada estándar.
 
-Añade `C:\src\flutter\bin` al PATH del usuario y reabre la terminal.
-
-- [ ] **Paso 5: Verificar Flutter**
-
-```bash
-flutter --version 2>&1 | head -1
+```powershell
+$env:JAVA_HOME = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Filter 'jdk-17*' -Directory | Select-Object -First 1).FullName
+$sdk = 'F:\dev\android-sdk'
+$mgr = "$sdk\cmdline-tools\latest\bin\sdkmanager.bat"
+$yes = "$env:TEMP\yes.txt"
+Set-Content -Path $yes -Value (@('y') * 40) -Encoding ascii
+cmd /c "`"$mgr`" --sdk_root=`"$sdk`" --licenses < `"$yes`""
+cmd /c "`"$mgr`" --sdk_root=`"$sdk`" platform-tools `"platforms;android-36`" `"build-tools;36.0.0`""
 ```
 
-Esperado: una línea que empieza por `Flutter 3.`
+Esperado: `All SDK package licenses accepted` y siete ficheros en `F:\dev\android-sdk\licenses`.
 
-- [ ] **Paso 6: Aceptar las licencias del SDK de Android**
+La versión de la plataforma tiene que coincidir con la que exija tu Flutter: la 3.44.9 pide la 36. Si `flutter doctor` reclama otra, instálala con el mismo comando cambiando el número.
 
-```bash
-flutter doctor --android-licenses
+El `sdkmanager` avisa de que está obsoleto en favor del nuevo binario `android`; sigue funcionando y es lo que espera `flutter doctor`.
+
+- [ ] **Paso 5: Dejar las rutas en el PATH del usuario**
+
+```powershell
+$ruta = [Environment]::GetEnvironmentVariable('Path','User')
+[Environment]::SetEnvironmentVariable('Path', "$ruta;F:\dev\flutter\bin;F:\dev\android-sdk\platform-tools", 'User')
+[Environment]::SetEnvironmentVariable('ANDROID_HOME', 'F:\dev\android-sdk', 'User')
 ```
 
-Responde `y` a todas.
+Reabre la terminal para que surta efecto.
+
+- [ ] **Paso 6: Apuntar Flutter al SDK y al JDK**
+
+```powershell
+flutter config --android-sdk 'F:\dev\android-sdk'
+flutter config --jdk-dir (Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Filter 'jdk-17*' | Select-Object -First 1).FullName
+```
 
 - [ ] **Paso 7: Comprobación final del entorno**
 
@@ -111,15 +144,7 @@ Responde `y` a todas.
 flutter doctor 2>&1 | grep -E "^\[" | head -6
 ```
 
-Esperado: `[√] Flutter` y `[√] Android toolchain` sin cruces. Las líneas de Visual Studio, Chrome o Android Studio pueden llevar `!`; no bloquean.
-
-Si `Android toolchain` se queja del JDK, apúntalo a mano:
-
-```bash
-flutter config --jdk-dir "C:\Program Files\Eclipse Adoptium\jdk-17.0.11.9-hotspot"
-```
-
-Ajusta la ruta a la versión que haya instalado winget.
+Esperado: `[√] Flutter` y `[√] Android toolchain` sin cruces. Las líneas de Visual Studio, Chrome o Android Studio pueden llevar `!`; no bloquean la compilación para Android.
 
 ---
 
