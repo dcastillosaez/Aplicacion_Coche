@@ -65,6 +65,18 @@ class MaintenanceDao extends DatabaseAccessor<AppDatabase>
         .getSingleOrNull();
   }
 
+  /// Registros reales (no sembrados) de un mantenimiento, ordenados por
+  /// fecha ascendente. Es la base del patrón real de uso: solo cuenta lo
+  /// que la app ha presenciado de verdad.
+  Future<List<MaintenanceRecord>> registrosRealesDe(int scheduleId) {
+    return (select(maintenanceRecords)
+          ..where(
+            (r) => r.scheduleId.equals(scheduleId) & r.esSembrado.equals(false),
+          )
+          ..orderBy([(r) => OrderingTerm(expression: r.fecha)]))
+        .get();
+  }
+
   /// Último registro de cada mantenimiento del vehículo, indexado por
   /// `scheduleId`. Una sola consulta en lugar de una por mantenimiento.
   Future<Map<int, MaintenanceRecord>> ultimosRecordsPorSchedule(

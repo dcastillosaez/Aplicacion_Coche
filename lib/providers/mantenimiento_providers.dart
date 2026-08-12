@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../domain/maintenance_due.dart';
+import '../domain/patron_real_uso.dart';
 import 'providers.dart';
 
 class MantenimientoConVencimiento {
@@ -26,6 +27,23 @@ final schedulesProvider = StreamProvider.family<List<MaintenanceSchedule>, int>(
     return ref.watch(databaseProvider).maintenanceDao.watchSchedules(vehicleId);
   },
 );
+
+/// Patrón real de uso de un mantenimiento concreto. Nulo si hay menos de
+/// dos registros reales: no hay patrón que mostrar todavía. No depende de
+/// la fecha de hoy, así que no hace falta recalcularlo al volver a primer
+/// plano.
+final patronRealProvider = FutureProvider.family<PatronRealUso?, int>((
+  ref,
+  scheduleId,
+) async {
+  final registros = await ref
+      .watch(databaseProvider)
+      .maintenanceDao
+      .registrosRealesDe(scheduleId);
+  return calcularPatronReal(
+    registros.map((r) => (fecha: r.fecha, km: r.km)).toList(),
+  );
+});
 
 /// Todo lo registrado, de todos los vehículos, para el historial.
 final historialProvider = StreamProvider<List<MaintenanceRecord>>((ref) {

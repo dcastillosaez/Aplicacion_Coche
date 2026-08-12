@@ -99,6 +99,40 @@ void main() {
     expect(mapa[frenos]!.km, 60000);
   });
 
+  test('registrosRealesDe excluye los sembrados y ordena por fecha', () async {
+    final id = await crearSchedule();
+    await db.maintenanceDao.insertarRecord(
+      MaintenanceRecordsCompanion.insert(
+        vehicleId: vehicleId,
+        scheduleId: Value(id),
+        fecha: DateTime(2026, 1, 1),
+        km: 90000,
+        esSembrado: const Value(true),
+      ),
+    );
+    await db.maintenanceDao.insertarRecord(
+      MaintenanceRecordsCompanion.insert(
+        vehicleId: vehicleId,
+        scheduleId: Value(id),
+        fecha: DateTime(2025, 1, 1),
+        km: 75000,
+      ),
+    );
+    await db.maintenanceDao.insertarRecord(
+      MaintenanceRecordsCompanion.insert(
+        vehicleId: vehicleId,
+        scheduleId: Value(id),
+        fecha: DateTime(2024, 1, 1),
+        km: 60000,
+      ),
+    );
+
+    final reales = await db.maintenanceDao.registrosRealesDe(id);
+
+    expect(reales, hasLength(2));
+    expect(reales.map((r) => r.km), [60000, 75000]);
+  });
+
   test('borrar un mantenimiento no borra su historial', () async {
     final id = await crearSchedule();
     await crearRecord(id, DateTime(2026, 5, 1), 95000);

@@ -427,17 +427,18 @@ class _TarjetaDestacada extends StatelessWidget {
   }
 }
 
-class _FilaMantenimiento extends StatelessWidget {
+class _FilaMantenimiento extends ConsumerWidget {
   final Vehicle vehiculo;
   final MantenimientoConVencimiento item;
 
   const _FilaMantenimiento({required this.vehiculo, required this.item});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tema = Theme.of(context);
     final v = item.vencimiento;
     final resumen = resumenVencimiento(v);
+    final patronReal = ref.watch(patronRealProvider(item.schedule.id)).value;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -466,6 +467,14 @@ class _FilaMantenimiento extends StatelessWidget {
                         color: tema.colorScheme.outline,
                       ),
                     ),
+                    if (patronReal != null)
+                      Text(
+                        'Tu patrón habitual: cambias cada '
+                        '≈ ${formatearKm(patronReal.kmMedioEntreCambios.round())}',
+                        style: tema.textTheme.bodySmall?.copyWith(
+                          color: tema.colorScheme.outline,
+                        ),
+                      ),
                   ],
                 ),
               ),
