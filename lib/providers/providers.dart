@@ -25,6 +25,11 @@ final ultimaLecturaProvider =
   return ref.watch(databaseProvider).mileageDao.watchUltima(vehicleId);
 });
 
+final vehicleSpecificationProvider =
+    StreamProvider.family<VehicleSpecification?, int>((ref, vehicleId) {
+  return ref.watch(databaseProvider).vehicleSpecificationDao.watchFor(vehicleId);
+});
+
 final ritmoUsoProvider =
     FutureProvider.family<UsageRateResult, int>((ref, vehicleId) async {
   final db = ref.watch(databaseProvider);
