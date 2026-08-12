@@ -41,6 +41,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
   late final TextEditingController _anio;
   late final TextEditingController _matricula;
   late final TextEditingController _color;
+  late final TextEditingController _vin;
 
   final _marcaFocus = FocusNode();
   final _modeloFocus = FocusNode();
@@ -84,6 +85,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     _anio = TextEditingController(text: v?.anio?.toString() ?? '');
     _matricula = TextEditingController(text: v?.matricula ?? '');
     _color = TextEditingController(text: v?.color ?? '');
+    _vin = TextEditingController(text: v?.vin ?? '');
     _colorValor = v?.colorValor;
     _combustible = v?.combustible ?? FuelType.diesel;
     _fechaMatriculacion = v?.fechaMatriculacion;
@@ -98,7 +100,8 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
 
   @override
   void dispose() {
-    for (final c in [_marca, _modelo, _version, _anio, _matricula, _color]) {
+    for (final c
+        in [_marca, _modelo, _version, _anio, _matricula, _color, _vin]) {
       c.dispose();
     }
     _marcaFocus.dispose();
@@ -212,6 +215,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             version: Value(textoONulo(_version)),
             anio: Value(int.tryParse(_anio.text.trim())),
             matricula: Value(textoONulo(_matricula)),
+            vin: Value(textoONulo(_vin)),
             combustible: _combustible,
             fechaMatriculacion: Value(_fechaMatriculacion),
             color: Value(nombreColor),
@@ -227,6 +231,7 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             version: Value(textoONulo(_version)),
             anio: Value(int.tryParse(_anio.text.trim())),
             matricula: Value(textoONulo(_matricula)),
+            vin: Value(textoONulo(_vin)),
             combustible: Value(_combustible),
             fechaMatriculacion: Value(_fechaMatriculacion),
             color: Value(nombreColor),
@@ -426,6 +431,16 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
             TextFormField(
               controller: _matricula,
               decoration: const InputDecoration(labelText: 'Matrícula'),
+              textCapitalization: TextCapitalization.characters,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _vin,
+              decoration: const InputDecoration(
+                labelText: 'VIN (número de bastidor)',
+                hintText: 'Lo encuentras en el parabrisas del lado del '
+                    'conductor o en el permiso de circulación',
+              ),
               textCapitalization: TextCapitalization.characters,
             ),
             const SizedBox(height: 12),
