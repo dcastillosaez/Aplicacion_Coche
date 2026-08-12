@@ -438,7 +438,9 @@ class _FilaMantenimiento extends ConsumerWidget {
     final tema = Theme.of(context);
     final v = item.vencimiento;
     final resumen = resumenVencimiento(v);
-    final patronReal = ref.watch(patronRealProvider(item.schedule.id)).value;
+    final patronReal = ref
+        .watch(patronRealProvider(item.schedule.id))
+        .valueOrNull;
 
     return Card(
       clipBehavior: Clip.antiAlias,
