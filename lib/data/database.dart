@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'daos/maintenance_dao.dart';
 import 'daos/mileage_dao.dart';
 import 'daos/vehicle_dao.dart';
+import 'daos/vehicle_specification_dao.dart';
 import 'tables/maintenance_records.dart';
 import 'tables/maintenance_schedules.dart';
 import 'tables/mileage_readings.dart';
@@ -26,7 +27,7 @@ part 'database.g.dart';
     MaintenanceRecords,
     VehicleSpecifications,
   ],
-  daos: [VehicleDao, MileageDao, MaintenanceDao],
+  daos: [VehicleDao, MileageDao, MaintenanceDao, VehicleSpecificationDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_abrirConexion());
