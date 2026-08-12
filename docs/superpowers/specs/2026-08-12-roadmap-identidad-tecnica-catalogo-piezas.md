@@ -32,7 +32,7 @@ El plan de la fase 2 dejaba anotado, sin desarrollar, un boceto de "fase 3" (not
 | ~~4~~ | ~~Componentes, facturas, gastos~~ — el concepto de "componente instalado con coste" se retoma más adelante, probablemente fundido con el modelo de piezas de la Fase 6 |
 | **3** | **Identidad técnica del vehículo** |
 | **4** | **Motor de recomendaciones y mantenimiento inteligente** |
-| **5** | **Catálogo de piezas (proveedor externo)** |
+| **5** | **Catálogo de piezas: decidir la fuente de datos** (no se asume TecDoc de antemano) |
 | **6** | **Integración mantenimiento ↔ piezas** |
 | **7** | **Compra** (especulativa, solo si 3–6 funcionan bien) |
 
@@ -93,12 +93,22 @@ VehicleSpecifications
   tipoCaja        enum, nullable         — manual, automatica
   numeroMarchas   entero, nullable
   traccion        enum, nullable         — delantera, trasera, total
+  codigoTecnico   texto, nullable        — identificador de variante de un catálogo externo
+                                           (p. ej. el KType de TecDoc). Ver nota abajo.
   notasTecnicas   texto, nullable
 ```
 
 `vin` **no se duplica aquí**: ya vive en `Vehicles.vin` desde la fase 1. Esta tabla es la ficha técnica; el VIN es un identificador administrativo del vehículo concreto, no de su especificación.
 
 Todos los campos son opcionales. Nadie debe sentirse obligado a rellenar el código de motor para poder usar la app.
+
+#### `codigoTecnico`: reservado, no manual
+
+"BMW Serie 3 320d 2019" es ambiguo para buscar piezas; un identificador técnico unívoco de la variante no lo es. Los catálogos aftermarket lo resuelven con un código propio — TecDoc, por ejemplo, usa un identificador numérico llamado *KType* para enlazar cada variante de vehículo con las piezas compatibles.
+
+Este campo se añade ya, en la Fase 3, pero **con una condición explícita: nunca se rellena a mano**. Nadie conoce el KType de su coche de memoria, y pedirlo en un formulario sería pedir un dato inventado. Se queda a `null` hasta que la Fase 5/6 lo resuelva automáticamente cruzando `VehicleSpecifications` contra el catálogo elegido — por generación, motor y potencia, no por el nombre comercial. Si esa fase nunca llega, el campo se queda vacío para siempre y no molesta a nadie: es la razón por la que es nullable y no una tabla aparte.
+
+Una advertencia encontrada al documentar esto y que conviene no olvidar: el propio KType de TecDoc tiene limitaciones conocidas de granularidad (una misma variante técnica real puede mapear a varios KType, o viceversa, según el mercado). No hay que tratarlo como una verdad absoluta cuando llegue ese momento, solo como el mejor identificador disponible.
 
 ### Modelo comercial frente a variante técnica
 
@@ -112,13 +122,29 @@ Se ofrece un campo opcional al dar de alta o editar el vehículo, con una ayuda 
 
 Se amplía la ficha del vehículo con una sección de identidad técnica, editable igual que el resto de datos del coche, con los mismos criterios ya asentados en el proyecto (guarda de reentrada, `try`/`catch` con mensaje en español, `if (!mounted)`).
 
+### Decisión arquitectónica que fija esta fase, aunque su código llegue después
+
+`VehicleSpecifications` es el único punto por el que cualquier futuro proveedor de piezas identificará un vehículo. Para que la Fase 5 pueda ser "elegir proveedor" y no "reescribir cómo se buscan piezas", el acceso al catálogo se diseña desde ahora detrás de una interfaz — un `PartsCatalogRepository` abstracto con implementaciones intercambiables (`Local`, y más adelante `Remote` para el proveedor que se elija). Si TecDoc resulta inviable por licencia (§3), se cambia la implementación sin tocar nada que dependa de ella.
+
+Esto es una decisión de diseño, no una tarea de esta fase: **el código del repositorio no se escribe todavía**, porque no tendría ningún consumidor real hasta la Fase 6 y sería abstracción sin uso. Lo que fija ya la Fase 3 es la forma del dato que ese repositorio consumirá el día de mañana — `VehicleSpecifications`, con su `codigoTecnico` reservado — para que cuando llegue el momento de escribir la interfaz, encaje sin fricción.
+
 ## 6. Fase 4 — Motor de recomendaciones y mantenimiento inteligente
 
 Todo lo que sigue se construye sobre datos que la app **ya tiene**. No hace falta ningún proveedor externo ni tabla nueva salvo una columna.
 
 ### Agrupación de mantenimientos próximos
 
-Cuando dos o más mantenimientos vencen dentro de una misma ventana de kilómetros o de tiempo, se agrupan en la interfaz con un mensaje del tipo "puedes hacer estas operaciones juntas y ahorrar una visita al taller". Es una capa de presentación sobre `vencimientosProvider`, que ya devuelve la lista ordenada por urgencia — agrupar es cuestión de comparar `diasHastaVencimiento` entre elementos consecutivos y decidir un umbral razonable (por ejemplo, una ventana de 500 km o 15 días).
+Cuando dos o más mantenimientos vencen dentro de una misma ventana de kilómetros o de tiempo, se agrupan en la interfaz con un mensaje del tipo "puedes hacer estas operaciones juntas y ahorrar una visita al taller". Es una capa de presentación sobre `vencimientosProvider`, que ya devuelve la lista ordenada por urgencia — agrupar es cuestión de comparar `diasHastaVencimiento` entre elementos consecutivos.
+
+Los umbrales de esa ventana (por ejemplo, 500 km o 15 días) **no se escriben como literales sueltos en el provider o en la pantalla**. Se agrupan en un único punto, del mismo modo que hoy `avisoKmPorDefecto`/`avisoDiasPorDefecto` viven en `Settings` y no repartidos por el código:
+
+```
+MaintenanceGroupingPolicy
+  maxKmDiferencia
+  maxDiasDiferencia
+```
+
+No hace falta construir una pantalla de ajustes para esto — eso solo se justifica si, tras usar la app, 500 km resultan ser demasiado poco o 15 días demasiado. Lo que sí evita esta forma es que, cuando llegue ese momento, cambiar el criterio signifique tocar un valor en un sitio y no rastrear varios ficheros.
 
 ### Mantenimientos sin ningún historial, distintos de los sembrados
 
@@ -152,13 +178,16 @@ Aunque su valor más rico llega después, esta columna se añade ya, en esta fas
 - `fabricante` → "Según el intervalo oficial de tu vehículo."
 - `usuario` → "Intervalo que has ajustado tú."
 
-## 7. Fase 5 — Catálogo de piezas
+## 7. Fase 5 — Catálogo de piezas: decidir la fuente de datos
+
+**Esta fase no asume TecDoc.** El título antiguo ("catálogo de piezas, proveedor externo") daba por hecho la conclusión antes de investigarla. El primer entregable no es código: es la respuesta a si TecDoc, o cualquier otro proveedor, tiene un plan viable para dos coches particulares (§3). Si la respuesta es no, esta fase busca alternativa o se aparca — no bloquea nada de lo construido en las fases 3 y 4, porque ninguna de ellas depende de que exista un catálogo.
+
+Gracias a la interfaz `PartsCatalogRepository` prevista desde la Fase 3, "decidir el proveedor" es una decisión real y no un compromiso de facto: cabe perfectamente empezar con una implementación `Local` — un catálogo reducido, mantenido a mano, solo para las piezas de los dos coches propios — y añadir después una implementación `Remote` si un proveedor externo resulta viable. La primera no es un paso perdido de cara a la segunda: ambas cumplen la misma interfaz.
 
 Alcance, sin cambios respecto a lo ya decidido:
 
-- Seleccionar proveedor de datos (TecDoc como candidato principal a estudiar, dado que es el estándar de facto europeo, con la salvedad de licencia y coste señalada en §3).
-- Estudiar API y licencia — el primer entregable de esta fase es la respuesta a "¿hay un plan viable para dos coches particulares?", no código.
-- Integrar el catálogo.
+- Decidir la fuente: ¿local y mantenida a mano, TecDoc, u otro proveedor? Estudiar API y licencia de cada candidata.
+- Definir e implementar `PartsCatalogRepository` (la interfaz que ya fijó su forma la Fase 3) y su primera implementación concreta.
 - Búsqueda por vehículo, por categoría, por referencia OE.
 - Mostrar equivalencias entre fabricantes.
 - Cobertura por categoría: aceites, filtros, bujías, frenos, baterías, neumáticos.
