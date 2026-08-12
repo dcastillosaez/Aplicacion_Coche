@@ -1780,6 +1780,19 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
     defaultValue: const Constant(0),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<FuenteIntervalo, String>
+  fuenteIntervalo =
+      GeneratedColumn<String>(
+        'fuente_intervalo',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('orientativo'),
+      ).withConverter<FuenteIntervalo>(
+        $MaintenanceSchedulesTable.$converterfuenteIntervalo,
+      );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     vehicleId,
@@ -1792,6 +1805,7 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
     activo,
     silenciado,
     orden,
+    fuenteIntervalo,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1924,6 +1938,13 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
         DriftSqlType.int,
         data['${effectivePrefix}orden'],
       )!,
+      fuenteIntervalo: $MaintenanceSchedulesTable.$converterfuenteIntervalo
+          .fromSql(
+            attachedDatabase.typeMapping.read(
+              DriftSqlType.string,
+              data['${effectivePrefix}fuente_intervalo'],
+            )!,
+          ),
     );
   }
 
@@ -1935,6 +1956,10 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
   static JsonTypeConverter2<MaintenanceCategory, String, String>
   $convertercategoria = const EnumNameConverter<MaintenanceCategory>(
     MaintenanceCategory.values,
+  );
+  static JsonTypeConverter2<FuenteIntervalo, String, String>
+  $converterfuenteIntervalo = const EnumNameConverter<FuenteIntervalo>(
+    FuenteIntervalo.values,
   );
 }
 
@@ -1959,6 +1984,10 @@ class MaintenanceSchedule extends DataClass
   /// Sigue calculando su estado, pero no genera notificación.
   final bool silenciado;
   final int orden;
+
+  /// Ver `FuenteIntervalo`. Todo mantenimiento tiene una fuente, incluso
+  /// los que no la eligieron explícitamente: por defecto es orientativo.
+  final FuenteIntervalo fuenteIntervalo;
   const MaintenanceSchedule({
     required this.id,
     required this.vehicleId,
@@ -1971,6 +2000,7 @@ class MaintenanceSchedule extends DataClass
     required this.activo,
     required this.silenciado,
     required this.orden,
+    required this.fuenteIntervalo,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1998,6 +2028,13 @@ class MaintenanceSchedule extends DataClass
     map['activo'] = Variable<bool>(activo);
     map['silenciado'] = Variable<bool>(silenciado);
     map['orden'] = Variable<int>(orden);
+    {
+      map['fuente_intervalo'] = Variable<String>(
+        $MaintenanceSchedulesTable.$converterfuenteIntervalo.toSql(
+          fuenteIntervalo,
+        ),
+      );
+    }
     return map;
   }
 
@@ -2022,6 +2059,7 @@ class MaintenanceSchedule extends DataClass
       activo: Value(activo),
       silenciado: Value(silenciado),
       orden: Value(orden),
+      fuenteIntervalo: Value(fuenteIntervalo),
     );
   }
 
@@ -2044,6 +2082,8 @@ class MaintenanceSchedule extends DataClass
       activo: serializer.fromJson<bool>(json['activo']),
       silenciado: serializer.fromJson<bool>(json['silenciado']),
       orden: serializer.fromJson<int>(json['orden']),
+      fuenteIntervalo: $MaintenanceSchedulesTable.$converterfuenteIntervalo
+          .fromJson(serializer.fromJson<String>(json['fuenteIntervalo'])),
     );
   }
   @override
@@ -2063,6 +2103,11 @@ class MaintenanceSchedule extends DataClass
       'activo': serializer.toJson<bool>(activo),
       'silenciado': serializer.toJson<bool>(silenciado),
       'orden': serializer.toJson<int>(orden),
+      'fuenteIntervalo': serializer.toJson<String>(
+        $MaintenanceSchedulesTable.$converterfuenteIntervalo.toJson(
+          fuenteIntervalo,
+        ),
+      ),
     };
   }
 
@@ -2078,6 +2123,7 @@ class MaintenanceSchedule extends DataClass
     bool? activo,
     bool? silenciado,
     int? orden,
+    FuenteIntervalo? fuenteIntervalo,
   }) => MaintenanceSchedule(
     id: id ?? this.id,
     vehicleId: vehicleId ?? this.vehicleId,
@@ -2092,6 +2138,7 @@ class MaintenanceSchedule extends DataClass
     activo: activo ?? this.activo,
     silenciado: silenciado ?? this.silenciado,
     orden: orden ?? this.orden,
+    fuenteIntervalo: fuenteIntervalo ?? this.fuenteIntervalo,
   );
   MaintenanceSchedule copyWithCompanion(MaintenanceSchedulesCompanion data) {
     return MaintenanceSchedule(
@@ -2112,6 +2159,9 @@ class MaintenanceSchedule extends DataClass
           ? data.silenciado.value
           : this.silenciado,
       orden: data.orden.present ? data.orden.value : this.orden,
+      fuenteIntervalo: data.fuenteIntervalo.present
+          ? data.fuenteIntervalo.value
+          : this.fuenteIntervalo,
     );
   }
 
@@ -2128,7 +2178,8 @@ class MaintenanceSchedule extends DataClass
           ..write('avisoDias: $avisoDias, ')
           ..write('activo: $activo, ')
           ..write('silenciado: $silenciado, ')
-          ..write('orden: $orden')
+          ..write('orden: $orden, ')
+          ..write('fuenteIntervalo: $fuenteIntervalo')
           ..write(')'))
         .toString();
   }
@@ -2146,6 +2197,7 @@ class MaintenanceSchedule extends DataClass
     activo,
     silenciado,
     orden,
+    fuenteIntervalo,
   );
   @override
   bool operator ==(Object other) =>
@@ -2161,7 +2213,8 @@ class MaintenanceSchedule extends DataClass
           other.avisoDias == this.avisoDias &&
           other.activo == this.activo &&
           other.silenciado == this.silenciado &&
-          other.orden == this.orden);
+          other.orden == this.orden &&
+          other.fuenteIntervalo == this.fuenteIntervalo);
 }
 
 class MaintenanceSchedulesCompanion
@@ -2177,6 +2230,7 @@ class MaintenanceSchedulesCompanion
   final Value<bool> activo;
   final Value<bool> silenciado;
   final Value<int> orden;
+  final Value<FuenteIntervalo> fuenteIntervalo;
   const MaintenanceSchedulesCompanion({
     this.id = const Value.absent(),
     this.vehicleId = const Value.absent(),
@@ -2189,6 +2243,7 @@ class MaintenanceSchedulesCompanion
     this.activo = const Value.absent(),
     this.silenciado = const Value.absent(),
     this.orden = const Value.absent(),
+    this.fuenteIntervalo = const Value.absent(),
   });
   MaintenanceSchedulesCompanion.insert({
     this.id = const Value.absent(),
@@ -2202,6 +2257,7 @@ class MaintenanceSchedulesCompanion
     this.activo = const Value.absent(),
     this.silenciado = const Value.absent(),
     this.orden = const Value.absent(),
+    this.fuenteIntervalo = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        nombre = Value(nombre),
        categoria = Value(categoria);
@@ -2217,6 +2273,7 @@ class MaintenanceSchedulesCompanion
     Expression<bool>? activo,
     Expression<bool>? silenciado,
     Expression<int>? orden,
+    Expression<String>? fuenteIntervalo,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2230,6 +2287,7 @@ class MaintenanceSchedulesCompanion
       if (activo != null) 'activo': activo,
       if (silenciado != null) 'silenciado': silenciado,
       if (orden != null) 'orden': orden,
+      if (fuenteIntervalo != null) 'fuente_intervalo': fuenteIntervalo,
     });
   }
 
@@ -2245,6 +2303,7 @@ class MaintenanceSchedulesCompanion
     Value<bool>? activo,
     Value<bool>? silenciado,
     Value<int>? orden,
+    Value<FuenteIntervalo>? fuenteIntervalo,
   }) {
     return MaintenanceSchedulesCompanion(
       id: id ?? this.id,
@@ -2258,6 +2317,7 @@ class MaintenanceSchedulesCompanion
       activo: activo ?? this.activo,
       silenciado: silenciado ?? this.silenciado,
       orden: orden ?? this.orden,
+      fuenteIntervalo: fuenteIntervalo ?? this.fuenteIntervalo,
     );
   }
 
@@ -2299,6 +2359,13 @@ class MaintenanceSchedulesCompanion
     if (orden.present) {
       map['orden'] = Variable<int>(orden.value);
     }
+    if (fuenteIntervalo.present) {
+      map['fuente_intervalo'] = Variable<String>(
+        $MaintenanceSchedulesTable.$converterfuenteIntervalo.toSql(
+          fuenteIntervalo.value,
+        ),
+      );
+    }
     return map;
   }
 
@@ -2315,7 +2382,8 @@ class MaintenanceSchedulesCompanion
           ..write('avisoDias: $avisoDias, ')
           ..write('activo: $activo, ')
           ..write('silenciado: $silenciado, ')
-          ..write('orden: $orden')
+          ..write('orden: $orden, ')
+          ..write('fuenteIntervalo: $fuenteIntervalo')
           ..write(')'))
         .toString();
   }
@@ -4983,6 +5051,7 @@ typedef $$MaintenanceSchedulesTableCreateCompanionBuilder =
       Value<bool> activo,
       Value<bool> silenciado,
       Value<int> orden,
+      Value<FuenteIntervalo> fuenteIntervalo,
     });
 typedef $$MaintenanceSchedulesTableUpdateCompanionBuilder =
     MaintenanceSchedulesCompanion Function({
@@ -4997,6 +5066,7 @@ typedef $$MaintenanceSchedulesTableUpdateCompanionBuilder =
       Value<bool> activo,
       Value<bool> silenciado,
       Value<int> orden,
+      Value<FuenteIntervalo> fuenteIntervalo,
     });
 
 final class $$MaintenanceSchedulesTableReferences
@@ -5116,6 +5186,12 @@ class $$MaintenanceSchedulesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnWithTypeConverterFilters<FuenteIntervalo, FuenteIntervalo, String>
+  get fuenteIntervalo => $composableBuilder(
+    column: $table.fuenteIntervalo,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
   $$VehiclesTableFilterComposer get vehicleId {
     final $$VehiclesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -5224,6 +5300,11 @@ class $$MaintenanceSchedulesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get fuenteIntervalo => $composableBuilder(
+    column: $table.fuenteIntervalo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$VehiclesTableOrderingComposer get vehicleId {
     final $$VehiclesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5292,6 +5373,12 @@ class $$MaintenanceSchedulesTableAnnotationComposer
 
   GeneratedColumn<int> get orden =>
       $composableBuilder(column: $table.orden, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<FuenteIntervalo, String>
+  get fuenteIntervalo => $composableBuilder(
+    column: $table.fuenteIntervalo,
+    builder: (column) => column,
+  );
 
   $$VehiclesTableAnnotationComposer get vehicleId {
     final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
@@ -5390,6 +5477,7 @@ class $$MaintenanceSchedulesTableTableManager
                 Value<bool> activo = const Value.absent(),
                 Value<bool> silenciado = const Value.absent(),
                 Value<int> orden = const Value.absent(),
+                Value<FuenteIntervalo> fuenteIntervalo = const Value.absent(),
               }) => MaintenanceSchedulesCompanion(
                 id: id,
                 vehicleId: vehicleId,
@@ -5402,6 +5490,7 @@ class $$MaintenanceSchedulesTableTableManager
                 activo: activo,
                 silenciado: silenciado,
                 orden: orden,
+                fuenteIntervalo: fuenteIntervalo,
               ),
           createCompanionCallback:
               ({
@@ -5416,6 +5505,7 @@ class $$MaintenanceSchedulesTableTableManager
                 Value<bool> activo = const Value.absent(),
                 Value<bool> silenciado = const Value.absent(),
                 Value<int> orden = const Value.absent(),
+                Value<FuenteIntervalo> fuenteIntervalo = const Value.absent(),
               }) => MaintenanceSchedulesCompanion.insert(
                 id: id,
                 vehicleId: vehicleId,
@@ -5428,6 +5518,7 @@ class $$MaintenanceSchedulesTableTableManager
                 activo: activo,
                 silenciado: silenciado,
                 orden: orden,
+                fuenteIntervalo: fuenteIntervalo,
               ),
           withReferenceMapper: (p0) => p0
               .map(

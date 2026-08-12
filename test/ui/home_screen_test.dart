@@ -102,6 +102,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const item = MantenimientoConVencimiento(
         schedule: schedule,
@@ -151,6 +152,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const itemAtencion = MantenimientoConVencimiento(
         schedule: scheduleFrenos,
@@ -172,6 +174,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const itemVencido = MantenimientoConVencimiento(
         schedule: scheduleAceite,
@@ -246,6 +249,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const item = MantenimientoConVencimiento(
         schedule: schedule,
@@ -310,6 +314,7 @@ void main() {
               activo: true,
               silenciado: false,
               orden: id,
+              fuenteIntervalo: FuenteIntervalo.orientativo,
             ),
             ultimoRegistro: null,
             // Estado "ok": no son pendientes, así que no aparecen en el
@@ -372,6 +377,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: id,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       ),
       ultimoRegistro: null,
       vencimiento: Vencimiento(
