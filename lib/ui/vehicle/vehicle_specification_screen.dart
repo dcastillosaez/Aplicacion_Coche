@@ -127,6 +127,14 @@ class _VehicleSpecificationScreenState
     Navigator.of(context).pop();
   }
 
+  /// Vacío es válido (el campo es opcional); si hay texto, tiene que ser un
+  /// número, o quien lo escriba nunca sabría que se guardó como si no
+  /// hubiera puesto nada.
+  String? _validarNumeroOpcional(String? valor) {
+    if (valor == null || valor.trim().isEmpty) return null;
+    return int.tryParse(valor.trim()) == null ? 'Tiene que ser un número' : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final especificacion =
@@ -182,6 +190,7 @@ class _VehicleSpecificationScreenState
             controller: _cilindradaCc,
             decoration: const InputDecoration(labelText: 'Cilindrada (cc)'),
             keyboardType: TextInputType.number,
+            validator: _validarNumeroOpcional,
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -191,6 +200,7 @@ class _VehicleSpecificationScreenState
               helperText: kw == null ? null : '≈ ${kwACv(kw)} CV',
             ),
             keyboardType: TextInputType.number,
+            validator: _validarNumeroOpcional,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
@@ -216,6 +226,7 @@ class _VehicleSpecificationScreenState
             controller: _numeroMarchas,
             decoration: const InputDecoration(labelText: 'Número de marchas'),
             keyboardType: TextInputType.number,
+            validator: _validarNumeroOpcional,
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<Traccion?>(
