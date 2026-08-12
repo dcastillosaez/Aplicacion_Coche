@@ -7,8 +7,10 @@ import '../../data/database.dart';
 import '../../data/photo_storage.dart';
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
+import '../../domain/origen_mantenimiento.dart';
 import '../common/estado_chip.dart';
 import '../common/formatters.dart';
+import '../common/origen_chip.dart';
 import '../common/vencimiento_texto.dart';
 import '../maintenance/maintenance_form_screen.dart';
 import '../maintenance/register_maintenance_sheet.dart';
@@ -321,6 +323,10 @@ class _TarjetaDestacada extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 EstadoChip(estado: v.estado),
+                const SizedBox(width: 8),
+                OrigenChip(
+                  origen: calcularOrigen(item.ultimoRegistro?.esSembrado),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -389,6 +395,10 @@ class _FilaMantenimiento extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               EstadoChip(estado: v.estado),
+              const SizedBox(width: 8),
+              OrigenChip(
+                origen: calcularOrigen(item.ultimoRegistro?.esSembrado),
+              ),
               IconButton(
                 icon: const Icon(Icons.fact_check_outlined),
                 tooltip: 'Registrar realizado',
