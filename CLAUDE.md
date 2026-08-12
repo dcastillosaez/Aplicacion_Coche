@@ -92,3 +92,11 @@ Criterios ya asentados en el código, que cualquier pantalla nueva debe seguir (
 - Commits en español, sin coautoría ni menciones a herramientas (nunca `Co-Authored-By`).
 - Sin dependencias nuevas salvo necesidad real y justificada.
 - Migraciones de esquema: cada cambio sube `schemaVersion` y se prueba con datos reales pre-existentes, no solo con estructura vacía (patrón en `test/data/database_migration_test.dart`).
+
+## Trampa conocida: `m.createTable()` usa siempre la definición actual de la tabla
+
+Descubierto en la revisión final de la fase 3, sin fix aplicado porque no hay ninguna columna futura contra la que probarlo todavía — es una advertencia para cuando llegue el momento, no un bug de hoy.
+
+`m.createTable(vehicleSpecifications)` en un paso `if (from < N)` de `onUpgrade` no crea la tabla "tal como era en la versión N": la crea con la definición **actual** de la clase Dart, la que esté en el código en el momento de compilar. Si una fase futura añade una columna a `VehicleSpecifications` (o a cualquier tabla) y sube `schemaVersion`, y el nuevo paso hace `m.addColumn(vehicleSpecifications, vehicleSpecifications.columnaNueva)`, un usuario que actualice desde antes de que existiera la tabla ejecutará primero el `createTable` (que ya trae la columna nueva, porque lee la clase Dart vigente) y después el `addColumn` sobre esa misma columna: `duplicate column name`, migración abortada.
+
+No hay `drift_schemas/` ni esquemas versionados en este proyecto, así que no hay red de seguridad automática. Antes de añadir una columna a `VehicleSpecifications` (o a cualquier tabla creada en un paso `createTable` de una migración anterior), comprobarlo con un test de migración que encadene ambos pasos con datos reales, exactamente como ya se hace para las demás — es donde este problema se vería antes de llegar al móvil del usuario.
