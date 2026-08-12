@@ -14,6 +14,7 @@ import '../maintenance/maintenance_form_screen.dart';
 import '../maintenance/register_maintenance_sheet.dart';
 import '../theme/app_theme.dart';
 import 'vehicle_form_screen.dart';
+import 'vehicle_specification_screen.dart';
 
 /// Ficha del vehículo: de un vistazo, su estado general, lo que toca antes
 /// de nada, y el detalle de cada mantenimiento configurado. Punto de
@@ -32,6 +33,16 @@ class VehicleDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('${vehiculo.marca} ${vehiculo.modelo}'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.build_outlined),
+            tooltip: 'Identidad técnica',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    VehicleSpecificationScreen(vehicleId: vehiculo.id),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Editar vehículo',
