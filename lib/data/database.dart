@@ -12,6 +12,7 @@ import 'tables/maintenance_records.dart';
 import 'tables/maintenance_schedules.dart';
 import 'tables/mileage_readings.dart';
 import 'tables/settings.dart';
+import 'tables/vehicle_specifications.dart';
 import 'tables/vehicles.dart';
 
 part 'database.g.dart';
@@ -23,6 +24,7 @@ part 'database.g.dart';
     Settings,
     MaintenanceSchedules,
     MaintenanceRecords,
+    VehicleSpecifications,
   ],
   daos: [VehicleDao, MileageDao, MaintenanceDao],
 )
@@ -32,7 +34,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +50,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 3) {
             await m.createTable(maintenanceSchedules);
             await m.createTable(maintenanceRecords);
+          }
+          // v3 -> v4: se añade la ficha técnica del vehículo.
+          if (from < 4) {
+            await m.createTable(vehicleSpecifications);
           }
         },
         beforeOpen: (details) async {

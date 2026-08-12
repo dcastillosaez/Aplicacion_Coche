@@ -94,9 +94,9 @@ void main() {
           .getSingle();
       // AppDatabase migra siempre hasta su schemaVersion actual en una sola
       // pasada: al abrir una base de datos en v1 ejecuta todos los pasos de
-      // onUpgrade pendientes (incluido el de v2 a v3), así que el resultado
-      // es la versión vigente del esquema, no la 2.
-      expect(version.data['user_version'], 3);
+      // onUpgrade pendientes (incluidos los de v2 a v3 y v3 a v4), así que
+      // el resultado es la versión vigente del esquema, no la 2.
+      expect(version.data['user_version'], 4);
 
       final vehiculos = await db.select(db.vehicles).get();
       expect(vehiculos, hasLength(1));
@@ -187,7 +187,10 @@ void main() {
 
       final version =
           await db.customSelect('PRAGMA user_version').getSingle();
-      expect(version.data['user_version'], 3);
+      // Igual que en el test de v1 a v2: la migración llega de un salto
+      // hasta la versión vigente del esquema (incluido el paso de v3 a v4),
+      // no se queda en la 3.
+      expect(version.data['user_version'], 4);
 
       // Lo que ya había sigue ahí.
       final vehiculos = await db.select(db.vehicles).get();
@@ -218,6 +221,129 @@ void main() {
       expect(guardado.nombre, 'Aceite y filtro');
       expect(guardado.intervalKm, 15000);
       expect(guardado.activo, isTrue);
+
+      await db.close();
+    },
+  );
+
+  test(
+    'migrar de v3 a v4 conserva los vehículos y crea la ficha técnica',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('car_care_migracion');
+      final fichero = File(p.join(dir.path, 'v3.sqlite'));
+      addTearDown(() => dir.delete(recursive: true));
+
+      // Esquema de la versión 3: como el de la 2, más las tablas de
+      // mantenimientos, y todavía sin ficha técnica.
+      final crudo = sqlite3.sqlite3.open(fichero.path);
+      crudo.execute('''
+        CREATE TABLE vehicles (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          marca TEXT NOT NULL,
+          modelo TEXT NOT NULL,
+          version TEXT NULL,
+          anio INTEGER NULL,
+          matricula TEXT NULL,
+          combustible TEXT NOT NULL,
+          fecha_matriculacion INTEGER NULL,
+          color TEXT NULL,
+          color_valor INTEGER NULL,
+          foto_path TEXT NULL,
+          vin TEXT NULL,
+          notas TEXT NULL,
+          creado_en INTEGER NOT NULL,
+          archivado INTEGER NOT NULL DEFAULT 0
+        );
+      ''');
+      crudo.execute('''
+        CREATE TABLE mileage_readings (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+          fecha INTEGER NOT NULL,
+          km INTEGER NOT NULL,
+          origen TEXT NOT NULL,
+          UNIQUE(vehicle_id, fecha)
+        );
+      ''');
+      crudo.execute('''
+        CREATE TABLE settings (
+          id INTEGER NOT NULL DEFAULT 1,
+          aviso_km_por_defecto INTEGER NOT NULL DEFAULT 1000,
+          aviso_dias_por_defecto INTEGER NOT NULL DEFAULT 30,
+          dias_recordatorio_lectura INTEGER NOT NULL DEFAULT 15,
+          tema TEXT NOT NULL DEFAULT 'automatico',
+          fecha_ultima_copia INTEGER NULL,
+          PRIMARY KEY (id)
+        );
+      ''');
+      crudo.execute('''
+        CREATE TABLE maintenance_schedules (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+          nombre TEXT NOT NULL,
+          categoria TEXT NOT NULL,
+          interval_km INTEGER NULL,
+          interval_meses INTEGER NULL,
+          aviso_km INTEGER NULL,
+          aviso_dias INTEGER NULL,
+          activo INTEGER NOT NULL DEFAULT 1,
+          silenciado INTEGER NOT NULL DEFAULT 0,
+          orden INTEGER NOT NULL DEFAULT 0
+        );
+      ''');
+      crudo.execute('''
+        CREATE TABLE maintenance_records (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+          schedule_id INTEGER NULL REFERENCES maintenance_schedules(id) ON DELETE SET NULL,
+          fecha INTEGER NOT NULL,
+          km INTEGER NOT NULL,
+          coste REAL NULL,
+          taller TEXT NULL,
+          notas TEXT NULL,
+          es_sembrado INTEGER NOT NULL DEFAULT 0
+        );
+      ''');
+
+      final ahora = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      crudo.execute(
+        '''
+        INSERT INTO vehicles
+          (marca, modelo, combustible, creado_en, archivado)
+        VALUES (?, ?, ?, ?, 0);
+        ''',
+        ['BMW', 'Serie 3', 'diesel', ahora],
+      );
+      crudo.execute('INSERT INTO settings DEFAULT VALUES;');
+      crudo.execute('PRAGMA user_version = 3;');
+      crudo.close();
+
+      final db = AppDatabase.forTesting(NativeDatabase(fichero));
+
+      final version =
+          await db.customSelect('PRAGMA user_version').getSingle();
+      expect(version.data['user_version'], 4);
+
+      // Lo que ya había sigue ahí.
+      final vehiculos = await db.select(db.vehicles).get();
+      expect(vehiculos, hasLength(1));
+      expect(vehiculos.single.marca, 'BMW');
+      expect(vehiculos.single.modelo, 'Serie 3');
+
+      // La tabla nueva existe, está vacía y se puede usar.
+      expect(await db.select(db.vehicleSpecifications).get(), isEmpty);
+
+      final vehicleId = vehiculos.single.id;
+      await db.into(db.vehicleSpecifications).insert(
+            VehicleSpecificationsCompanion.insert(
+              vehicleId: Value(vehicleId),
+              motorCodigo: const Value('B47'),
+            ),
+          );
+      final guardada = await (db.select(db.vehicleSpecifications)
+            ..where((s) => s.vehicleId.equals(vehicleId)))
+          .getSingle();
+      expect(guardada.motorCodigo, 'B47');
 
       await db.close();
     },

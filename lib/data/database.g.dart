@@ -2881,6 +2881,680 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
   }
 }
 
+class $VehicleSpecificationsTable extends VehicleSpecifications
+    with TableInfo<$VehicleSpecificationsTable, VehicleSpecification> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VehicleSpecificationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _vehicleIdMeta = const VerificationMeta(
+    'vehicleId',
+  );
+  @override
+  late final GeneratedColumn<int> vehicleId = GeneratedColumn<int>(
+    'vehicle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES vehicles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _generacionMeta = const VerificationMeta(
+    'generacion',
+  );
+  @override
+  late final GeneratedColumn<String> generacion = GeneratedColumn<String>(
+    'generacion',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _motorCodigoMeta = const VerificationMeta(
+    'motorCodigo',
+  );
+  @override
+  late final GeneratedColumn<String> motorCodigo = GeneratedColumn<String>(
+    'motor_codigo',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cilindradaCcMeta = const VerificationMeta(
+    'cilindradaCc',
+  );
+  @override
+  late final GeneratedColumn<int> cilindradaCc = GeneratedColumn<int>(
+    'cilindrada_cc',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _potenciaKwMeta = const VerificationMeta(
+    'potenciaKw',
+  );
+  @override
+  late final GeneratedColumn<int> potenciaKw = GeneratedColumn<int>(
+    'potencia_kw',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<TipoCaja?, String> tipoCaja =
+      GeneratedColumn<String>(
+        'tipo_caja',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<TipoCaja?>(
+        $VehicleSpecificationsTable.$convertertipoCajan,
+      );
+  static const VerificationMeta _numeroMarchasMeta = const VerificationMeta(
+    'numeroMarchas',
+  );
+  @override
+  late final GeneratedColumn<int> numeroMarchas = GeneratedColumn<int>(
+    'numero_marchas',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<Traccion?, String> traccion =
+      GeneratedColumn<String>(
+        'traccion',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<Traccion?>(
+        $VehicleSpecificationsTable.$convertertraccionn,
+      );
+  static const VerificationMeta _codigoTecnicoMeta = const VerificationMeta(
+    'codigoTecnico',
+  );
+  @override
+  late final GeneratedColumn<String> codigoTecnico = GeneratedColumn<String>(
+    'codigo_tecnico',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notasTecnicasMeta = const VerificationMeta(
+    'notasTecnicas',
+  );
+  @override
+  late final GeneratedColumn<String> notasTecnicas = GeneratedColumn<String>(
+    'notas_tecnicas',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    vehicleId,
+    generacion,
+    motorCodigo,
+    cilindradaCc,
+    potenciaKw,
+    tipoCaja,
+    numeroMarchas,
+    traccion,
+    codigoTecnico,
+    notasTecnicas,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'vehicle_specifications';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VehicleSpecification> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('vehicle_id')) {
+      context.handle(
+        _vehicleIdMeta,
+        vehicleId.isAcceptableOrUnknown(data['vehicle_id']!, _vehicleIdMeta),
+      );
+    }
+    if (data.containsKey('generacion')) {
+      context.handle(
+        _generacionMeta,
+        generacion.isAcceptableOrUnknown(data['generacion']!, _generacionMeta),
+      );
+    }
+    if (data.containsKey('motor_codigo')) {
+      context.handle(
+        _motorCodigoMeta,
+        motorCodigo.isAcceptableOrUnknown(
+          data['motor_codigo']!,
+          _motorCodigoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cilindrada_cc')) {
+      context.handle(
+        _cilindradaCcMeta,
+        cilindradaCc.isAcceptableOrUnknown(
+          data['cilindrada_cc']!,
+          _cilindradaCcMeta,
+        ),
+      );
+    }
+    if (data.containsKey('potencia_kw')) {
+      context.handle(
+        _potenciaKwMeta,
+        potenciaKw.isAcceptableOrUnknown(data['potencia_kw']!, _potenciaKwMeta),
+      );
+    }
+    if (data.containsKey('numero_marchas')) {
+      context.handle(
+        _numeroMarchasMeta,
+        numeroMarchas.isAcceptableOrUnknown(
+          data['numero_marchas']!,
+          _numeroMarchasMeta,
+        ),
+      );
+    }
+    if (data.containsKey('codigo_tecnico')) {
+      context.handle(
+        _codigoTecnicoMeta,
+        codigoTecnico.isAcceptableOrUnknown(
+          data['codigo_tecnico']!,
+          _codigoTecnicoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notas_tecnicas')) {
+      context.handle(
+        _notasTecnicasMeta,
+        notasTecnicas.isAcceptableOrUnknown(
+          data['notas_tecnicas']!,
+          _notasTecnicasMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {vehicleId};
+  @override
+  VehicleSpecification map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VehicleSpecification(
+      vehicleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}vehicle_id'],
+      )!,
+      generacion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}generacion'],
+      ),
+      motorCodigo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}motor_codigo'],
+      ),
+      cilindradaCc: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cilindrada_cc'],
+      ),
+      potenciaKw: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}potencia_kw'],
+      ),
+      tipoCaja: $VehicleSpecificationsTable.$convertertipoCajan.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}tipo_caja'],
+        ),
+      ),
+      numeroMarchas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}numero_marchas'],
+      ),
+      traccion: $VehicleSpecificationsTable.$convertertraccionn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}traccion'],
+        ),
+      ),
+      codigoTecnico: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}codigo_tecnico'],
+      ),
+      notasTecnicas: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notas_tecnicas'],
+      ),
+    );
+  }
+
+  @override
+  $VehicleSpecificationsTable createAlias(String alias) {
+    return $VehicleSpecificationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<TipoCaja, String, String> $convertertipoCaja =
+      const EnumNameConverter<TipoCaja>(TipoCaja.values);
+  static JsonTypeConverter2<TipoCaja?, String?, String?> $convertertipoCajan =
+      JsonTypeConverter2.asNullable($convertertipoCaja);
+  static JsonTypeConverter2<Traccion, String, String> $convertertraccion =
+      const EnumNameConverter<Traccion>(Traccion.values);
+  static JsonTypeConverter2<Traccion?, String?, String?> $convertertraccionn =
+      JsonTypeConverter2.asNullable($convertertraccion);
+}
+
+class VehicleSpecification extends DataClass
+    implements Insertable<VehicleSpecification> {
+  final int vehicleId;
+  final String? generacion;
+  final String? motorCodigo;
+  final int? cilindradaCc;
+
+  /// Siempre en kilovatios, como en la ficha técnica oficial. El CV se
+  /// calcula al mostrarlo (ver `lib/domain/potencia.dart`) y nunca se
+  /// guarda aquí.
+  final int? potenciaKw;
+  final TipoCaja? tipoCaja;
+  final int? numeroMarchas;
+  final Traccion? traccion;
+
+  /// Identificador de variante de un catálogo externo (p. ej. el KType de
+  /// TecDoc). Nunca se rellena a mano: solo lo resolverá un catálogo, si
+  /// alguna vez existe. Sin UI en esta fase.
+  final String? codigoTecnico;
+  final String? notasTecnicas;
+  const VehicleSpecification({
+    required this.vehicleId,
+    this.generacion,
+    this.motorCodigo,
+    this.cilindradaCc,
+    this.potenciaKw,
+    this.tipoCaja,
+    this.numeroMarchas,
+    this.traccion,
+    this.codigoTecnico,
+    this.notasTecnicas,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['vehicle_id'] = Variable<int>(vehicleId);
+    if (!nullToAbsent || generacion != null) {
+      map['generacion'] = Variable<String>(generacion);
+    }
+    if (!nullToAbsent || motorCodigo != null) {
+      map['motor_codigo'] = Variable<String>(motorCodigo);
+    }
+    if (!nullToAbsent || cilindradaCc != null) {
+      map['cilindrada_cc'] = Variable<int>(cilindradaCc);
+    }
+    if (!nullToAbsent || potenciaKw != null) {
+      map['potencia_kw'] = Variable<int>(potenciaKw);
+    }
+    if (!nullToAbsent || tipoCaja != null) {
+      map['tipo_caja'] = Variable<String>(
+        $VehicleSpecificationsTable.$convertertipoCajan.toSql(tipoCaja),
+      );
+    }
+    if (!nullToAbsent || numeroMarchas != null) {
+      map['numero_marchas'] = Variable<int>(numeroMarchas);
+    }
+    if (!nullToAbsent || traccion != null) {
+      map['traccion'] = Variable<String>(
+        $VehicleSpecificationsTable.$convertertraccionn.toSql(traccion),
+      );
+    }
+    if (!nullToAbsent || codigoTecnico != null) {
+      map['codigo_tecnico'] = Variable<String>(codigoTecnico);
+    }
+    if (!nullToAbsent || notasTecnicas != null) {
+      map['notas_tecnicas'] = Variable<String>(notasTecnicas);
+    }
+    return map;
+  }
+
+  VehicleSpecificationsCompanion toCompanion(bool nullToAbsent) {
+    return VehicleSpecificationsCompanion(
+      vehicleId: Value(vehicleId),
+      generacion: generacion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(generacion),
+      motorCodigo: motorCodigo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(motorCodigo),
+      cilindradaCc: cilindradaCc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cilindradaCc),
+      potenciaKw: potenciaKw == null && nullToAbsent
+          ? const Value.absent()
+          : Value(potenciaKw),
+      tipoCaja: tipoCaja == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tipoCaja),
+      numeroMarchas: numeroMarchas == null && nullToAbsent
+          ? const Value.absent()
+          : Value(numeroMarchas),
+      traccion: traccion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(traccion),
+      codigoTecnico: codigoTecnico == null && nullToAbsent
+          ? const Value.absent()
+          : Value(codigoTecnico),
+      notasTecnicas: notasTecnicas == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notasTecnicas),
+    );
+  }
+
+  factory VehicleSpecification.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VehicleSpecification(
+      vehicleId: serializer.fromJson<int>(json['vehicleId']),
+      generacion: serializer.fromJson<String?>(json['generacion']),
+      motorCodigo: serializer.fromJson<String?>(json['motorCodigo']),
+      cilindradaCc: serializer.fromJson<int?>(json['cilindradaCc']),
+      potenciaKw: serializer.fromJson<int?>(json['potenciaKw']),
+      tipoCaja: $VehicleSpecificationsTable.$convertertipoCajan.fromJson(
+        serializer.fromJson<String?>(json['tipoCaja']),
+      ),
+      numeroMarchas: serializer.fromJson<int?>(json['numeroMarchas']),
+      traccion: $VehicleSpecificationsTable.$convertertraccionn.fromJson(
+        serializer.fromJson<String?>(json['traccion']),
+      ),
+      codigoTecnico: serializer.fromJson<String?>(json['codigoTecnico']),
+      notasTecnicas: serializer.fromJson<String?>(json['notasTecnicas']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'vehicleId': serializer.toJson<int>(vehicleId),
+      'generacion': serializer.toJson<String?>(generacion),
+      'motorCodigo': serializer.toJson<String?>(motorCodigo),
+      'cilindradaCc': serializer.toJson<int?>(cilindradaCc),
+      'potenciaKw': serializer.toJson<int?>(potenciaKw),
+      'tipoCaja': serializer.toJson<String?>(
+        $VehicleSpecificationsTable.$convertertipoCajan.toJson(tipoCaja),
+      ),
+      'numeroMarchas': serializer.toJson<int?>(numeroMarchas),
+      'traccion': serializer.toJson<String?>(
+        $VehicleSpecificationsTable.$convertertraccionn.toJson(traccion),
+      ),
+      'codigoTecnico': serializer.toJson<String?>(codigoTecnico),
+      'notasTecnicas': serializer.toJson<String?>(notasTecnicas),
+    };
+  }
+
+  VehicleSpecification copyWith({
+    int? vehicleId,
+    Value<String?> generacion = const Value.absent(),
+    Value<String?> motorCodigo = const Value.absent(),
+    Value<int?> cilindradaCc = const Value.absent(),
+    Value<int?> potenciaKw = const Value.absent(),
+    Value<TipoCaja?> tipoCaja = const Value.absent(),
+    Value<int?> numeroMarchas = const Value.absent(),
+    Value<Traccion?> traccion = const Value.absent(),
+    Value<String?> codigoTecnico = const Value.absent(),
+    Value<String?> notasTecnicas = const Value.absent(),
+  }) => VehicleSpecification(
+    vehicleId: vehicleId ?? this.vehicleId,
+    generacion: generacion.present ? generacion.value : this.generacion,
+    motorCodigo: motorCodigo.present ? motorCodigo.value : this.motorCodigo,
+    cilindradaCc: cilindradaCc.present ? cilindradaCc.value : this.cilindradaCc,
+    potenciaKw: potenciaKw.present ? potenciaKw.value : this.potenciaKw,
+    tipoCaja: tipoCaja.present ? tipoCaja.value : this.tipoCaja,
+    numeroMarchas: numeroMarchas.present
+        ? numeroMarchas.value
+        : this.numeroMarchas,
+    traccion: traccion.present ? traccion.value : this.traccion,
+    codigoTecnico: codigoTecnico.present
+        ? codigoTecnico.value
+        : this.codigoTecnico,
+    notasTecnicas: notasTecnicas.present
+        ? notasTecnicas.value
+        : this.notasTecnicas,
+  );
+  VehicleSpecification copyWithCompanion(VehicleSpecificationsCompanion data) {
+    return VehicleSpecification(
+      vehicleId: data.vehicleId.present ? data.vehicleId.value : this.vehicleId,
+      generacion: data.generacion.present
+          ? data.generacion.value
+          : this.generacion,
+      motorCodigo: data.motorCodigo.present
+          ? data.motorCodigo.value
+          : this.motorCodigo,
+      cilindradaCc: data.cilindradaCc.present
+          ? data.cilindradaCc.value
+          : this.cilindradaCc,
+      potenciaKw: data.potenciaKw.present
+          ? data.potenciaKw.value
+          : this.potenciaKw,
+      tipoCaja: data.tipoCaja.present ? data.tipoCaja.value : this.tipoCaja,
+      numeroMarchas: data.numeroMarchas.present
+          ? data.numeroMarchas.value
+          : this.numeroMarchas,
+      traccion: data.traccion.present ? data.traccion.value : this.traccion,
+      codigoTecnico: data.codigoTecnico.present
+          ? data.codigoTecnico.value
+          : this.codigoTecnico,
+      notasTecnicas: data.notasTecnicas.present
+          ? data.notasTecnicas.value
+          : this.notasTecnicas,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VehicleSpecification(')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('generacion: $generacion, ')
+          ..write('motorCodigo: $motorCodigo, ')
+          ..write('cilindradaCc: $cilindradaCc, ')
+          ..write('potenciaKw: $potenciaKw, ')
+          ..write('tipoCaja: $tipoCaja, ')
+          ..write('numeroMarchas: $numeroMarchas, ')
+          ..write('traccion: $traccion, ')
+          ..write('codigoTecnico: $codigoTecnico, ')
+          ..write('notasTecnicas: $notasTecnicas')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    vehicleId,
+    generacion,
+    motorCodigo,
+    cilindradaCc,
+    potenciaKw,
+    tipoCaja,
+    numeroMarchas,
+    traccion,
+    codigoTecnico,
+    notasTecnicas,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VehicleSpecification &&
+          other.vehicleId == this.vehicleId &&
+          other.generacion == this.generacion &&
+          other.motorCodigo == this.motorCodigo &&
+          other.cilindradaCc == this.cilindradaCc &&
+          other.potenciaKw == this.potenciaKw &&
+          other.tipoCaja == this.tipoCaja &&
+          other.numeroMarchas == this.numeroMarchas &&
+          other.traccion == this.traccion &&
+          other.codigoTecnico == this.codigoTecnico &&
+          other.notasTecnicas == this.notasTecnicas);
+}
+
+class VehicleSpecificationsCompanion
+    extends UpdateCompanion<VehicleSpecification> {
+  final Value<int> vehicleId;
+  final Value<String?> generacion;
+  final Value<String?> motorCodigo;
+  final Value<int?> cilindradaCc;
+  final Value<int?> potenciaKw;
+  final Value<TipoCaja?> tipoCaja;
+  final Value<int?> numeroMarchas;
+  final Value<Traccion?> traccion;
+  final Value<String?> codigoTecnico;
+  final Value<String?> notasTecnicas;
+  const VehicleSpecificationsCompanion({
+    this.vehicleId = const Value.absent(),
+    this.generacion = const Value.absent(),
+    this.motorCodigo = const Value.absent(),
+    this.cilindradaCc = const Value.absent(),
+    this.potenciaKw = const Value.absent(),
+    this.tipoCaja = const Value.absent(),
+    this.numeroMarchas = const Value.absent(),
+    this.traccion = const Value.absent(),
+    this.codigoTecnico = const Value.absent(),
+    this.notasTecnicas = const Value.absent(),
+  });
+  VehicleSpecificationsCompanion.insert({
+    this.vehicleId = const Value.absent(),
+    this.generacion = const Value.absent(),
+    this.motorCodigo = const Value.absent(),
+    this.cilindradaCc = const Value.absent(),
+    this.potenciaKw = const Value.absent(),
+    this.tipoCaja = const Value.absent(),
+    this.numeroMarchas = const Value.absent(),
+    this.traccion = const Value.absent(),
+    this.codigoTecnico = const Value.absent(),
+    this.notasTecnicas = const Value.absent(),
+  });
+  static Insertable<VehicleSpecification> custom({
+    Expression<int>? vehicleId,
+    Expression<String>? generacion,
+    Expression<String>? motorCodigo,
+    Expression<int>? cilindradaCc,
+    Expression<int>? potenciaKw,
+    Expression<String>? tipoCaja,
+    Expression<int>? numeroMarchas,
+    Expression<String>? traccion,
+    Expression<String>? codigoTecnico,
+    Expression<String>? notasTecnicas,
+  }) {
+    return RawValuesInsertable({
+      if (vehicleId != null) 'vehicle_id': vehicleId,
+      if (generacion != null) 'generacion': generacion,
+      if (motorCodigo != null) 'motor_codigo': motorCodigo,
+      if (cilindradaCc != null) 'cilindrada_cc': cilindradaCc,
+      if (potenciaKw != null) 'potencia_kw': potenciaKw,
+      if (tipoCaja != null) 'tipo_caja': tipoCaja,
+      if (numeroMarchas != null) 'numero_marchas': numeroMarchas,
+      if (traccion != null) 'traccion': traccion,
+      if (codigoTecnico != null) 'codigo_tecnico': codigoTecnico,
+      if (notasTecnicas != null) 'notas_tecnicas': notasTecnicas,
+    });
+  }
+
+  VehicleSpecificationsCompanion copyWith({
+    Value<int>? vehicleId,
+    Value<String?>? generacion,
+    Value<String?>? motorCodigo,
+    Value<int?>? cilindradaCc,
+    Value<int?>? potenciaKw,
+    Value<TipoCaja?>? tipoCaja,
+    Value<int?>? numeroMarchas,
+    Value<Traccion?>? traccion,
+    Value<String?>? codigoTecnico,
+    Value<String?>? notasTecnicas,
+  }) {
+    return VehicleSpecificationsCompanion(
+      vehicleId: vehicleId ?? this.vehicleId,
+      generacion: generacion ?? this.generacion,
+      motorCodigo: motorCodigo ?? this.motorCodigo,
+      cilindradaCc: cilindradaCc ?? this.cilindradaCc,
+      potenciaKw: potenciaKw ?? this.potenciaKw,
+      tipoCaja: tipoCaja ?? this.tipoCaja,
+      numeroMarchas: numeroMarchas ?? this.numeroMarchas,
+      traccion: traccion ?? this.traccion,
+      codigoTecnico: codigoTecnico ?? this.codigoTecnico,
+      notasTecnicas: notasTecnicas ?? this.notasTecnicas,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (vehicleId.present) {
+      map['vehicle_id'] = Variable<int>(vehicleId.value);
+    }
+    if (generacion.present) {
+      map['generacion'] = Variable<String>(generacion.value);
+    }
+    if (motorCodigo.present) {
+      map['motor_codigo'] = Variable<String>(motorCodigo.value);
+    }
+    if (cilindradaCc.present) {
+      map['cilindrada_cc'] = Variable<int>(cilindradaCc.value);
+    }
+    if (potenciaKw.present) {
+      map['potencia_kw'] = Variable<int>(potenciaKw.value);
+    }
+    if (tipoCaja.present) {
+      map['tipo_caja'] = Variable<String>(
+        $VehicleSpecificationsTable.$convertertipoCajan.toSql(tipoCaja.value),
+      );
+    }
+    if (numeroMarchas.present) {
+      map['numero_marchas'] = Variable<int>(numeroMarchas.value);
+    }
+    if (traccion.present) {
+      map['traccion'] = Variable<String>(
+        $VehicleSpecificationsTable.$convertertraccionn.toSql(traccion.value),
+      );
+    }
+    if (codigoTecnico.present) {
+      map['codigo_tecnico'] = Variable<String>(codigoTecnico.value);
+    }
+    if (notasTecnicas.present) {
+      map['notas_tecnicas'] = Variable<String>(notasTecnicas.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VehicleSpecificationsCompanion(')
+          ..write('vehicleId: $vehicleId, ')
+          ..write('generacion: $generacion, ')
+          ..write('motorCodigo: $motorCodigo, ')
+          ..write('cilindradaCc: $cilindradaCc, ')
+          ..write('potenciaKw: $potenciaKw, ')
+          ..write('tipoCaja: $tipoCaja, ')
+          ..write('numeroMarchas: $numeroMarchas, ')
+          ..write('traccion: $traccion, ')
+          ..write('codigoTecnico: $codigoTecnico, ')
+          ..write('notasTecnicas: $notasTecnicas')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2893,6 +3567,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $MaintenanceSchedulesTable(this);
   late final $MaintenanceRecordsTable maintenanceRecords =
       $MaintenanceRecordsTable(this);
+  late final $VehicleSpecificationsTable vehicleSpecifications =
+      $VehicleSpecificationsTable(this);
   late final VehicleDao vehicleDao = VehicleDao(this as AppDatabase);
   late final MileageDao mileageDao = MileageDao(this as AppDatabase);
   late final MaintenanceDao maintenanceDao = MaintenanceDao(
@@ -2908,6 +3584,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     settings,
     maintenanceSchedules,
     maintenanceRecords,
+    vehicleSpecifications,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2938,6 +3615,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('maintenance_records', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vehicles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('vehicle_specifications', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3043,6 +3727,31 @@ final class $$VehiclesTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _maintenanceRecordsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $VehicleSpecificationsTable,
+    List<VehicleSpecification>
+  >
+  _vehicleSpecificationsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.vehicleSpecifications,
+        aliasName: 'vehicles__id__vehicle_specifications__vehicle_id',
+      );
+
+  $$VehicleSpecificationsTableProcessedTableManager
+  get vehicleSpecificationsRefs {
+    final manager = $$VehicleSpecificationsTableTableManager(
+      $_db,
+      $_db.vehicleSpecifications,
+    ).filter((f) => f.vehicleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _vehicleSpecificationsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3207,6 +3916,32 @@ class $$VehiclesTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> vehicleSpecificationsRefs(
+    Expression<bool> Function($$VehicleSpecificationsTableFilterComposer f) f,
+  ) {
+    final $$VehicleSpecificationsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.vehicleSpecifications,
+          getReferencedColumn: (t) => t.vehicleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$VehicleSpecificationsTableFilterComposer(
+                $db: $db,
+                $table: $db.vehicleSpecifications,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -3433,6 +4168,32 @@ class $$VehiclesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> vehicleSpecificationsRefs<T extends Object>(
+    Expression<T> Function($$VehicleSpecificationsTableAnnotationComposer a) f,
+  ) {
+    final $$VehicleSpecificationsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.vehicleSpecifications,
+          getReferencedColumn: (t) => t.vehicleId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$VehicleSpecificationsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.vehicleSpecifications,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$VehiclesTableTableManager
@@ -3452,6 +4213,7 @@ class $$VehiclesTableTableManager
             bool mileageReadingsRefs,
             bool maintenanceSchedulesRefs,
             bool maintenanceRecordsRefs,
+            bool vehicleSpecificationsRefs,
           })
         > {
   $$VehiclesTableTableManager(_$AppDatabase db, $VehiclesTable table)
@@ -3546,6 +4308,7 @@ class $$VehiclesTableTableManager
                 mileageReadingsRefs = false,
                 maintenanceSchedulesRefs = false,
                 maintenanceRecordsRefs = false,
+                vehicleSpecificationsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -3553,6 +4316,7 @@ class $$VehiclesTableTableManager
                     if (mileageReadingsRefs) db.mileageReadings,
                     if (maintenanceSchedulesRefs) db.maintenanceSchedules,
                     if (maintenanceRecordsRefs) db.maintenanceRecords,
+                    if (vehicleSpecificationsRefs) db.vehicleSpecifications,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -3620,6 +4384,27 @@ class $$VehiclesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (vehicleSpecificationsRefs)
+                        await $_getPrefetchedData<
+                          Vehicle,
+                          $VehiclesTable,
+                          VehicleSpecification
+                        >(
+                          currentTable: table,
+                          referencedTable: $$VehiclesTableReferences
+                              ._vehicleSpecificationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$VehiclesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).vehicleSpecificationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.vehicleId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3644,6 +4429,7 @@ typedef $$VehiclesTableProcessedTableManager =
         bool mileageReadingsRefs,
         bool maintenanceSchedulesRefs,
         bool maintenanceRecordsRefs,
+        bool vehicleSpecificationsRefs,
       })
     >;
 typedef $$MileageReadingsTableCreateCompanionBuilder =
@@ -5232,6 +6018,450 @@ typedef $$MaintenanceRecordsTableProcessedTableManager =
       MaintenanceRecord,
       PrefetchHooks Function({bool vehicleId, bool scheduleId})
     >;
+typedef $$VehicleSpecificationsTableCreateCompanionBuilder =
+    VehicleSpecificationsCompanion Function({
+      Value<int> vehicleId,
+      Value<String?> generacion,
+      Value<String?> motorCodigo,
+      Value<int?> cilindradaCc,
+      Value<int?> potenciaKw,
+      Value<TipoCaja?> tipoCaja,
+      Value<int?> numeroMarchas,
+      Value<Traccion?> traccion,
+      Value<String?> codigoTecnico,
+      Value<String?> notasTecnicas,
+    });
+typedef $$VehicleSpecificationsTableUpdateCompanionBuilder =
+    VehicleSpecificationsCompanion Function({
+      Value<int> vehicleId,
+      Value<String?> generacion,
+      Value<String?> motorCodigo,
+      Value<int?> cilindradaCc,
+      Value<int?> potenciaKw,
+      Value<TipoCaja?> tipoCaja,
+      Value<int?> numeroMarchas,
+      Value<Traccion?> traccion,
+      Value<String?> codigoTecnico,
+      Value<String?> notasTecnicas,
+    });
+
+final class $$VehicleSpecificationsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $VehicleSpecificationsTable,
+          VehicleSpecification
+        > {
+  $$VehicleSpecificationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $VehiclesTable _vehicleIdTable(_$AppDatabase db) => db.vehicles
+      .createAlias('vehicle_specifications__vehicle_id__vehicles__id');
+
+  $$VehiclesTableProcessedTableManager get vehicleId {
+    final $_column = $_itemColumn<int>('vehicle_id')!;
+
+    final manager = $$VehiclesTableTableManager(
+      $_db,
+      $_db.vehicles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vehicleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$VehicleSpecificationsTableFilterComposer
+    extends Composer<_$AppDatabase, $VehicleSpecificationsTable> {
+  $$VehicleSpecificationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get generacion => $composableBuilder(
+    column: $table.generacion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get motorCodigo => $composableBuilder(
+    column: $table.motorCodigo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cilindradaCc => $composableBuilder(
+    column: $table.cilindradaCc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get potenciaKw => $composableBuilder(
+    column: $table.potenciaKw,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<TipoCaja?, TipoCaja, String> get tipoCaja =>
+      $composableBuilder(
+        column: $table.tipoCaja,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get numeroMarchas => $composableBuilder(
+    column: $table.numeroMarchas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<Traccion?, Traccion, String> get traccion =>
+      $composableBuilder(
+        column: $table.traccion,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get codigoTecnico => $composableBuilder(
+    column: $table.codigoTecnico,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notasTecnicas => $composableBuilder(
+    column: $table.notasTecnicas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VehiclesTableFilterComposer get vehicleId {
+    final $$VehiclesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableFilterComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VehicleSpecificationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $VehicleSpecificationsTable> {
+  $$VehicleSpecificationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get generacion => $composableBuilder(
+    column: $table.generacion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get motorCodigo => $composableBuilder(
+    column: $table.motorCodigo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cilindradaCc => $composableBuilder(
+    column: $table.cilindradaCc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get potenciaKw => $composableBuilder(
+    column: $table.potenciaKw,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipoCaja => $composableBuilder(
+    column: $table.tipoCaja,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get numeroMarchas => $composableBuilder(
+    column: $table.numeroMarchas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get traccion => $composableBuilder(
+    column: $table.traccion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get codigoTecnico => $composableBuilder(
+    column: $table.codigoTecnico,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notasTecnicas => $composableBuilder(
+    column: $table.notasTecnicas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VehiclesTableOrderingComposer get vehicleId {
+    final $$VehiclesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableOrderingComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VehicleSpecificationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VehicleSpecificationsTable> {
+  $$VehicleSpecificationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get generacion => $composableBuilder(
+    column: $table.generacion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get motorCodigo => $composableBuilder(
+    column: $table.motorCodigo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cilindradaCc => $composableBuilder(
+    column: $table.cilindradaCc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get potenciaKw => $composableBuilder(
+    column: $table.potenciaKw,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<TipoCaja?, String> get tipoCaja =>
+      $composableBuilder(column: $table.tipoCaja, builder: (column) => column);
+
+  GeneratedColumn<int> get numeroMarchas => $composableBuilder(
+    column: $table.numeroMarchas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<Traccion?, String> get traccion =>
+      $composableBuilder(column: $table.traccion, builder: (column) => column);
+
+  GeneratedColumn<String> get codigoTecnico => $composableBuilder(
+    column: $table.codigoTecnico,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notasTecnicas => $composableBuilder(
+    column: $table.notasTecnicas,
+    builder: (column) => column,
+  );
+
+  $$VehiclesTableAnnotationComposer get vehicleId {
+    final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.vehicleId,
+      referencedTable: $db.vehicles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VehiclesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.vehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VehicleSpecificationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VehicleSpecificationsTable,
+          VehicleSpecification,
+          $$VehicleSpecificationsTableFilterComposer,
+          $$VehicleSpecificationsTableOrderingComposer,
+          $$VehicleSpecificationsTableAnnotationComposer,
+          $$VehicleSpecificationsTableCreateCompanionBuilder,
+          $$VehicleSpecificationsTableUpdateCompanionBuilder,
+          (VehicleSpecification, $$VehicleSpecificationsTableReferences),
+          VehicleSpecification,
+          PrefetchHooks Function({bool vehicleId})
+        > {
+  $$VehicleSpecificationsTableTableManager(
+    _$AppDatabase db,
+    $VehicleSpecificationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VehicleSpecificationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$VehicleSpecificationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$VehicleSpecificationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> vehicleId = const Value.absent(),
+                Value<String?> generacion = const Value.absent(),
+                Value<String?> motorCodigo = const Value.absent(),
+                Value<int?> cilindradaCc = const Value.absent(),
+                Value<int?> potenciaKw = const Value.absent(),
+                Value<TipoCaja?> tipoCaja = const Value.absent(),
+                Value<int?> numeroMarchas = const Value.absent(),
+                Value<Traccion?> traccion = const Value.absent(),
+                Value<String?> codigoTecnico = const Value.absent(),
+                Value<String?> notasTecnicas = const Value.absent(),
+              }) => VehicleSpecificationsCompanion(
+                vehicleId: vehicleId,
+                generacion: generacion,
+                motorCodigo: motorCodigo,
+                cilindradaCc: cilindradaCc,
+                potenciaKw: potenciaKw,
+                tipoCaja: tipoCaja,
+                numeroMarchas: numeroMarchas,
+                traccion: traccion,
+                codigoTecnico: codigoTecnico,
+                notasTecnicas: notasTecnicas,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> vehicleId = const Value.absent(),
+                Value<String?> generacion = const Value.absent(),
+                Value<String?> motorCodigo = const Value.absent(),
+                Value<int?> cilindradaCc = const Value.absent(),
+                Value<int?> potenciaKw = const Value.absent(),
+                Value<TipoCaja?> tipoCaja = const Value.absent(),
+                Value<int?> numeroMarchas = const Value.absent(),
+                Value<Traccion?> traccion = const Value.absent(),
+                Value<String?> codigoTecnico = const Value.absent(),
+                Value<String?> notasTecnicas = const Value.absent(),
+              }) => VehicleSpecificationsCompanion.insert(
+                vehicleId: vehicleId,
+                generacion: generacion,
+                motorCodigo: motorCodigo,
+                cilindradaCc: cilindradaCc,
+                potenciaKw: potenciaKw,
+                tipoCaja: tipoCaja,
+                numeroMarchas: numeroMarchas,
+                traccion: traccion,
+                codigoTecnico: codigoTecnico,
+                notasTecnicas: notasTecnicas,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$VehicleSpecificationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({vehicleId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (vehicleId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.vehicleId,
+                                referencedTable:
+                                    $$VehicleSpecificationsTableReferences
+                                        ._vehicleIdTable(db),
+                                referencedColumn:
+                                    $$VehicleSpecificationsTableReferences
+                                        ._vehicleIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$VehicleSpecificationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VehicleSpecificationsTable,
+      VehicleSpecification,
+      $$VehicleSpecificationsTableFilterComposer,
+      $$VehicleSpecificationsTableOrderingComposer,
+      $$VehicleSpecificationsTableAnnotationComposer,
+      $$VehicleSpecificationsTableCreateCompanionBuilder,
+      $$VehicleSpecificationsTableUpdateCompanionBuilder,
+      (VehicleSpecification, $$VehicleSpecificationsTableReferences),
+      VehicleSpecification,
+      PrefetchHooks Function({bool vehicleId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5246,4 +6476,6 @@ class $AppDatabaseManager {
       $$MaintenanceSchedulesTableTableManager(_db, _db.maintenanceSchedules);
   $$MaintenanceRecordsTableTableManager get maintenanceRecords =>
       $$MaintenanceRecordsTableTableManager(_db, _db.maintenanceRecords);
+  $$VehicleSpecificationsTableTableManager get vehicleSpecifications =>
+      $$VehicleSpecificationsTableTableManager(_db, _db.vehicleSpecifications);
 }
