@@ -22,4 +22,9 @@ enum MaintenanceCategory {
   carroceria,
   itv,
   otro,
+  direccion,
+  climatizacion,
+  escapeEmisiones,
+  habitaculo,
+  seguridad,
 }

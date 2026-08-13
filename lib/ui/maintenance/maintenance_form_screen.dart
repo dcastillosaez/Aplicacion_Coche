@@ -17,6 +17,11 @@ const Map<MaintenanceCategory, String> etiquetasCategoria = {
   MaintenanceCategory.carroceria: 'Carrocería',
   MaintenanceCategory.itv: 'ITV',
   MaintenanceCategory.otro: 'Otro',
+  MaintenanceCategory.direccion: 'Dirección',
+  MaintenanceCategory.climatizacion: 'Climatización',
+  MaintenanceCategory.escapeEmisiones: 'Escape y emisiones',
+  MaintenanceCategory.habitaculo: 'Habitáculo',
+  MaintenanceCategory.seguridad: 'Seguridad',
 };
 
 class MaintenanceFormScreen extends ConsumerStatefulWidget {
