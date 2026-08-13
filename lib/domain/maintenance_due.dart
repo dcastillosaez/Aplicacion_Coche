@@ -111,8 +111,7 @@ Vencimiento calcularVencimiento({
   required int avisoDiasPorDefecto,
 }) {
   final diasDesdeLectura = diasNaturalesEntre(fechaUltimaLectura, ahora);
-  final kmProyectado =
-      kmActual + (ritmo.kmPorDia * diasDesdeLectura).round();
+  final kmProyectado = kmActual + (ritmo.kmPorDia * diasDesdeLectura).round();
 
   if (datos.ultimoKm == null || datos.ultimaFecha == null) {
     return Vencimiento(
@@ -131,8 +130,9 @@ Vencimiento calcularVencimiento({
     proximoKm = datos.ultimoKm! + datos.intervalKm!;
     kmRestantes = proximoKm - kmProyectado;
     if (!ritmo.cocheParado) {
-      fechaEstimadaPorKm =
-          ahora.add(Duration(days: (kmRestantes / ritmo.kmPorDia).round()));
+      fechaEstimadaPorKm = ahora.add(
+        Duration(days: (kmRestantes / ritmo.kmPorDia).round()),
+      );
     }
   }
 
@@ -147,8 +147,7 @@ Vencimiento calcularVencimiento({
   final vencidoPorFecha = diasRestantes != null && diasRestantes <= 0;
 
   final atencionPorKm = kmRestantes != null && kmRestantes <= margenKm;
-  final atencionPorFecha =
-      diasRestantes != null && diasRestantes <= margenDias;
+  final atencionPorFecha = diasRestantes != null && diasRestantes <= margenDias;
 
   final proximoPorKm = kmRestantes != null && kmRestantes <= margenKm * 2;
   final proximoPorFecha =

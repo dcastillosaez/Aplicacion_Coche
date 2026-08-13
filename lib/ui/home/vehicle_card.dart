@@ -80,8 +80,9 @@ class VehicleCard extends ConsumerWidget {
                   if (vehiculo.version != null)
                     Text(
                       vehiculo.version!,
-                      style: tema.textTheme.bodySmall
-                          ?.copyWith(color: tema.colorScheme.outline),
+                      style: tema.textTheme.bodySmall?.copyWith(
+                        color: tema.colorScheme.outline,
+                      ),
                     ),
                   const SizedBox(height: 16),
                   Row(
@@ -129,8 +130,9 @@ class VehicleCard extends ConsumerWidget {
                             r.cocheParado
                                 ? 'Prácticamente parado'
                                 : '≈ ${r.kmPorDia.round()} km al día',
-                            style: tema.textTheme.bodySmall
-                                ?.copyWith(color: tema.colorScheme.outline),
+                            style: tema.textTheme.bodySmall?.copyWith(
+                              color: tema.colorScheme.outline,
+                            ),
                           ),
                     orElse: () => const SizedBox.shrink(),
                   ),
@@ -140,9 +142,7 @@ class VehicleCard extends ConsumerWidget {
                   vencimientos.when(
                     loading: () => const SizedBox.shrink(),
                     error: (e, st) {
-                      debugPrint(
-                        'Error al cargar los mantenimientos: $e\n$st',
-                      );
+                      debugPrint('Error al cargar los mantenimientos: $e\n$st');
                       return const SizedBox.shrink();
                     },
                     data: (lista) => _ProximosVencimientos(lista: lista),
@@ -187,8 +187,9 @@ class _ProximosVencimientos extends StatelessWidget {
             Expanded(
               child: Text(
                 'Sin mantenimientos configurados. Toca para añadirlos.',
-                style: tema.textTheme.bodySmall
-                    ?.copyWith(color: tema.colorScheme.outline),
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
               ),
             ),
           ],
@@ -216,8 +217,9 @@ class _ProximosVencimientos extends StatelessWidget {
           if (avisoRitmo)
             Text(
               avisoRitmoSupuesto,
-              style: tema.textTheme.bodySmall
-                  ?.copyWith(color: tema.colorScheme.outline),
+              style: tema.textTheme.bodySmall?.copyWith(
+                color: tema.colorScheme.outline,
+              ),
             ),
         ],
       ),
@@ -250,8 +252,9 @@ class _FilaVencimientoCompacta extends StatelessWidget {
               ),
               Text(
                 resumen.isEmpty ? 'Sin datos todavía' : resumen,
-                style: tema.textTheme.bodySmall
-                    ?.copyWith(color: tema.colorScheme.outline),
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ],

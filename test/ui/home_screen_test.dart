@@ -13,13 +13,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Vehicle vehiculo(int id, String marca, String modelo) => Vehicle(
-        id: id,
-        marca: marca,
-        modelo: modelo,
-        combustible: FuelType.diesel,
-        creadoEn: DateTime(2024, 1, 1),
-        archivado: false,
-      );
+    id: id,
+    marca: marca,
+    modelo: modelo,
+    combustible: FuelType.diesel,
+    creadoEn: DateTime(2024, 1, 1),
+    archivado: false,
+  );
 
   // Igual que en vehicle_detail_screen_test.dart: se simulan los providers
   // en lugar de abrir una base de datos real, porque Inicio combina el
@@ -63,34 +63,31 @@ void main() {
     );
   }
 
-  testWidgets(
-    'un vehiculo sin mantenimientos configurados se distingue en su '
-    'tarjeta y no cuenta como "todo al dia" en el resumen',
-    (tester) async {
-      final v1 = vehiculo(1, 'Seat', 'León ST');
+  testWidgets('un vehiculo sin mantenimientos configurados se distingue en su '
+      'tarjeta y no cuenta como "todo al dia" en el resumen', (tester) async {
+    final v1 = vehiculo(1, 'Seat', 'León ST');
 
-      await tester.pumpWidget(
-        envolver(
-          vehiculos: [v1],
-          vencimientos: const {1: []},
-          estados: const {1: EstadoMantenimiento.sinConfigurar},
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      envolver(
+        vehiculos: [v1],
+        vencimientos: const {1: []},
+        estados: const {1: EstadoMantenimiento.sinConfigurar},
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(
-        find.text('Sin mantenimientos configurados. Toca para añadirlos.'),
-        findsOneWidget,
-      );
-      // Sin nada configurado no hay nada que resumir: ni el aviso positivo
-      // ni la cabecera de la lista global deben aparecer.
-      expect(
-        find.text('Todo al día. No hay ningún mantenimiento pendiente.'),
-        findsNothing,
-      );
-      expect(find.text('Próximos mantenimientos'), findsNothing);
-    },
-  );
+    expect(
+      find.text('Sin mantenimientos configurados. Toca para añadirlos.'),
+      findsOneWidget,
+    );
+    // Sin nada configurado no hay nada que resumir: ni el aviso positivo
+    // ni la cabecera de la lista global deben aparecer.
+    expect(
+      find.text('Todo al día. No hay ningún mantenimiento pendiente.'),
+      findsNothing,
+    );
+    expect(find.text('Próximos mantenimientos'), findsNothing);
+  });
 
   testWidgets(
     'con todo lo configurado al dia, el resumen lo dice explicitamente',
@@ -105,17 +102,23 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const item = MantenimientoConVencimiento(
         schedule: schedule,
         ultimoRegistro: null,
-        vencimiento: Vencimiento(estado: EstadoMantenimiento.ok, kmProyectado: 5000),
+        vencimiento: Vencimiento(
+          estado: EstadoMantenimiento.ok,
+          kmProyectado: 5000,
+        ),
       );
 
       await tester.pumpWidget(
         envolver(
           vehiculos: [v1],
-          vencimientos: const {1: [item]},
+          vencimientos: const {
+            1: [item],
+          },
           estados: const {1: EstadoMantenimiento.ok},
         ),
       );
@@ -149,6 +152,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const itemAtencion = MantenimientoConVencimiento(
         schedule: scheduleFrenos,
@@ -170,6 +174,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const itemVencido = MantenimientoConVencimiento(
         schedule: scheduleAceite,
@@ -244,18 +249,24 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const item = MantenimientoConVencimiento(
         schedule: schedule,
         ultimoRegistro: null,
-        vencimiento:
-            Vencimiento(estado: EstadoMantenimiento.ok, kmProyectado: 5000),
+        vencimiento: Vencimiento(
+          estado: EstadoMantenimiento.ok,
+          kmProyectado: 5000,
+        ),
       );
 
       await tester.pumpWidget(
         envolver(
           vehiculos: [v1, v2],
-          vencimientos: const {1: [item], 2: []},
+          vencimientos: const {
+            1: [item],
+            2: [],
+          },
           estados: const {
             1: EstadoMantenimiento.ok,
             2: EstadoMantenimiento.sinConfigurar,
@@ -303,6 +314,7 @@ void main() {
               activo: true,
               silenciado: false,
               orden: id,
+              fuenteIntervalo: FuenteIntervalo.orientativo,
             ),
             ultimoRegistro: null,
             // Estado "ok": no son pendientes, así que no aparecen en el
@@ -338,91 +350,88 @@ void main() {
     },
   );
 
-  testWidgets(
-    'el resumen global recorta a los 5 mantenimientos pendientes mas '
-    'urgentes y cuenta los restantes',
-    (tester) async {
-      // Dos tarjetas con tres filas cada una más la lista global no caben
-      // en el viewport estándar de test: hace falta una superficie más alta
-      // para que todo el contenido llegue a construirse.
-      tester.view.physicalSize = const Size(1000, 3000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
+  testWidgets('el resumen global recorta a los 5 mantenimientos pendientes mas '
+      'urgentes y cuenta los restantes', (tester) async {
+    // Dos tarjetas con tres filas cada una más la lista global no caben
+    // en el viewport estándar de test: hace falta una superficie más alta
+    // para que todo el contenido llegue a construirse.
+    tester.view.physicalSize = const Size(1000, 3000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
 
-      final v1 = vehiculo(1, 'Seat', 'León ST');
-      final v2 = vehiculo(2, 'BMW', 'X3');
+    final v1 = vehiculo(1, 'Seat', 'León ST');
+    final v2 = vehiculo(2, 'BMW', 'X3');
 
-      MantenimientoConVencimiento item(
-        int id,
-        int vehicleId,
-        String nombre,
-        int diasHastaVencimiento,
-      ) =>
-          MantenimientoConVencimiento(
-            schedule: MaintenanceSchedule(
-              id: id,
-              vehicleId: vehicleId,
-              nombre: nombre,
-              categoria: MaintenanceCategory.motor,
-              intervalKm: 30000,
-              activo: true,
-              silenciado: false,
-              orden: id,
-            ),
-            ultimoRegistro: null,
-            vencimiento: Vencimiento(
-              estado: EstadoMantenimiento.vencido,
-              kmProyectado: 5000,
-              diasHastaVencimiento: diasHastaVencimiento,
-            ),
-          );
+    MantenimientoConVencimiento item(
+      int id,
+      int vehicleId,
+      String nombre,
+      int diasHastaVencimiento,
+    ) => MantenimientoConVencimiento(
+      schedule: MaintenanceSchedule(
+        id: id,
+        vehicleId: vehicleId,
+        nombre: nombre,
+        categoria: MaintenanceCategory.motor,
+        intervalKm: 30000,
+        activo: true,
+        silenciado: false,
+        orden: id,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
+      ),
+      ultimoRegistro: null,
+      vencimiento: Vencimiento(
+        estado: EstadoMantenimiento.vencido,
+        kmProyectado: 5000,
+        diasHastaVencimiento: diasHastaVencimiento,
+      ),
+    );
 
-      // Seis mantenimientos vencidos entre los dos vehículos, tres por
-      // coche (así ninguna tarjeta recorta por su cuenta y lo único que se
-      // ejercita es el máximo de 5 del resumen global). Cuanto más negativo
-      // diasHastaVencimiento, más urgente y antes aparece.
-      final v1Items = [
-        item(1, 1, 'Correa distribución', -60),
-        item(2, 1, 'Frenos', -50),
-        item(3, 1, 'Batería', -40),
-      ];
-      final v2Items = [
-        item(4, 2, 'Aceite y filtro', -30),
-        item(5, 2, 'Neumáticos', -20),
-        item(6, 2, 'Filtro de aire', -10),
-      ];
+    // Seis mantenimientos vencidos entre los dos vehículos, tres por
+    // coche (así ninguna tarjeta recorta por su cuenta y lo único que se
+    // ejercita es el máximo de 5 del resumen global). Cuanto más negativo
+    // diasHastaVencimiento, más urgente y antes aparece.
+    final v1Items = [
+      item(1, 1, 'Correa distribución', -60),
+      item(2, 1, 'Frenos', -50),
+      item(3, 1, 'Batería', -40),
+    ];
+    final v2Items = [
+      item(4, 2, 'Aceite y filtro', -30),
+      item(5, 2, 'Neumáticos', -20),
+      item(6, 2, 'Filtro de aire', -10),
+    ];
 
-      await tester.pumpWidget(
-        envolver(
-          vehiculos: [v1, v2],
-          vencimientos: {1: v1Items, 2: v2Items},
-          estados: const {
-            1: EstadoMantenimiento.vencido,
-            2: EstadoMantenimiento.vencido,
-          },
-        ),
-      );
-      await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      envolver(
+        vehiculos: [v1, v2],
+        vencimientos: {1: v1Items, 2: v2Items},
+        estados: const {
+          1: EstadoMantenimiento.vencido,
+          2: EstadoMantenimiento.vencido,
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      // Los 5 más urgentes aparecen dos veces: una en la tarjeta de su
-      // vehículo y otra en el resumen global.
-      for (final nombre in [
-        'Correa distribución',
-        'Frenos',
-        'Batería',
-        'Aceite y filtro',
-        'Neumáticos',
-      ]) {
-        expect(find.text(nombre).evaluate().length, 2, reason: nombre);
-      }
-      // El sexto, el menos urgente, solo aparece en la tarjeta de su
-      // vehículo: el resumen global lo deja fuera por el máximo de 5.
-      expect(find.text('Filtro de aire').evaluate().length, 1);
+    // Los 5 más urgentes aparecen dos veces: una en la tarjeta de su
+    // vehículo y otra en el resumen global.
+    for (final nombre in [
+      'Correa distribución',
+      'Frenos',
+      'Batería',
+      'Aceite y filtro',
+      'Neumáticos',
+    ]) {
+      expect(find.text(nombre).evaluate().length, 2, reason: nombre);
+    }
+    // El sexto, el menos urgente, solo aparece en la tarjeta de su
+    // vehículo: el resumen global lo deja fuera por el máximo de 5.
+    expect(find.text('Filtro de aire').evaluate().length, 1);
 
-      expect(
-        find.text('Y 1 mantenimiento más pendiente, en su ficha.'),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(
+      find.text('Y 1 mantenimiento más pendiente, en su ficha.'),
+      findsOneWidget,
+    );
+  });
 }

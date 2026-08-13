@@ -10,9 +10,11 @@ class MaintenanceRecords extends Table {
 
   /// Nulo en reparaciones puntuales que no responden a ningún mantenimiento
   /// configurado. Si se borra el mantenimiento, el registro sobrevive.
-  IntColumn get scheduleId => integer()
-      .nullable()
-      .references(MaintenanceSchedules, #id, onDelete: KeyAction.setNull)();
+  IntColumn get scheduleId => integer().nullable().references(
+    MaintenanceSchedules,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
 
   DateTimeColumn get fecha => dateTime()();
   IntColumn get km => integer()();

@@ -29,8 +29,9 @@ class EmptyState extends StatelessWidget {
             Text(
               descripcion,
               textAlign: TextAlign.center,
-              style: tema.textTheme.bodyMedium
-                  ?.copyWith(color: tema.colorScheme.outline),
+              style: tema.textTheme.bodyMedium?.copyWith(
+                color: tema.colorScheme.outline,
+              ),
             ),
           ],
         ),

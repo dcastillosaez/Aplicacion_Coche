@@ -20,8 +20,7 @@ void main() {
       expect(mesesEntreItv(DateTime(2016, 8, 11), DateTime(2026, 8, 10)), 24);
     });
 
-    test(
-        'un vehiculo matriculado el 29 de febrero no desborda el aniversario '
+    test('un vehiculo matriculado el 29 de febrero no desborda el aniversario '
         'a marzo', () {
       // 2016 fue bisiesto y 2026 no: el aniversario de los diez años cae el
       // 28 de febrero, no se desborda al 1 de marzo.
@@ -35,8 +34,7 @@ void main() {
       expect(proximaItv(fechaMatriculacion: null), isNull);
     });
 
-    test('sin inspecciones previas toca a los cuatro anios de matricular',
-        () {
+    test('sin inspecciones previas toca a los cuatro anios de matricular', () {
       expect(
         proximaItv(fechaMatriculacion: DateTime(2023, 5, 20)),
         DateTime(2027, 5, 20),
@@ -63,8 +61,7 @@ void main() {
       );
     });
 
-    test(
-        'con una ultima itv incoherente anterior a la exencion, la primera '
+    test('con una ultima itv incoherente anterior a la exencion, la primera '
         'es fija a los cuatro anios', () {
       // Matriculado 2024-01-01: el coche seguía exento el 2027-09-01, así
       // que esa fecha no puede ser el punto de partida. La primera ITV

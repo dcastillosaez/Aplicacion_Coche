@@ -131,8 +131,9 @@ class _HojaRegistroMantenimientoState
 
     final km = int.parse(_kmController.text.trim());
     final costeTexto = _costeController.text.trim();
-    final coste =
-        costeTexto.isEmpty ? null : double.parse(costeTexto.replaceAll(',', '.'));
+    final coste = costeTexto.isEmpty
+        ? null
+        : double.parse(costeTexto.replaceAll(',', '.'));
     final taller = _tallerController.text.trim();
     final notas = _notasController.text.trim();
     final scheduleId = _scheduleSeleccionadoId;
@@ -166,8 +167,11 @@ class _HojaRegistroMantenimientoState
         // es, el mantenimiento se guarda igual -es un hecho real- pero el
         // kilometraje del coche se deja como está; se avisa al usuario
         // fuera de la transacción.
-        final coherente = await db.mileageDao
-            .esLecturaCoherente(widget.vehicleId, fecha, km);
+        final coherente = await db.mileageDao.esLecturaCoherente(
+          widget.vehicleId,
+          fecha,
+          km,
+        );
         if (coherente) {
           await db.mileageDao.registrar(
             vehicleId: widget.vehicleId,
@@ -227,7 +231,8 @@ class _HojaRegistroMantenimientoState
     final tema = Theme.of(context);
 
     final schedulesAsync = ref.watch(schedulesProvider(widget.vehicleId));
-    final schedules = schedulesAsync.valueOrNull ?? const <MaintenanceSchedule>[];
+    final schedules =
+        schedulesAsync.valueOrNull ?? const <MaintenanceSchedule>[];
     final opciones = List<MaintenanceSchedule>.of(schedules);
     final inicial = widget.scheduleInicial;
     if (inicial != null && !opciones.any((s) => s.id == inicial.id)) {
@@ -311,8 +316,9 @@ class _HojaRegistroMantenimientoState
                     l == null
                         ? 'Todavía sin kilometraje registrado'
                         : 'Última lectura: ${formatearKm(l.km)}',
-                    style: tema.textTheme.bodySmall
-                        ?.copyWith(color: tema.colorScheme.outline),
+                    style: tema.textTheme.bodySmall?.copyWith(
+                      color: tema.colorScheme.outline,
+                    ),
                   ),
                 ),
                 orElse: () => const SizedBox.shrink(),
@@ -324,8 +330,9 @@ class _HojaRegistroMantenimientoState
                   labelText: 'Coste',
                   suffixText: '€',
                 ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                 ],
@@ -349,8 +356,9 @@ class _HojaRegistroMantenimientoState
                 const SizedBox(height: 4),
                 Text(
                   'No corresponde a ningún mantenimiento configurado.',
-                  style: tema.textTheme.bodySmall
-                      ?.copyWith(color: tema.colorScheme.outline),
+                  style: tema.textTheme.bodySmall?.copyWith(
+                    color: tema.colorScheme.outline,
+                  ),
                 ),
               ],
               const SizedBox(height: 24),

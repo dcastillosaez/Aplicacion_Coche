@@ -91,6 +91,7 @@ void main() {
         activo: true,
         silenciado: false,
         orden: 0,
+        fuenteIntervalo: FuenteIntervalo.orientativo,
       );
       const vencimiento = Vencimiento(
         estado: EstadoMantenimiento.vencido,

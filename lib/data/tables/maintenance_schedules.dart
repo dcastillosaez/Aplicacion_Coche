@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/fuente_intervalo.dart';
 import '../../domain/maintenance_category.dart';
 import 'vehicles.dart';
 
+export '../../domain/fuente_intervalo.dart';
 export '../../domain/maintenance_category.dart';
 
 class MaintenanceSchedules extends Table {
@@ -28,4 +30,9 @@ class MaintenanceSchedules extends Table {
   BoolColumn get silenciado => boolean().withDefault(const Constant(false))();
 
   IntColumn get orden => integer().withDefault(const Constant(0))();
+
+  /// Ver `FuenteIntervalo`. Todo mantenimiento tiene una fuente, incluso
+  /// los que no la eligieron explícitamente: por defecto es orientativo.
+  TextColumn get fuenteIntervalo =>
+      textEnum<FuenteIntervalo>().withDefault(const Constant('orientativo'))();
 }

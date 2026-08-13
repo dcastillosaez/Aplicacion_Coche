@@ -2,8 +2,11 @@ import 'package:intl/intl.dart';
 
 final _formatoKm = NumberFormat.decimalPattern('es_ES');
 final _formatoFecha = DateFormat('dd/MM/yyyy', 'es_ES');
-final _formatoCoste =
-    NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 2);
+final _formatoCoste = NumberFormat.currency(
+  locale: 'es_ES',
+  symbol: '€',
+  decimalDigits: 2,
+);
 
 /// 142350 → "142.350 km"
 String formatearKm(int km) => '${_formatoKm.format(km)} km';

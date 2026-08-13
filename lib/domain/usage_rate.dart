@@ -39,10 +39,9 @@ class UsageRate {
     required DateTime ahora,
   }) {
     final inicioVentana = ahora.subtract(const Duration(days: kVentanaDias));
-    final ventana = lecturas
-        .where((l) => !l.fecha.isBefore(inicioVentana))
-        .toList()
-      ..sort((a, b) => a.fecha.compareTo(b.fecha));
+    final ventana =
+        lecturas.where((l) => !l.fecha.isBefore(inicioVentana)).toList()
+          ..sort((a, b) => a.fecha.compareTo(b.fecha));
 
     if (ventana.length >= 2) {
       final primera = ventana.first;

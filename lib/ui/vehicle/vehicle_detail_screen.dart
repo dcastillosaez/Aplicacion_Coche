@@ -5,15 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../data/photo_storage.dart';
+import '../../domain/maintenance_grouping.dart';
+import '../../domain/origen_mantenimiento.dart';
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
 import '../common/estado_chip.dart';
 import '../common/formatters.dart';
+import '../common/origen_chip.dart';
 import '../common/vencimiento_texto.dart';
 import '../maintenance/maintenance_form_screen.dart';
 import '../maintenance/register_maintenance_sheet.dart';
 import '../theme/app_theme.dart';
 import 'vehicle_form_screen.dart';
+import 'vehicle_specification_screen.dart';
 
 /// Ficha del vehículo: de un vistazo, su estado general, lo que toca antes
 /// de nada, y el detalle de cada mantenimiento configurado. Punto de
@@ -32,6 +36,16 @@ class VehicleDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('${vehiculo.marca} ${vehiculo.modelo}'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.badge_outlined),
+            tooltip: 'Identidad técnica',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    VehicleSpecificationScreen(vehicleId: vehiculo.id),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Editar vehículo',
@@ -146,9 +160,7 @@ class _Cabecera extends ConsumerWidget {
                   loading: () => const SizedBox(height: 40),
                   error: (e, st) {
                     debugPrint('Error al cargar el kilometraje: $e\n$st');
-                    return const Text(
-                      'No se ha podido cargar el kilometraje',
-                    );
+                    return const Text('No se ha podido cargar el kilometraje');
                   },
                   data: (l) => Text(
                     l == null ? 'Sin kilometraje' : formatearKm(l.km),
@@ -178,14 +190,14 @@ class _Cabecera extends ConsumerWidget {
   }
 
   Widget _marcador(ThemeData tema) => Container(
-        color: tema.colorScheme.surfaceContainerHighest,
-        alignment: Alignment.center,
-        child: Icon(
-          Icons.directions_car_outlined,
-          size: 40,
-          color: tema.colorScheme.outline,
-        ),
-      );
+    color: tema.colorScheme.surfaceContainerHighest,
+    alignment: Alignment.center,
+    child: Icon(
+      Icons.directions_car_outlined,
+      size: 40,
+      color: tema.colorScheme.outline,
+    ),
+  );
 }
 
 /// Cuerpo de la ficha una vez resueltos los vencimientos: o bien la
@@ -195,10 +207,7 @@ class _ContenidoMantenimientos extends StatelessWidget {
   final Vehicle vehiculo;
   final List<MantenimientoConVencimiento> lista;
 
-  const _ContenidoMantenimientos({
-    required this.vehiculo,
-    required this.lista,
-  });
+  const _ContenidoMantenimientos({required this.vehiculo, required this.lista});
 
   @override
   Widget build(BuildContext context) {
@@ -227,15 +236,15 @@ class _ContenidoMantenimientos extends StatelessWidget {
               'Añade los mantenimientos habituales del coche para saber qué '
               'toca y cuándo.',
               textAlign: TextAlign.center,
-              style: tema.textTheme.bodyMedium
-                  ?.copyWith(color: tema.colorScheme.outline),
+              style: tema.textTheme.bodyMedium?.copyWith(
+                color: tema.colorScheme.outline,
+              ),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) =>
-                      MaintenanceFormScreen(vehicleId: vehiculo.id),
+                  builder: (_) => MaintenanceFormScreen(vehicleId: vehiculo.id),
                 ),
               ),
               icon: const Icon(Icons.add),
@@ -250,8 +259,9 @@ class _ContenidoMantenimientos extends StatelessWidget {
     // primero es lo más próximo, tanto para destacarlo como para encabezar
     // la lista completa de abajo.
     final destacado = lista.first;
-    final avisoRitmo =
-        necesitaAvisoRitmoSupuesto(lista.map((m) => m.vencimiento));
+    final avisoRitmo = necesitaAvisoRitmoSupuesto(
+      lista.map((m) => m.vencimiento),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,19 +273,95 @@ class _ContenidoMantenimientos extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             avisoRitmoSupuesto,
-            style: tema.textTheme.bodySmall
-                ?.copyWith(color: tema.colorScheme.outline),
+            style: tema.textTheme.bodySmall?.copyWith(
+              color: tema.colorScheme.outline,
+            ),
           ),
         ],
         const SizedBox(height: 24),
         Text('Mantenimientos', style: tema.textTheme.titleSmall),
         const SizedBox(height: 8),
-        for (final item in lista)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _FilaMantenimiento(vehiculo: vehiculo, item: item),
-          ),
+        for (final grupo in agruparPorProximidad(
+          lista.map((m) => m.vencimiento).toList(),
+          const MaintenanceGroupingPolicy(),
+        ))
+          if (grupo.length == 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _FilaMantenimiento(
+                vehiculo: vehiculo,
+                item: lista[grupo.single],
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _GrupoMantenimientos(
+                vehiculo: vehiculo,
+                items: [for (final i in grupo) lista[i]],
+              ),
+            ),
       ],
+    );
+  }
+}
+
+/// Varios mantenimientos cuyos vencimientos caen lo bastante cerca (según
+/// [agruparPorProximidad]) como para convenir hacerlos en la misma visita
+/// al taller. Reutiliza [_FilaMantenimiento] tal cual para cada uno —misma
+/// tarjeta, mismo comportamiento al tocarla— y añade un marco y una
+/// cabecera que los presenta como conjunto.
+class _GrupoMantenimientos extends StatelessWidget {
+  final Vehicle vehiculo;
+  final List<MantenimientoConVencimiento> items;
+
+  const _GrupoMantenimientos({required this.vehiculo, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: tema.colorScheme.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: tema.colorScheme.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.merge_type,
+                  size: 18,
+                  color: tema.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Puedes hacer esto junto y ahorrar una visita al taller',
+                    style: tema.textTheme.bodySmall?.copyWith(
+                      color: tema.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _FilaMantenimiento(vehiculo: vehiculo, item: item),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -313,6 +399,10 @@ class _TarjetaDestacada extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 EstadoChip(estado: v.estado),
+                const SizedBox(width: 8),
+                OrigenChip(
+                  origen: calcularOrigen(item.ultimoRegistro?.esSembrado),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -320,8 +410,9 @@ class _TarjetaDestacada extends StatelessWidget {
               Text(
                 'Aún no se ha registrado. Sin un primer dato no se puede '
                 'calcular cuándo toca.',
-                style: tema.textTheme.bodyMedium
-                    ?.copyWith(color: tema.colorScheme.outline),
+                style: tema.textTheme.bodyMedium?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
               )
             else
               for (final linea in lineas)
@@ -336,17 +427,20 @@ class _TarjetaDestacada extends StatelessWidget {
   }
 }
 
-class _FilaMantenimiento extends StatelessWidget {
+class _FilaMantenimiento extends ConsumerWidget {
   final Vehicle vehiculo;
   final MantenimientoConVencimiento item;
 
   const _FilaMantenimiento({required this.vehiculo, required this.item});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tema = Theme.of(context);
     final v = item.vencimiento;
     final resumen = resumenVencimiento(v);
+    final patronReal = ref
+        .watch(patronRealProvider(item.schedule.id))
+        .valueOrNull;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -371,14 +465,27 @@ class _FilaMantenimiento extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       resumen.isEmpty ? 'Sin datos todavía' : resumen,
-                      style: tema.textTheme.bodySmall
-                          ?.copyWith(color: tema.colorScheme.outline),
+                      style: tema.textTheme.bodySmall?.copyWith(
+                        color: tema.colorScheme.outline,
+                      ),
                     ),
+                    if (patronReal != null)
+                      Text(
+                        'Tu patrón habitual: cambias cada '
+                        '≈ ${formatearKm(patronReal.kmMedioEntreCambios.round())}',
+                        style: tema.textTheme.bodySmall?.copyWith(
+                          color: tema.colorScheme.outline,
+                        ),
+                      ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               EstadoChip(estado: v.estado),
+              const SizedBox(width: 8),
+              OrigenChip(
+                origen: calcularOrigen(item.ultimoRegistro?.esSembrado),
+              ),
               IconButton(
                 icon: const Icon(Icons.fact_check_outlined),
                 tooltip: 'Registrar realizado',

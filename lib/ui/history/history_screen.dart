@@ -39,8 +39,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         error: (e, st) {
           debugPrint('Error al cargar el historial: $e\n$st');
           return _ErrorConReintento(
-            mensaje:
-                'No se ha podido cargar el historial. Inténtalo de nuevo.',
+            mensaje: 'No se ha podido cargar el historial. Inténtalo de nuevo.',
             onReintentar: () => ref.invalidate(historialProvider),
           );
         },
@@ -185,9 +184,9 @@ class _ContenidoHistorial extends ConsumerWidget {
                       : 'Sin registros para este vehículo',
                   descripcion: registros.isEmpty
                       ? 'Aquí irá apareciendo cada mantenimiento y '
-                          'reparación que registres.'
+                            'reparación que registres.'
                       : 'Prueba a quitar el filtro para ver el resto del '
-                          'historial.',
+                            'historial.',
                 )
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -198,10 +197,9 @@ class _ContenidoHistorial extends ConsumerWidget {
                     return _FilaHistorial(
                       registro: r,
                       vehiculo: porVehiculoId[r.vehicleId],
-                      schedule:
-                          r.scheduleId == null
-                              ? null
-                              : schedulesPorId[r.scheduleId],
+                      schedule: r.scheduleId == null
+                          ? null
+                          : schedulesPorId[r.scheduleId],
                     );
                   },
                 ),
@@ -311,8 +309,9 @@ class _FilaHistorial extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 etiquetasCategoria[schedule!.categoria]!,
-                style: tema.textTheme.bodySmall
-                    ?.copyWith(color: tema.colorScheme.outline),
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
               ),
             ],
             const SizedBox(height: 8),

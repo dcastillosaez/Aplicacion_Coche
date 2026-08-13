@@ -11,13 +11,13 @@ void main() {
   tearDown(() => db.close());
 
   VehiclesCompanion mercedes() => const VehiclesCompanion(
-        marca: Value('Mercedes-Benz'),
-        modelo: Value('Clase B'),
-        version: Value('B 180'),
-        anio: Value(2009),
-        combustible: Value(FuelType.diesel),
-        color: Value('Rojo'),
-      );
+    marca: Value('Mercedes-Benz'),
+    modelo: Value('Clase B'),
+    version: Value('B 180'),
+    anio: Value(2009),
+    combustible: Value(FuelType.diesel),
+    color: Value('Rojo'),
+  );
 
   test('inserta un vehiculo y lo recupera por id', () async {
     final id = await db.vehicleDao.insertar(mercedes());

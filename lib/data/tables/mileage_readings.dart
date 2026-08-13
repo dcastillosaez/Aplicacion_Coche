@@ -14,6 +14,6 @@ class MileageReadings extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {vehicleId, fecha},
-      ];
+    {vehicleId, fecha},
+  ];
 }

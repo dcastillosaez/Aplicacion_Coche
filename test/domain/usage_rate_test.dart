@@ -103,8 +103,7 @@ void main() {
     expect(r.kmPorDia, greaterThan(0));
   });
 
-  test(
-      'una ventana que cruza el cambio de hora de primavera cuenta dias '
+  test('una ventana que cruza el cambio de hora de primavera cuenta dias '
       'naturales, no horas', () {
     // Del 1 de marzo al 1 de abril de 2026 hay 31 dias naturales, pero el
     // cambio al horario de verano (ultimo domingo de marzo) hace que esas

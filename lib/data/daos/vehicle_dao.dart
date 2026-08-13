@@ -20,9 +20,9 @@ class VehicleDao extends DatabaseAccessor<AppDatabase> with _$VehicleDaoMixin {
   /// nombrar cualquier vehículo —como el historial—, no solo los que se
   /// gestionan hoy desde Inicio.
   Stream<List<Vehicle>> watchTodos() {
-    return (select(vehicles)
-          ..orderBy([(v) => OrderingTerm(expression: v.creadoEn)]))
-        .watch();
+    return (select(
+      vehicles,
+    )..orderBy([(v) => OrderingTerm(expression: v.creadoEn)])).watch();
   }
 
   Future<Vehicle?> getById(int id) {
@@ -38,7 +38,8 @@ class VehicleDao extends DatabaseAccessor<AppDatabase> with _$VehicleDaoMixin {
   }
 
   Future<int> archivar(int id) {
-    return (update(vehicles)..where((v) => v.id.equals(id)))
-        .write(const VehiclesCompanion(archivado: Value(true)));
+    return (update(vehicles)..where((v) => v.id.equals(id))).write(
+      const VehiclesCompanion(archivado: Value(true)),
+    );
   }
 }
