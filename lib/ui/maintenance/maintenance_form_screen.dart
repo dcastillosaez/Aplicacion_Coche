@@ -53,7 +53,14 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
 
   bool _guardando = false;
 
+  /// Si se está borrando el mantenimiento (independiente de _guardando: no
+  /// pueden solaparse, pero necesitan su propio texto de error y su propio
+  /// guardado de reentrada).
+  bool _borrando = false;
+
   bool get _esEdicion => widget.schedule != null;
+
+  bool get _ocupado => _guardando || _borrando;
 
   @override
   void initState() {
@@ -232,6 +239,61 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  Future<void> _confirmarBorrar() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Borrar mantenimiento'),
+        content: const Text(
+          'Deja de calcularse y de aparecer en la ficha del vehículo. Los '
+          'registros que ya tenga guardados no se borran, pero quedan '
+          'sueltos, sin este mantenimiento al que pertenecían.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Borrar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true) return;
+    if (!mounted) return;
+    await _borrar();
+  }
+
+  Future<void> _borrar() async {
+    final schedule = widget.schedule;
+    if (schedule == null) return;
+    setState(() => _borrando = true);
+
+    final dao = ref.read(databaseProvider).maintenanceDao;
+    try {
+      await dao.borrarSchedule(schedule.id);
+    } catch (e) {
+      debugPrint('Error al borrar el mantenimiento: $e');
+      if (!mounted) return;
+      setState(() => _borrando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se ha podido borrar el mantenimiento. Inténtalo de nuevo.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
@@ -241,6 +303,14 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
         title: Text(
           _esEdicion ? 'Editar mantenimiento' : 'Nuevo mantenimiento',
         ),
+        actions: [
+          if (_esEdicion)
+            IconButton(
+              onPressed: _ocupado ? null : _confirmarBorrar,
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Borrar mantenimiento',
+            ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -386,7 +456,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
             ],
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: _guardando ? null : _guardar,
+              onPressed: _ocupado ? null : _guardar,
               child: Text(
                 _esEdicion ? 'Guardar cambios' : 'Crear mantenimiento',
               ),
