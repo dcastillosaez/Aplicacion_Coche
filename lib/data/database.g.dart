@@ -1793,6 +1793,42 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
         $MaintenanceSchedulesTable.$converterfuenteIntervalo,
       );
   @override
+  late final GeneratedColumnWithTypeConverter<MaintenanceType?, String> tipo =
+      GeneratedColumn<String>(
+        'tipo',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<MaintenanceType?>(
+        $MaintenanceSchedulesTable.$convertertipon,
+      );
+  @override
+  late final GeneratedColumnWithTypeConverter<Posicion?, String> posicion =
+      GeneratedColumn<String>(
+        'posicion',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<Posicion?>(
+        $MaintenanceSchedulesTable.$converterposicionn,
+      );
+  static const VerificationMeta _nombreAutogeneradoMeta =
+      const VerificationMeta('nombreAutogenerado');
+  @override
+  late final GeneratedColumn<bool> nombreAutogenerado = GeneratedColumn<bool>(
+    'nombre_autogenerado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("nombre_autogenerado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     vehicleId,
@@ -1806,6 +1842,9 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
     silenciado,
     orden,
     fuenteIntervalo,
+    tipo,
+    posicion,
+    nombreAutogenerado,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1883,6 +1922,15 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
         orden.isAcceptableOrUnknown(data['orden']!, _ordenMeta),
       );
     }
+    if (data.containsKey('nombre_autogenerado')) {
+      context.handle(
+        _nombreAutogeneradoMeta,
+        nombreAutogenerado.isAcceptableOrUnknown(
+          data['nombre_autogenerado']!,
+          _nombreAutogeneradoMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1945,6 +1993,22 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
               data['${effectivePrefix}fuente_intervalo'],
             )!,
           ),
+      tipo: $MaintenanceSchedulesTable.$convertertipon.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}tipo'],
+        ),
+      ),
+      posicion: $MaintenanceSchedulesTable.$converterposicionn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}posicion'],
+        ),
+      ),
+      nombreAutogenerado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}nombre_autogenerado'],
+      )!,
     );
   }
 
@@ -1961,6 +2025,14 @@ class $MaintenanceSchedulesTable extends MaintenanceSchedules
   $converterfuenteIntervalo = const EnumNameConverter<FuenteIntervalo>(
     FuenteIntervalo.values,
   );
+  static JsonTypeConverter2<MaintenanceType, String, String> $convertertipo =
+      const EnumNameConverter<MaintenanceType>(MaintenanceType.values);
+  static JsonTypeConverter2<MaintenanceType?, String?, String?>
+  $convertertipon = JsonTypeConverter2.asNullable($convertertipo);
+  static JsonTypeConverter2<Posicion, String, String> $converterposicion =
+      const EnumNameConverter<Posicion>(Posicion.values);
+  static JsonTypeConverter2<Posicion?, String?, String?> $converterposicionn =
+      JsonTypeConverter2.asNullable($converterposicion);
 }
 
 class MaintenanceSchedule extends DataClass
@@ -1988,6 +2060,19 @@ class MaintenanceSchedule extends DataClass
   /// Ver `FuenteIntervalo`. Todo mantenimiento tiene una fuente, incluso
   /// los que no la eligieron explícitamente: por defecto es orientativo.
   final FuenteIntervalo fuenteIntervalo;
+
+  /// Qué es, del catálogo. Nulo en los mantenimientos ya configurados
+  /// antes de que existiera este campo, y en cualquiera nuevo que no use
+  /// el catálogo: siguen funcionando igual, solo con nombre libre.
+  final MaintenanceType? tipo;
+
+  /// Dónde, cuando el tipo lo admite (`MaintenanceType.admitePosicion`).
+  final Posicion? posicion;
+
+  /// Si `nombre` se generó solo a partir de tipo+posición (y por tanto se
+  /// regenera si cambian) o si el usuario lo editó a mano (y por tanto se
+  /// queda quieto para siempre, aunque cambie el tipo o la posición).
+  final bool nombreAutogenerado;
   const MaintenanceSchedule({
     required this.id,
     required this.vehicleId,
@@ -2001,6 +2086,9 @@ class MaintenanceSchedule extends DataClass
     required this.silenciado,
     required this.orden,
     required this.fuenteIntervalo,
+    this.tipo,
+    this.posicion,
+    required this.nombreAutogenerado,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2035,6 +2123,17 @@ class MaintenanceSchedule extends DataClass
         ),
       );
     }
+    if (!nullToAbsent || tipo != null) {
+      map['tipo'] = Variable<String>(
+        $MaintenanceSchedulesTable.$convertertipon.toSql(tipo),
+      );
+    }
+    if (!nullToAbsent || posicion != null) {
+      map['posicion'] = Variable<String>(
+        $MaintenanceSchedulesTable.$converterposicionn.toSql(posicion),
+      );
+    }
+    map['nombre_autogenerado'] = Variable<bool>(nombreAutogenerado);
     return map;
   }
 
@@ -2060,6 +2159,11 @@ class MaintenanceSchedule extends DataClass
       silenciado: Value(silenciado),
       orden: Value(orden),
       fuenteIntervalo: Value(fuenteIntervalo),
+      tipo: tipo == null && nullToAbsent ? const Value.absent() : Value(tipo),
+      posicion: posicion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(posicion),
+      nombreAutogenerado: Value(nombreAutogenerado),
     );
   }
 
@@ -2084,6 +2188,13 @@ class MaintenanceSchedule extends DataClass
       orden: serializer.fromJson<int>(json['orden']),
       fuenteIntervalo: $MaintenanceSchedulesTable.$converterfuenteIntervalo
           .fromJson(serializer.fromJson<String>(json['fuenteIntervalo'])),
+      tipo: $MaintenanceSchedulesTable.$convertertipon.fromJson(
+        serializer.fromJson<String?>(json['tipo']),
+      ),
+      posicion: $MaintenanceSchedulesTable.$converterposicionn.fromJson(
+        serializer.fromJson<String?>(json['posicion']),
+      ),
+      nombreAutogenerado: serializer.fromJson<bool>(json['nombreAutogenerado']),
     );
   }
   @override
@@ -2108,6 +2219,13 @@ class MaintenanceSchedule extends DataClass
           fuenteIntervalo,
         ),
       ),
+      'tipo': serializer.toJson<String?>(
+        $MaintenanceSchedulesTable.$convertertipon.toJson(tipo),
+      ),
+      'posicion': serializer.toJson<String?>(
+        $MaintenanceSchedulesTable.$converterposicionn.toJson(posicion),
+      ),
+      'nombreAutogenerado': serializer.toJson<bool>(nombreAutogenerado),
     };
   }
 
@@ -2124,6 +2242,9 @@ class MaintenanceSchedule extends DataClass
     bool? silenciado,
     int? orden,
     FuenteIntervalo? fuenteIntervalo,
+    Value<MaintenanceType?> tipo = const Value.absent(),
+    Value<Posicion?> posicion = const Value.absent(),
+    bool? nombreAutogenerado,
   }) => MaintenanceSchedule(
     id: id ?? this.id,
     vehicleId: vehicleId ?? this.vehicleId,
@@ -2139,6 +2260,9 @@ class MaintenanceSchedule extends DataClass
     silenciado: silenciado ?? this.silenciado,
     orden: orden ?? this.orden,
     fuenteIntervalo: fuenteIntervalo ?? this.fuenteIntervalo,
+    tipo: tipo.present ? tipo.value : this.tipo,
+    posicion: posicion.present ? posicion.value : this.posicion,
+    nombreAutogenerado: nombreAutogenerado ?? this.nombreAutogenerado,
   );
   MaintenanceSchedule copyWithCompanion(MaintenanceSchedulesCompanion data) {
     return MaintenanceSchedule(
@@ -2162,6 +2286,11 @@ class MaintenanceSchedule extends DataClass
       fuenteIntervalo: data.fuenteIntervalo.present
           ? data.fuenteIntervalo.value
           : this.fuenteIntervalo,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      posicion: data.posicion.present ? data.posicion.value : this.posicion,
+      nombreAutogenerado: data.nombreAutogenerado.present
+          ? data.nombreAutogenerado.value
+          : this.nombreAutogenerado,
     );
   }
 
@@ -2179,7 +2308,10 @@ class MaintenanceSchedule extends DataClass
           ..write('activo: $activo, ')
           ..write('silenciado: $silenciado, ')
           ..write('orden: $orden, ')
-          ..write('fuenteIntervalo: $fuenteIntervalo')
+          ..write('fuenteIntervalo: $fuenteIntervalo, ')
+          ..write('tipo: $tipo, ')
+          ..write('posicion: $posicion, ')
+          ..write('nombreAutogenerado: $nombreAutogenerado')
           ..write(')'))
         .toString();
   }
@@ -2198,6 +2330,9 @@ class MaintenanceSchedule extends DataClass
     silenciado,
     orden,
     fuenteIntervalo,
+    tipo,
+    posicion,
+    nombreAutogenerado,
   );
   @override
   bool operator ==(Object other) =>
@@ -2214,7 +2349,10 @@ class MaintenanceSchedule extends DataClass
           other.activo == this.activo &&
           other.silenciado == this.silenciado &&
           other.orden == this.orden &&
-          other.fuenteIntervalo == this.fuenteIntervalo);
+          other.fuenteIntervalo == this.fuenteIntervalo &&
+          other.tipo == this.tipo &&
+          other.posicion == this.posicion &&
+          other.nombreAutogenerado == this.nombreAutogenerado);
 }
 
 class MaintenanceSchedulesCompanion
@@ -2231,6 +2369,9 @@ class MaintenanceSchedulesCompanion
   final Value<bool> silenciado;
   final Value<int> orden;
   final Value<FuenteIntervalo> fuenteIntervalo;
+  final Value<MaintenanceType?> tipo;
+  final Value<Posicion?> posicion;
+  final Value<bool> nombreAutogenerado;
   const MaintenanceSchedulesCompanion({
     this.id = const Value.absent(),
     this.vehicleId = const Value.absent(),
@@ -2244,6 +2385,9 @@ class MaintenanceSchedulesCompanion
     this.silenciado = const Value.absent(),
     this.orden = const Value.absent(),
     this.fuenteIntervalo = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.posicion = const Value.absent(),
+    this.nombreAutogenerado = const Value.absent(),
   });
   MaintenanceSchedulesCompanion.insert({
     this.id = const Value.absent(),
@@ -2258,6 +2402,9 @@ class MaintenanceSchedulesCompanion
     this.silenciado = const Value.absent(),
     this.orden = const Value.absent(),
     this.fuenteIntervalo = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.posicion = const Value.absent(),
+    this.nombreAutogenerado = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        nombre = Value(nombre),
        categoria = Value(categoria);
@@ -2274,6 +2421,9 @@ class MaintenanceSchedulesCompanion
     Expression<bool>? silenciado,
     Expression<int>? orden,
     Expression<String>? fuenteIntervalo,
+    Expression<String>? tipo,
+    Expression<String>? posicion,
+    Expression<bool>? nombreAutogenerado,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2288,6 +2438,9 @@ class MaintenanceSchedulesCompanion
       if (silenciado != null) 'silenciado': silenciado,
       if (orden != null) 'orden': orden,
       if (fuenteIntervalo != null) 'fuente_intervalo': fuenteIntervalo,
+      if (tipo != null) 'tipo': tipo,
+      if (posicion != null) 'posicion': posicion,
+      if (nombreAutogenerado != null) 'nombre_autogenerado': nombreAutogenerado,
     });
   }
 
@@ -2304,6 +2457,9 @@ class MaintenanceSchedulesCompanion
     Value<bool>? silenciado,
     Value<int>? orden,
     Value<FuenteIntervalo>? fuenteIntervalo,
+    Value<MaintenanceType?>? tipo,
+    Value<Posicion?>? posicion,
+    Value<bool>? nombreAutogenerado,
   }) {
     return MaintenanceSchedulesCompanion(
       id: id ?? this.id,
@@ -2318,6 +2474,9 @@ class MaintenanceSchedulesCompanion
       silenciado: silenciado ?? this.silenciado,
       orden: orden ?? this.orden,
       fuenteIntervalo: fuenteIntervalo ?? this.fuenteIntervalo,
+      tipo: tipo ?? this.tipo,
+      posicion: posicion ?? this.posicion,
+      nombreAutogenerado: nombreAutogenerado ?? this.nombreAutogenerado,
     );
   }
 
@@ -2366,6 +2525,19 @@ class MaintenanceSchedulesCompanion
         ),
       );
     }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(
+        $MaintenanceSchedulesTable.$convertertipon.toSql(tipo.value),
+      );
+    }
+    if (posicion.present) {
+      map['posicion'] = Variable<String>(
+        $MaintenanceSchedulesTable.$converterposicionn.toSql(posicion.value),
+      );
+    }
+    if (nombreAutogenerado.present) {
+      map['nombre_autogenerado'] = Variable<bool>(nombreAutogenerado.value);
+    }
     return map;
   }
 
@@ -2383,7 +2555,10 @@ class MaintenanceSchedulesCompanion
           ..write('activo: $activo, ')
           ..write('silenciado: $silenciado, ')
           ..write('orden: $orden, ')
-          ..write('fuenteIntervalo: $fuenteIntervalo')
+          ..write('fuenteIntervalo: $fuenteIntervalo, ')
+          ..write('tipo: $tipo, ')
+          ..write('posicion: $posicion, ')
+          ..write('nombreAutogenerado: $nombreAutogenerado')
           ..write(')'))
         .toString();
   }
@@ -2497,6 +2672,18 @@ class $MaintenanceRecordsTable extends MaintenanceRecords
     defaultValue: const Constant(false),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<MaintenanceOperationKind?, String>
+  kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<MaintenanceOperationKind?>(
+        $MaintenanceRecordsTable.$converterkindn,
+      );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     vehicleId,
@@ -2507,6 +2694,7 @@ class $MaintenanceRecordsTable extends MaintenanceRecords
     taller,
     notas,
     esSembrado,
+    kind,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2619,6 +2807,12 @@ class $MaintenanceRecordsTable extends MaintenanceRecords
         DriftSqlType.bool,
         data['${effectivePrefix}es_sembrado'],
       )!,
+      kind: $MaintenanceRecordsTable.$converterkindn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        ),
+      ),
     );
   }
 
@@ -2626,6 +2820,13 @@ class $MaintenanceRecordsTable extends MaintenanceRecords
   $MaintenanceRecordsTable createAlias(String alias) {
     return $MaintenanceRecordsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<MaintenanceOperationKind, String, String>
+  $converterkind = const EnumNameConverter<MaintenanceOperationKind>(
+    MaintenanceOperationKind.values,
+  );
+  static JsonTypeConverter2<MaintenanceOperationKind?, String?, String?>
+  $converterkindn = JsonTypeConverter2.asNullable($converterkind);
 }
 
 class MaintenanceRecord extends DataClass
@@ -2646,6 +2847,13 @@ class MaintenanceRecord extends DataClass
   /// poder calcular el primer vencimiento. Cuenta para los cálculos y se
   /// distingue en el historial.
   final bool esSembrado;
+
+  /// Qué se hizo realmente esta vez: reparación, sustitución, inspección...
+  /// Nulo en los registros ya guardados antes de que existiera este campo,
+  /// y en cualquiera nuevo que no lo rellene. No se recalcula nunca a
+  /// partir de `MaintenanceType.defaultKind`: es un valor fijado al
+  /// guardar, no una vista sobre el catálogo.
+  final MaintenanceOperationKind? kind;
   const MaintenanceRecord({
     required this.id,
     required this.vehicleId,
@@ -2656,6 +2864,7 @@ class MaintenanceRecord extends DataClass
     this.taller,
     this.notas,
     required this.esSembrado,
+    this.kind,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2677,6 +2886,11 @@ class MaintenanceRecord extends DataClass
       map['notas'] = Variable<String>(notas);
     }
     map['es_sembrado'] = Variable<bool>(esSembrado);
+    if (!nullToAbsent || kind != null) {
+      map['kind'] = Variable<String>(
+        $MaintenanceRecordsTable.$converterkindn.toSql(kind),
+      );
+    }
     return map;
   }
 
@@ -2699,6 +2913,7 @@ class MaintenanceRecord extends DataClass
           ? const Value.absent()
           : Value(notas),
       esSembrado: Value(esSembrado),
+      kind: kind == null && nullToAbsent ? const Value.absent() : Value(kind),
     );
   }
 
@@ -2717,6 +2932,9 @@ class MaintenanceRecord extends DataClass
       taller: serializer.fromJson<String?>(json['taller']),
       notas: serializer.fromJson<String?>(json['notas']),
       esSembrado: serializer.fromJson<bool>(json['esSembrado']),
+      kind: $MaintenanceRecordsTable.$converterkindn.fromJson(
+        serializer.fromJson<String?>(json['kind']),
+      ),
     );
   }
   @override
@@ -2732,6 +2950,9 @@ class MaintenanceRecord extends DataClass
       'taller': serializer.toJson<String?>(taller),
       'notas': serializer.toJson<String?>(notas),
       'esSembrado': serializer.toJson<bool>(esSembrado),
+      'kind': serializer.toJson<String?>(
+        $MaintenanceRecordsTable.$converterkindn.toJson(kind),
+      ),
     };
   }
 
@@ -2745,6 +2966,7 @@ class MaintenanceRecord extends DataClass
     Value<String?> taller = const Value.absent(),
     Value<String?> notas = const Value.absent(),
     bool? esSembrado,
+    Value<MaintenanceOperationKind?> kind = const Value.absent(),
   }) => MaintenanceRecord(
     id: id ?? this.id,
     vehicleId: vehicleId ?? this.vehicleId,
@@ -2755,6 +2977,7 @@ class MaintenanceRecord extends DataClass
     taller: taller.present ? taller.value : this.taller,
     notas: notas.present ? notas.value : this.notas,
     esSembrado: esSembrado ?? this.esSembrado,
+    kind: kind.present ? kind.value : this.kind,
   );
   MaintenanceRecord copyWithCompanion(MaintenanceRecordsCompanion data) {
     return MaintenanceRecord(
@@ -2771,6 +2994,7 @@ class MaintenanceRecord extends DataClass
       esSembrado: data.esSembrado.present
           ? data.esSembrado.value
           : this.esSembrado,
+      kind: data.kind.present ? data.kind.value : this.kind,
     );
   }
 
@@ -2785,7 +3009,8 @@ class MaintenanceRecord extends DataClass
           ..write('coste: $coste, ')
           ..write('taller: $taller, ')
           ..write('notas: $notas, ')
-          ..write('esSembrado: $esSembrado')
+          ..write('esSembrado: $esSembrado, ')
+          ..write('kind: $kind')
           ..write(')'))
         .toString();
   }
@@ -2801,6 +3026,7 @@ class MaintenanceRecord extends DataClass
     taller,
     notas,
     esSembrado,
+    kind,
   );
   @override
   bool operator ==(Object other) =>
@@ -2814,7 +3040,8 @@ class MaintenanceRecord extends DataClass
           other.coste == this.coste &&
           other.taller == this.taller &&
           other.notas == this.notas &&
-          other.esSembrado == this.esSembrado);
+          other.esSembrado == this.esSembrado &&
+          other.kind == this.kind);
 }
 
 class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
@@ -2827,6 +3054,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
   final Value<String?> taller;
   final Value<String?> notas;
   final Value<bool> esSembrado;
+  final Value<MaintenanceOperationKind?> kind;
   const MaintenanceRecordsCompanion({
     this.id = const Value.absent(),
     this.vehicleId = const Value.absent(),
@@ -2837,6 +3065,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
     this.taller = const Value.absent(),
     this.notas = const Value.absent(),
     this.esSembrado = const Value.absent(),
+    this.kind = const Value.absent(),
   });
   MaintenanceRecordsCompanion.insert({
     this.id = const Value.absent(),
@@ -2848,6 +3077,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
     this.taller = const Value.absent(),
     this.notas = const Value.absent(),
     this.esSembrado = const Value.absent(),
+    this.kind = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        fecha = Value(fecha),
        km = Value(km);
@@ -2861,6 +3091,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
     Expression<String>? taller,
     Expression<String>? notas,
     Expression<bool>? esSembrado,
+    Expression<String>? kind,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2872,6 +3103,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
       if (taller != null) 'taller': taller,
       if (notas != null) 'notas': notas,
       if (esSembrado != null) 'es_sembrado': esSembrado,
+      if (kind != null) 'kind': kind,
     });
   }
 
@@ -2885,6 +3117,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
     Value<String?>? taller,
     Value<String?>? notas,
     Value<bool>? esSembrado,
+    Value<MaintenanceOperationKind?>? kind,
   }) {
     return MaintenanceRecordsCompanion(
       id: id ?? this.id,
@@ -2896,6 +3129,7 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
       taller: taller ?? this.taller,
       notas: notas ?? this.notas,
       esSembrado: esSembrado ?? this.esSembrado,
+      kind: kind ?? this.kind,
     );
   }
 
@@ -2929,6 +3163,11 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
     if (esSembrado.present) {
       map['es_sembrado'] = Variable<bool>(esSembrado.value);
     }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $MaintenanceRecordsTable.$converterkindn.toSql(kind.value),
+      );
+    }
     return map;
   }
 
@@ -2943,7 +3182,8 @@ class MaintenanceRecordsCompanion extends UpdateCompanion<MaintenanceRecord> {
           ..write('coste: $coste, ')
           ..write('taller: $taller, ')
           ..write('notas: $notas, ')
-          ..write('esSembrado: $esSembrado')
+          ..write('esSembrado: $esSembrado, ')
+          ..write('kind: $kind')
           ..write(')'))
         .toString();
   }
@@ -5052,6 +5292,9 @@ typedef $$MaintenanceSchedulesTableCreateCompanionBuilder =
       Value<bool> silenciado,
       Value<int> orden,
       Value<FuenteIntervalo> fuenteIntervalo,
+      Value<MaintenanceType?> tipo,
+      Value<Posicion?> posicion,
+      Value<bool> nombreAutogenerado,
     });
 typedef $$MaintenanceSchedulesTableUpdateCompanionBuilder =
     MaintenanceSchedulesCompanion Function({
@@ -5067,6 +5310,9 @@ typedef $$MaintenanceSchedulesTableUpdateCompanionBuilder =
       Value<bool> silenciado,
       Value<int> orden,
       Value<FuenteIntervalo> fuenteIntervalo,
+      Value<MaintenanceType?> tipo,
+      Value<Posicion?> posicion,
+      Value<bool> nombreAutogenerado,
     });
 
 final class $$MaintenanceSchedulesTableReferences
@@ -5192,6 +5438,23 @@ class $$MaintenanceSchedulesTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
+  ColumnWithTypeConverterFilters<MaintenanceType?, MaintenanceType, String>
+  get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<Posicion?, Posicion, String> get posicion =>
+      $composableBuilder(
+        column: $table.posicion,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<bool> get nombreAutogenerado => $composableBuilder(
+    column: $table.nombreAutogenerado,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$VehiclesTableFilterComposer get vehicleId {
     final $$VehiclesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -5305,6 +5568,21 @@ class $$MaintenanceSchedulesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get posicion => $composableBuilder(
+    column: $table.posicion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get nombreAutogenerado => $composableBuilder(
+    column: $table.nombreAutogenerado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$VehiclesTableOrderingComposer get vehicleId {
     final $$VehiclesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5377,6 +5655,17 @@ class $$MaintenanceSchedulesTableAnnotationComposer
   GeneratedColumnWithTypeConverter<FuenteIntervalo, String>
   get fuenteIntervalo => $composableBuilder(
     column: $table.fuenteIntervalo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<MaintenanceType?, String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<Posicion?, String> get posicion =>
+      $composableBuilder(column: $table.posicion, builder: (column) => column);
+
+  GeneratedColumn<bool> get nombreAutogenerado => $composableBuilder(
+    column: $table.nombreAutogenerado,
     builder: (column) => column,
   );
 
@@ -5478,6 +5767,9 @@ class $$MaintenanceSchedulesTableTableManager
                 Value<bool> silenciado = const Value.absent(),
                 Value<int> orden = const Value.absent(),
                 Value<FuenteIntervalo> fuenteIntervalo = const Value.absent(),
+                Value<MaintenanceType?> tipo = const Value.absent(),
+                Value<Posicion?> posicion = const Value.absent(),
+                Value<bool> nombreAutogenerado = const Value.absent(),
               }) => MaintenanceSchedulesCompanion(
                 id: id,
                 vehicleId: vehicleId,
@@ -5491,6 +5783,9 @@ class $$MaintenanceSchedulesTableTableManager
                 silenciado: silenciado,
                 orden: orden,
                 fuenteIntervalo: fuenteIntervalo,
+                tipo: tipo,
+                posicion: posicion,
+                nombreAutogenerado: nombreAutogenerado,
               ),
           createCompanionCallback:
               ({
@@ -5506,6 +5801,9 @@ class $$MaintenanceSchedulesTableTableManager
                 Value<bool> silenciado = const Value.absent(),
                 Value<int> orden = const Value.absent(),
                 Value<FuenteIntervalo> fuenteIntervalo = const Value.absent(),
+                Value<MaintenanceType?> tipo = const Value.absent(),
+                Value<Posicion?> posicion = const Value.absent(),
+                Value<bool> nombreAutogenerado = const Value.absent(),
               }) => MaintenanceSchedulesCompanion.insert(
                 id: id,
                 vehicleId: vehicleId,
@@ -5519,6 +5817,9 @@ class $$MaintenanceSchedulesTableTableManager
                 silenciado: silenciado,
                 orden: orden,
                 fuenteIntervalo: fuenteIntervalo,
+                tipo: tipo,
+                posicion: posicion,
+                nombreAutogenerado: nombreAutogenerado,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -5625,6 +5926,7 @@ typedef $$MaintenanceRecordsTableCreateCompanionBuilder =
       Value<String?> taller,
       Value<String?> notas,
       Value<bool> esSembrado,
+      Value<MaintenanceOperationKind?> kind,
     });
 typedef $$MaintenanceRecordsTableUpdateCompanionBuilder =
     MaintenanceRecordsCompanion Function({
@@ -5637,6 +5939,7 @@ typedef $$MaintenanceRecordsTableUpdateCompanionBuilder =
       Value<String?> taller,
       Value<String?> notas,
       Value<bool> esSembrado,
+      Value<MaintenanceOperationKind?> kind,
     });
 
 final class $$MaintenanceRecordsTableReferences
@@ -5733,6 +6036,16 @@ class $$MaintenanceRecordsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnWithTypeConverterFilters<
+    MaintenanceOperationKind?,
+    MaintenanceOperationKind,
+    String
+  >
+  get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
   $$VehiclesTableFilterComposer get vehicleId {
     final $$VehiclesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -5824,6 +6137,11 @@ class $$MaintenanceRecordsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$VehiclesTableOrderingComposer get vehicleId {
     final $$VehiclesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5903,6 +6221,10 @@ class $$MaintenanceRecordsTableAnnotationComposer
     column: $table.esSembrado,
     builder: (column) => column,
   );
+
+  GeneratedColumnWithTypeConverter<MaintenanceOperationKind?, String>
+  get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
 
   $$VehiclesTableAnnotationComposer get vehicleId {
     final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
@@ -5994,6 +6316,7 @@ class $$MaintenanceRecordsTableTableManager
                 Value<String?> taller = const Value.absent(),
                 Value<String?> notas = const Value.absent(),
                 Value<bool> esSembrado = const Value.absent(),
+                Value<MaintenanceOperationKind?> kind = const Value.absent(),
               }) => MaintenanceRecordsCompanion(
                 id: id,
                 vehicleId: vehicleId,
@@ -6004,6 +6327,7 @@ class $$MaintenanceRecordsTableTableManager
                 taller: taller,
                 notas: notas,
                 esSembrado: esSembrado,
+                kind: kind,
               ),
           createCompanionCallback:
               ({
@@ -6016,6 +6340,7 @@ class $$MaintenanceRecordsTableTableManager
                 Value<String?> taller = const Value.absent(),
                 Value<String?> notas = const Value.absent(),
                 Value<bool> esSembrado = const Value.absent(),
+                Value<MaintenanceOperationKind?> kind = const Value.absent(),
               }) => MaintenanceRecordsCompanion.insert(
                 id: id,
                 vehicleId: vehicleId,
@@ -6026,6 +6351,7 @@ class $$MaintenanceRecordsTableTableManager
                 taller: taller,
                 notas: notas,
                 esSembrado: esSembrado,
+                kind: kind,
               ),
           withReferenceMapper: (p0) => p0
               .map(

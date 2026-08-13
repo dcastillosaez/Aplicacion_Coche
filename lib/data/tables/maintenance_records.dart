@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/maintenance_operation_kind.dart';
 import 'maintenance_schedules.dart';
 import 'vehicles.dart';
+
+export '../../domain/maintenance_operation_kind.dart';
 
 class MaintenanceRecords extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -26,4 +29,11 @@ class MaintenanceRecords extends Table {
   /// poder calcular el primer vencimiento. Cuenta para los cálculos y se
   /// distingue en el historial.
   BoolColumn get esSembrado => boolean().withDefault(const Constant(false))();
+
+  /// Qué se hizo realmente esta vez: reparación, sustitución, inspección...
+  /// Nulo en los registros ya guardados antes de que existiera este campo,
+  /// y en cualquiera nuevo que no lo rellene. No se recalcula nunca a
+  /// partir de `MaintenanceType.defaultKind`: es un valor fijado al
+  /// guardar, no una vista sobre el catálogo.
+  TextColumn get kind => textEnum<MaintenanceOperationKind>().nullable()();
 }

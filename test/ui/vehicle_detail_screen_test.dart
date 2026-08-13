@@ -92,6 +92,7 @@ void main() {
         silenciado: false,
         orden: 0,
         fuenteIntervalo: FuenteIntervalo.orientativo,
+        nombreAutogenerado: false,
       );
       const vencimiento = Vencimiento(
         estado: EstadoMantenimiento.vencido,
