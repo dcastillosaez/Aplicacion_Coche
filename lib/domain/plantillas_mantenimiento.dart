@@ -1,6 +1,8 @@
 import 'fuel_type.dart';
 import 'itv.dart' show mesesEntreItv;
 import 'maintenance_category.dart';
+import 'maintenance_type.dart';
+import 'posicion.dart';
 
 /// Un mantenimiento habitual propuesto al dar de alta un vehículo.
 ///
@@ -11,6 +13,11 @@ import 'maintenance_category.dart';
 class PlantillaMantenimiento {
   final String nombre;
   final MaintenanceCategory categoria;
+
+  /// Nulo cuando la plantilla no encaja de forma directa en un tipo del
+  /// catálogo, o cuando no aporta nada frente al nombre libre.
+  final MaintenanceType? tipo;
+  final Posicion? posicion;
 
   /// Nulo cuando el mantenimiento no tiene un kilometraje orientativo
   /// razonable (p. ej. la distribución, que depende del motor concreto) o
@@ -24,6 +31,8 @@ class PlantillaMantenimiento {
   const PlantillaMantenimiento({
     required this.nombre,
     required this.categoria,
+    this.tipo,
+    this.posicion,
     this.intervalKm,
     this.intervalMeses,
   });
@@ -60,19 +69,22 @@ List<PlantillaMantenimiento> plantillasPara({
       const PlantillaMantenimiento(
         nombre: 'Aceite y filtro',
         categoria: MaintenanceCategory.motor,
+        tipo: MaintenanceType.aceiteMotor,
         intervalKm: 15000,
         intervalMeses: 12,
       ),
       const PlantillaMantenimiento(
         nombre: 'Filtro de aire',
         categoria: MaintenanceCategory.motor,
+        tipo: MaintenanceType.filtroAire,
         intervalKm: 30000,
         intervalMeses: 24,
       ),
     ],
     const PlantillaMantenimiento(
       nombre: 'Filtro de habitáculo',
-      categoria: MaintenanceCategory.otro,
+      categoria: MaintenanceCategory.habitaculo,
+      tipo: MaintenanceType.filtroHabitaculo,
       intervalKm: 20000,
       intervalMeses: 12,
     ),
@@ -80,6 +92,7 @@ List<PlantillaMantenimiento> plantillasPara({
       const PlantillaMantenimiento(
         nombre: 'Filtro de combustible',
         categoria: MaintenanceCategory.motor,
+        tipo: MaintenanceType.filtroCombustible,
         intervalKm: 40000,
         intervalMeses: 48,
       ),
@@ -87,49 +100,59 @@ List<PlantillaMantenimiento> plantillasPara({
       const PlantillaMantenimiento(
         nombre: 'Bujías',
         categoria: MaintenanceCategory.motor,
+        tipo: MaintenanceType.bujias,
         intervalKm: 60000,
         intervalMeses: 60,
       ),
     const PlantillaMantenimiento(
       nombre: 'Líquido de frenos',
       categoria: MaintenanceCategory.frenos,
+      tipo: MaintenanceType.liquidoFrenos,
       intervalMeses: 24,
     ),
     if (!esElectrico)
       const PlantillaMantenimiento(
         nombre: 'Refrigerante',
         categoria: MaintenanceCategory.motor,
+        tipo: MaintenanceType.refrigerante,
         intervalKm: 60000,
         intervalMeses: 48,
       ),
     const PlantillaMantenimiento(
       nombre: 'Pastillas de freno delanteras',
       categoria: MaintenanceCategory.frenos,
+      tipo: MaintenanceType.pastillasFreno,
+      posicion: Posicion.delantera,
       intervalKm: 40000,
     ),
     const PlantillaMantenimiento(
       nombre: 'Pastillas de freno traseras',
       categoria: MaintenanceCategory.frenos,
+      tipo: MaintenanceType.pastillasFreno,
+      posicion: Posicion.trasera,
       intervalKm: 60000,
     ),
     const PlantillaMantenimiento(
       nombre: 'Discos de freno',
       categoria: MaintenanceCategory.frenos,
+      tipo: MaintenanceType.discosFreno,
       intervalKm: 80000,
     ),
     const PlantillaMantenimiento(
       nombre: 'Neumáticos',
       categoria: MaintenanceCategory.neumaticos,
+      tipo: MaintenanceType.neumatico,
       intervalKm: 40000,
       intervalMeses: 72,
     ),
     const PlantillaMantenimiento(
       nombre: 'Batería',
       categoria: MaintenanceCategory.electricidad,
+      tipo: MaintenanceType.bateria,
       intervalMeses: 60,
     ),
-    // Sin intervalo a propósito: depende del motor concreto y la app no
-    // puede saberlo. Que el dueño lo rellene con el libro delante.
+    // Sin tipo ni intervalo a propósito: depende del motor concreto y la
+    // app no puede saberlo. Que el dueño lo rellene con el libro delante.
     if (!esElectrico)
       const PlantillaMantenimiento(
         nombre: 'Correa o cadena de distribución',
@@ -139,12 +162,14 @@ List<PlantillaMantenimiento> plantillasPara({
       const PlantillaMantenimiento(
         nombre: 'Aceite de la caja automática',
         categoria: MaintenanceCategory.transmision,
+        tipo: MaintenanceType.aceiteCajaCambios,
         intervalKm: 60000,
         intervalMeses: 72,
       ),
     PlantillaMantenimiento(
       nombre: 'ITV',
       categoria: MaintenanceCategory.itv,
+      tipo: MaintenanceType.inspeccionItv,
       intervalMeses: _mesesItvOrientativos(fechaMatriculacion),
     ),
   ];
