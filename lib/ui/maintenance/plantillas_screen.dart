@@ -80,6 +80,8 @@ class _PlantillasScreenState extends ConsumerState<PlantillasScreen> {
               intervalKm: Value(plantilla.intervalKm),
               intervalMeses: Value(plantilla.intervalMeses),
               orden: Value(i),
+              tipo: Value(plantilla.tipo),
+              posicion: Value(plantilla.posicion),
             ),
           );
         }

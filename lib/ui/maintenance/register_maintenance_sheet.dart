@@ -83,6 +83,7 @@ class _HojaRegistroMantenimientoState
   void initState() {
     super.initState();
     _scheduleSeleccionadoId = widget.scheduleInicial?.id;
+    _kind = widget.scheduleInicial?.tipo?.defaultKind;
     _fecha = DateUtils.dateOnly(DateTime.now());
   }
 

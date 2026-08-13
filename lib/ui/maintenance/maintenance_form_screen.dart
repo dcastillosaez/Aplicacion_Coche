@@ -286,6 +286,14 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
   /// la única que debe apagar `_nombreAutogenerado`.
   bool _escribiendoNombreAutomatico = false;
 
+  /// Último texto que `_regenerarNombreAutomatico` escribió por su cuenta
+  /// en `_nombre`. El `TextEditingController` notifica no solo al cambiar
+  /// el texto sino también al cambiar la selección (p. ej. al enfocar el
+  /// campo), así que `_alEditarNombre` no puede fiarse solo de que le
+  /// llegue una notificación: compara contra este valor para saber si el
+  /// texto realmente cambió.
+  String? _ultimoNombreAutogenerado;
+
   bool _guardando = false;
 
   /// Si se está borrando el mantenimiento (independiente de _guardando: no
@@ -316,6 +324,10 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     // En creación empieza en true: no hay nombre que proteger todavía, así
     // que elegir Tipo o Posición ya debe rellenarlo.
     _nombreAutogenerado = s?.nombreAutogenerado ?? true;
+    // Punto de partida coherente con el texto ya en el campo: si nadie ha
+    // tecleado todavía, tocar el campo (que solo mueve la selección, no el
+    // texto) no debe apagar la autogeneración.
+    _ultimoNombreAutogenerado = _nombre.text;
     _nombre.addListener(_alEditarNombre);
   }
 
@@ -376,13 +388,17 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     return null;
   }
 
-  /// Reacciona a cualquier cambio de `_nombre.text`. Solo apaga
-  /// `_nombreAutogenerado` cuando el cambio lo hizo el usuario tecleando:
-  /// mientras `_regenerarNombreAutomatico` reescribe el campo por su
-  /// cuenta, `_escribiendoNombreAutomatico` está a `true` y este listener
-  /// no hace nada.
+  /// Reacciona a las notificaciones de `_nombre` (texto o selección). Solo
+  /// apaga `_nombreAutogenerado` cuando el texto ha cambiado de verdad por
+  /// tecleo del usuario: mientras `_regenerarNombreAutomatico` reescribe el
+  /// campo por su cuenta, `_escribiendoNombreAutomatico` está a `true` y
+  /// este listener no hace nada; y si el texto sigue siendo el mismo que
+  /// `_regenerarNombreAutomatico` dejó (p. ej. porque el usuario solo ha
+  /// enfocado el campo, lo que cambia la selección sin tocar el texto),
+  /// tampoco hay nada que apagar.
   void _alEditarNombre() {
     if (_escribiendoNombreAutomatico || !_nombreAutogenerado) return;
+    if (_nombre.text == _ultimoNombreAutogenerado) return;
     setState(() => _nombreAutogenerado = false);
   }
 
@@ -402,6 +418,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     }
     _escribiendoNombreAutomatico = true;
     _nombre.text = nuevoNombre;
+    _ultimoNombreAutogenerado = nuevoNombre;
     _escribiendoNombreAutomatico = false;
   }
 
