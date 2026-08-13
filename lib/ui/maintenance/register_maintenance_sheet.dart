@@ -4,10 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/tables/maintenance_records.dart'
+    show MaintenanceOperationKind;
 import '../../data/tables/mileage_readings.dart' show MileageOrigin;
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
+import 'maintenance_form_screen.dart' show etiquetasMaintenanceOperationKind;
 
 /// Abre la hoja para registrar un mantenimiento ya realizado.
 ///
@@ -65,6 +68,7 @@ class _HojaRegistroMantenimientoState
   final _notasController = TextEditingController();
 
   int? _scheduleSeleccionadoId;
+  MaintenanceOperationKind? _kind;
   late DateTime _fecha;
 
   /// El kilometraje solo se rellena por defecto una vez, con la última
@@ -155,6 +159,7 @@ class _HojaRegistroMantenimientoState
             scheduleId: Value(scheduleId),
             fecha: fecha,
             km: km,
+            kind: Value(_kind),
             coste: Value(coste),
             taller: Value(taller.isEmpty ? null : taller),
             notas: Value(notas.isEmpty ? null : notas),
@@ -288,7 +293,19 @@ class _HojaRegistroMantenimientoState
                     ),
                   ),
                 ],
-                onChanged: (id) => setState(() => _scheduleSeleccionadoId = id),
+                onChanged: (id) => setState(() {
+                  _scheduleSeleccionadoId = id;
+                  // La sugerencia de kind solo se recalcula al cambiar de
+                  // mantenimiento seleccionado: si el usuario ya la ha
+                  // tocado a mano para este mismo mantenimiento, un cambio
+                  // posterior en otro campo no debe pisarla.
+                  if (id == null) {
+                    _kind = null;
+                  } else {
+                    final schedule = opciones.firstWhere((s) => s.id == id);
+                    _kind = schedule.tipo?.defaultKind;
+                  }
+                }),
               ),
               const SizedBox(height: 12),
               ListTile(
@@ -337,6 +354,27 @@ class _HojaRegistroMantenimientoState
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                 ],
                 validator: _validarCoste,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<MaintenanceOperationKind?>(
+                initialValue: _kind,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de intervención',
+                ),
+                items: [
+                  const DropdownMenuItem<MaintenanceOperationKind?>(
+                    value: null,
+                    child: Text('Sin especificar'),
+                  ),
+                  ...MaintenanceOperationKind.values.map(
+                    (k) => DropdownMenuItem<MaintenanceOperationKind?>(
+                      value: k,
+                      child: Text(etiquetasMaintenanceOperationKind[k]!),
+                    ),
+                  ),
+                ],
+                onChanged: (k) => setState(() => _kind = k),
               ),
               const SizedBox(height: 12),
               TextFormField(

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/tables/maintenance_records.dart'
+    show MaintenanceOperationKind;
 import '../../data/tables/maintenance_schedules.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
@@ -229,6 +231,15 @@ const Map<Posicion, String> etiquetasPosicion = {
   Posicion.ejeDelantero: 'Eje delantero',
   Posicion.ejeTrasero: 'Eje trasero',
 };
+
+const Map<MaintenanceOperationKind, String> etiquetasMaintenanceOperationKind =
+    {
+      MaintenanceOperationKind.preventivo: 'Preventivo',
+      MaintenanceOperationKind.inspeccion: 'Inspección',
+      MaintenanceOperationKind.reparacion: 'Reparación',
+      MaintenanceOperationKind.sustitucion: 'Sustitución',
+      MaintenanceOperationKind.otro: 'Otro',
+    };
 
 class MaintenanceFormScreen extends ConsumerStatefulWidget {
   final int vehicleId;
