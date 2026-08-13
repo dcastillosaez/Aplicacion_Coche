@@ -24,6 +24,212 @@ const Map<MaintenanceCategory, String> etiquetasCategoria = {
   MaintenanceCategory.seguridad: 'Seguridad',
 };
 
+const Map<MaintenanceType, String> etiquetasMaintenanceType = {
+  // Motor
+  MaintenanceType.aceiteMotor: 'Aceite motor',
+  MaintenanceType.filtroAceite: 'Filtro de aceite',
+  MaintenanceType.filtroAire: 'Filtro de aire',
+  MaintenanceType.filtroCombustible: 'Filtro de combustible',
+  MaintenanceType.bujias: 'Bujías',
+  MaintenanceType.calentadores: 'Calentadores',
+  MaintenanceType.bobinasEncendido: 'Bobinas de encendido',
+  MaintenanceType.correaDistribucion: 'Correa de distribución',
+  MaintenanceType.kitDistribucion: 'Kit de distribución',
+  MaintenanceType.cadenaDistribucion: 'Cadena de distribución',
+  MaintenanceType.tensorDistribucion: 'Tensor de distribución',
+  MaintenanceType.correaAuxiliar: 'Correa auxiliar',
+  MaintenanceType.tensorCorreaAuxiliar: 'Tensor de correa auxiliar',
+  MaintenanceType.bombaAgua: 'Bomba de agua',
+  MaintenanceType.refrigerante: 'Refrigerante',
+  MaintenanceType.bombaAceite: 'Bomba de aceite',
+  MaintenanceType.termostato: 'Termostato',
+  MaintenanceType.radiador: 'Radiador',
+  MaintenanceType.manguitosRefrigeracion: 'Manguitos de refrigeración',
+  MaintenanceType.soportesMotor: 'Soportes de motor',
+  MaintenanceType.admision: 'Admisión',
+  MaintenanceType.inyectores: 'Inyectores',
+  MaintenanceType.sistemaCombustible: 'Sistema de combustible',
+  MaintenanceType.limpiezaDescarbonizacion: 'Limpieza / descarbonización',
+  MaintenanceType.turbo: 'Turbo',
+  MaintenanceType.otroMotor: 'Otro (motor)',
+  // Frenos
+  MaintenanceType.pastillasFreno: 'Pastillas de freno',
+  MaintenanceType.discosFreno: 'Discos de freno',
+  MaintenanceType.zapatasFreno: 'Zapatas de freno',
+  MaintenanceType.tamboresFreno: 'Tambores de freno',
+  MaintenanceType.liquidoFrenos: 'Líquido de frenos',
+  MaintenanceType.pinzasFreno: 'Pinzas de freno',
+  MaintenanceType.latiguillosFreno: 'Latiguillos de freno',
+  MaintenanceType.sensorDesgasteFreno: 'Sensor de desgaste',
+  MaintenanceType.cilindroMaestro: 'Cilindro maestro',
+  MaintenanceType.servofreno: 'Servofreno',
+  MaintenanceType.abs: 'ABS',
+  MaintenanceType.sensoresAbs: 'Sensores ABS',
+  MaintenanceType.frenoEstacionamiento: 'Freno de estacionamiento',
+  MaintenanceType.frenoEstacionamientoElectrico:
+      'Freno de estacionamiento eléctrico',
+  MaintenanceType.otroFrenos: 'Otro (frenos)',
+  // Neumáticos
+  MaintenanceType.neumatico: 'Neumático',
+  MaintenanceType.rotacionNeumaticos: 'Rotación de neumáticos',
+  MaintenanceType.equilibrado: 'Equilibrado',
+  MaintenanceType.alineacion: 'Alineación',
+  MaintenanceType.reparacionPinchazo: 'Reparación de pinchazo',
+  MaintenanceType.valvulas: 'Válvulas',
+  MaintenanceType.tpms: 'TPMS / sensores de presión',
+  MaintenanceType.kitAntipinchazos: 'Kit antipinchazos',
+  MaintenanceType.ruedaRepuesto: 'Rueda de repuesto',
+  MaintenanceType.otroNeumaticos: 'Otro (neumáticos)',
+  // Electricidad
+  MaintenanceType.bateria: 'Batería',
+  MaintenanceType.alternador: 'Alternador',
+  MaintenanceType.motorArranque: 'Motor de arranque',
+  MaintenanceType.fusibles: 'Fusibles',
+  MaintenanceType.reles: 'Relés',
+  MaintenanceType.bombillas: 'Bombillas',
+  MaintenanceType.iluminacionExterior: 'Iluminación exterior',
+  MaintenanceType.iluminacionInterior: 'Iluminación interior',
+  MaintenanceType.sensorElectrico: 'Sensor',
+  MaintenanceType.cableado: 'Cableado',
+  MaintenanceType.sistemaCarga: 'Sistema de carga',
+  MaintenanceType.otroElectricidad: 'Otro (electricidad)',
+  // Suspensión
+  MaintenanceType.amortiguadores: 'Amortiguadores',
+  MaintenanceType.muelles: 'Muelles',
+  MaintenanceType.copelas: 'Copelas',
+  MaintenanceType.rodamientosCopela: 'Rodamientos de copela',
+  MaintenanceType.brazosSuspension: 'Brazos de suspensión',
+  MaintenanceType.silentblocks: 'Silentblocks',
+  MaintenanceType.rotulasSuspension: 'Rótulas',
+  MaintenanceType.bieletasEstabilizadoras: 'Bieletas estabilizadoras',
+  MaintenanceType.barraEstabilizadora: 'Barra estabilizadora',
+  MaintenanceType.rodamientosRueda: 'Rodamientos de rueda',
+  MaintenanceType.mangueta: 'Mangueta',
+  MaintenanceType.suspensionNeumatica: 'Suspensión neumática',
+  MaintenanceType.compresorSuspension: 'Compresor de suspensión',
+  MaintenanceType.otroSuspension: 'Otro (suspensión)',
+  // Dirección
+  MaintenanceType.direccionAsistida: 'Dirección asistida',
+  MaintenanceType.bombaDireccion: 'Bomba de dirección',
+  MaintenanceType.cremallera: 'Cremallera',
+  MaintenanceType.terminalDireccion: 'Terminal de dirección',
+  MaintenanceType.rotulaDireccion: 'Rótula de dirección',
+  MaintenanceType.columnaDireccion: 'Columna de dirección',
+  MaintenanceType.volante: 'Volante',
+  MaintenanceType.direccionElectrica: 'Dirección eléctrica',
+  MaintenanceType.liquidoDireccion: 'Líquido de dirección',
+  MaintenanceType.otroDireccion: 'Otro (dirección)',
+  // Transmisión
+  MaintenanceType.embrague: 'Embrague',
+  MaintenanceType.kitEmbrague: 'Kit de embrague',
+  MaintenanceType.volanteBimasa: 'Volante bimasa',
+  MaintenanceType.cajaCambiosManual: 'Caja de cambios manual',
+  MaintenanceType.cajaCambiosAutomatica: 'Caja de cambios automática',
+  MaintenanceType.aceiteCajaCambios: 'Aceite de caja de cambios',
+  MaintenanceType.filtroCajaCambios: 'Filtro de caja de cambios',
+  MaintenanceType.convertidorPar: 'Convertidor de par',
+  MaintenanceType.mecatronica: 'Mecatrónica',
+  MaintenanceType.palieres: 'Palieres',
+  MaintenanceType.juntasHomocineticas: 'Juntas homocinéticas',
+  MaintenanceType.arbolTransmision: 'Árbol de transmisión',
+  MaintenanceType.diferencial: 'Diferencial',
+  MaintenanceType.aceiteDiferencial: 'Aceite de diferencial',
+  MaintenanceType.transfer: 'Transfer',
+  MaintenanceType.aceiteTransfer: 'Aceite de transfer',
+  MaintenanceType.retenesTransmision: 'Retenes de transmisión',
+  MaintenanceType.otroTransmision: 'Otro (transmisión)',
+  // Climatización
+  MaintenanceType.aireAcondicionado: 'Aire acondicionado',
+  MaintenanceType.gasRefrigeranteAc: 'Gas refrigerante',
+  MaintenanceType.compresorAc: 'Compresor A/C',
+  MaintenanceType.condensadorAc: 'Condensador',
+  MaintenanceType.evaporadorAc: 'Evaporador',
+  MaintenanceType.filtroDeshidratador: 'Filtro deshidratador',
+  MaintenanceType.ventiladorClimatizacion: 'Ventilador',
+  MaintenanceType.motorVentilador: 'Motor del ventilador',
+  MaintenanceType.calefaccion: 'Calefacción',
+  MaintenanceType.radiadorCalefaccion: 'Radiador de calefacción',
+  MaintenanceType.termostatoClimatizacion: 'Termostato de climatización',
+  MaintenanceType.otroClimatizacion: 'Otro (climatización)',
+  // Escape y emisiones
+  MaintenanceType.escape: 'Escape',
+  MaintenanceType.silencioso: 'Silencioso',
+  MaintenanceType.catalizador: 'Catalizador',
+  MaintenanceType.dpfFap: 'Filtro de partículas (DPF/FAP)',
+  MaintenanceType.egr: 'EGR',
+  MaintenanceType.sondaLambda: 'Sonda lambda',
+  MaintenanceType.sensorNox: 'Sensor NOx',
+  MaintenanceType.sensorTemperaturaEscape: 'Sensor de temperatura',
+  MaintenanceType.adblueScr: 'AdBlue / SCR',
+  MaintenanceType.inyectorAdblue: 'Inyector AdBlue',
+  MaintenanceType.depositoAdblue: 'Depósito AdBlue',
+  MaintenanceType.otroEscapeEmisiones: 'Otro (escape y emisiones)',
+  // Carrocería
+  MaintenanceType.paragolpes: 'Parachoques',
+  MaintenanceType.capo: 'Capó',
+  MaintenanceType.puertas: 'Puertas',
+  MaintenanceType.porton: 'Portón',
+  MaintenanceType.aletas: 'Aletas',
+  MaintenanceType.espejos: 'Espejos',
+  MaintenanceType.elevalunas: 'Elevalunas',
+  MaintenanceType.cerraduras: 'Cerraduras',
+  MaintenanceType.bisagras: 'Bisagras',
+  MaintenanceType.escobillasLimpiaparabrisas: 'Escobillas limpiaparabrisas',
+  MaintenanceType.brazosLimpiaparabrisas: 'Brazos limpiaparabrisas',
+  MaintenanceType.motorLimpiaparabrisas: 'Motor limpiaparabrisas',
+  MaintenanceType.lunaParabrisas: 'Luna / parabrisas',
+  MaintenanceType.molduras: 'Molduras',
+  MaintenanceType.juntasCarroceria: 'Juntas',
+  MaintenanceType.techoSolar: 'Techo solar / panorámico',
+  MaintenanceType.otroCarroceria: 'Otro (carrocería)',
+  // Habitáculo
+  MaintenanceType.filtroHabitaculo: 'Filtro de habitáculo',
+  MaintenanceType.alfombrillas: 'Alfombrillas',
+  MaintenanceType.asientos: 'Asientos',
+  MaintenanceType.salpicadero: 'Salpicadero',
+  MaintenanceType.instrumentacion: 'Instrumentación',
+  MaintenanceType.pantallaInfotainment: 'Pantalla / infotainment',
+  MaintenanceType.altavoces: 'Altavoces',
+  MaintenanceType.otroHabitaculo: 'Otro (habitáculo)',
+  // Seguridad
+  MaintenanceType.airbag: 'Airbag',
+  MaintenanceType.pretensorCinturon: 'Pretensor de cinturón',
+  MaintenanceType.cinturonSeguridad: 'Cinturón de seguridad',
+  MaintenanceType.esp: 'ESP / ESC',
+  MaintenanceType.sensorImpacto: 'Sensor de impacto',
+  MaintenanceType.camaraSeguridad: 'Cámara',
+  MaintenanceType.radarSeguridad: 'Radar',
+  MaintenanceType.adas: 'ADAS',
+  MaintenanceType.sensorAparcamiento: 'Sensor de aparcamiento',
+  MaintenanceType.otroSeguridad: 'Otro (seguridad)',
+  // ITV
+  MaintenanceType.inspeccionItv: 'ITV',
+  MaintenanceType.preItv: 'Pre-ITV',
+  MaintenanceType.inspeccionGeneral: 'Inspección general',
+  MaintenanceType.inspeccionEmisiones: 'Inspección de emisiones',
+  MaintenanceType.inspeccionFrenos: 'Inspección de frenos',
+  MaintenanceType.inspeccionNeumaticos: 'Inspección de neumáticos',
+  MaintenanceType.inspeccionLuces: 'Inspección de luces',
+  MaintenanceType.otroItv: 'Otro (ITV)',
+  // Otro
+  MaintenanceType.mantenimientoGeneral: 'Mantenimiento general',
+  MaintenanceType.reparacionGeneral: 'Reparación general',
+  MaintenanceType.otro: 'Otro',
+};
+
+const Map<Posicion, String> etiquetasPosicion = {
+  Posicion.delantera: 'Delantera',
+  Posicion.trasera: 'Trasera',
+  Posicion.izquierda: 'Izquierda',
+  Posicion.derecha: 'Derecha',
+  Posicion.delanteraIzquierda: 'Delantera izquierda',
+  Posicion.delanteraDerecha: 'Delantera derecha',
+  Posicion.traseraIzquierda: 'Trasera izquierda',
+  Posicion.traseraDerecha: 'Trasera derecha',
+  Posicion.ejeDelantero: 'Eje delantero',
+  Posicion.ejeTrasero: 'Eje trasero',
+};
+
 class MaintenanceFormScreen extends ConsumerStatefulWidget {
   final int vehicleId;
   final MaintenanceSchedule? schedule;
@@ -56,6 +262,19 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
   late MaintenanceCategory _categoria;
   late bool _silenciado;
 
+  MaintenanceType? _tipo;
+  Posicion? _posicion;
+
+  /// Si `_nombre` se regenera solo cuando cambian Tipo o Posición, o si el
+  /// usuario ya lo editó a mano y por tanto se deja quieto para siempre.
+  late bool _nombreAutogenerado;
+
+  /// Mientras es `true`, el listener de `_nombre` (`_alEditarNombre`) no
+  /// reacciona: distingue una reescritura programática hecha por
+  /// `_regenerarNombreAutomatico` de una edición real del usuario, que es
+  /// la única que debe apagar `_nombreAutogenerado`.
+  bool _escribiendoNombreAutomatico = false;
+
   bool _guardando = false;
 
   /// Si se está borrando el mantenimiento (independiente de _guardando: no
@@ -81,6 +300,12 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     _siembraKm = TextEditingController();
     _categoria = s?.categoria ?? MaintenanceCategory.motor;
     _silenciado = s?.silenciado ?? false;
+    _tipo = s?.tipo;
+    _posicion = s?.posicion;
+    // En creación empieza en true: no hay nombre que proteger todavía, así
+    // que elegir Tipo o Posición ya debe rellenarlo.
+    _nombreAutogenerado = s?.nombreAutogenerado ?? true;
+    _nombre.addListener(_alEditarNombre);
   }
 
   @override
@@ -140,6 +365,35 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
     return null;
   }
 
+  /// Reacciona a cualquier cambio de `_nombre.text`. Solo apaga
+  /// `_nombreAutogenerado` cuando el cambio lo hizo el usuario tecleando:
+  /// mientras `_regenerarNombreAutomatico` reescribe el campo por su
+  /// cuenta, `_escribiendoNombreAutomatico` está a `true` y este listener
+  /// no hace nada.
+  void _alEditarNombre() {
+    if (_escribiendoNombreAutomatico || !_nombreAutogenerado) return;
+    setState(() => _nombreAutogenerado = false);
+  }
+
+  /// Reescribe `_nombre` a partir de Tipo y Posición, solo si el usuario
+  /// no lo ha editado a mano todavía (`_nombreAutogenerado`). Sin Tipo no
+  /// hay nada que autogenerar, así que deja el campo vacío.
+  void _regenerarNombreAutomatico() {
+    if (!_nombreAutogenerado) return;
+    final tipo = _tipo;
+    var nuevoNombre = '';
+    if (tipo != null) {
+      nuevoNombre = etiquetasMaintenanceType[tipo]!;
+      final posicion = _posicion;
+      if (posicion != null) {
+        nuevoNombre = '$nuevoNombre, ${etiquetasPosicion[posicion]}';
+      }
+    }
+    _escribiendoNombreAutomatico = true;
+    _nombre.text = nuevoNombre;
+    _escribiendoNombreAutomatico = false;
+  }
+
   Future<void> _elegirSiembraFecha() async {
     final elegida = await showDatePicker(
       context: context,
@@ -193,6 +447,9 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
             avisoKm: Value(entero(_avisoKm)),
             avisoDias: Value(entero(_avisoDias)),
             silenciado: _silenciado,
+            tipo: Value(_tipo),
+            posicion: Value(_posicion),
+            nombreAutogenerado: _nombreAutogenerado,
           ),
         );
       } else {
@@ -211,6 +468,9 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
               avisoKm: Value(entero(_avisoKm)),
               avisoDias: Value(entero(_avisoDias)),
               silenciado: Value(_silenciado),
+              tipo: Value(_tipo),
+              posicion: Value(_posicion),
+              nombreAutogenerado: Value(_nombreAutogenerado),
             ),
           );
 
@@ -339,7 +599,12 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
             const SizedBox(height: 12),
             DropdownButtonFormField<MaintenanceCategory>(
               initialValue: _categoria,
-              decoration: const InputDecoration(labelText: 'Categoría'),
+              decoration: InputDecoration(
+                labelText: 'Categoría',
+                helperText: _tipo != null
+                    ? 'La marca el tipo elegido debajo'
+                    : null,
+              ),
               items: MaintenanceCategory.values
                   .map(
                     (c) => DropdownMenuItem(
@@ -348,8 +613,63 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                     ),
                   )
                   .toList(),
-              onChanged: (c) => setState(() => _categoria = c!),
+              // Con un Tipo elegido, la categoría la marca
+              // `tipo.categoria`: deshabilitado en vez de libre, para que
+              // nunca puedan guardarse desincronizados.
+              onChanged: _tipo == null
+                  ? (c) => setState(() => _categoria = c!)
+                  : null,
             ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<MaintenanceType?>(
+              initialValue: _tipo,
+              decoration: const InputDecoration(labelText: 'Tipo'),
+              items: [
+                const DropdownMenuItem<MaintenanceType?>(
+                  value: null,
+                  child: Text('Sin tipo concreto'),
+                ),
+                ...MaintenanceType.values
+                    .where((t) => t.categoria == _categoria)
+                    .map(
+                      (t) => DropdownMenuItem<MaintenanceType?>(
+                        value: t,
+                        child: Text(etiquetasMaintenanceType[t]!),
+                      ),
+                    ),
+              ],
+              onChanged: (t) {
+                setState(() {
+                  _tipo = t;
+                  if (t != null) _categoria = t.categoria;
+                  if (t == null || !t.admitePosicion) _posicion = null;
+                });
+                _regenerarNombreAutomatico();
+              },
+            ),
+            if (_tipo?.admitePosicion == true) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<Posicion?>(
+                initialValue: _posicion,
+                decoration: const InputDecoration(labelText: 'Posición'),
+                items: [
+                  const DropdownMenuItem<Posicion?>(
+                    value: null,
+                    child: Text('Sin posición concreta'),
+                  ),
+                  ...Posicion.values.map(
+                    (p) => DropdownMenuItem<Posicion?>(
+                      value: p,
+                      child: Text(etiquetasPosicion[p]!),
+                    ),
+                  ),
+                ],
+                onChanged: (p) {
+                  setState(() => _posicion = p);
+                  _regenerarNombreAutomatico();
+                },
+              ),
+            ],
             const SizedBox(height: 20),
             Text('Intervalo', style: tema.textTheme.titleSmall),
             const SizedBox(height: 4),
