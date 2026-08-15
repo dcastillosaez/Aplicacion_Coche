@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../expenses/expenses_screen.dart';
 import '../history/history_screen.dart';
 import '../home/home_screen.dart';
 
@@ -16,6 +17,7 @@ class _AppShellState extends State<AppShell> {
   static const _pantallas = [
     HomeScreen(),
     HistoryScreen(),
+    ExpensesScreen(),
     _PendienteFase2(
       titulo: 'Ajustes',
       descripcion: 'Los ajustes llegan en la próxima fase.',
@@ -39,6 +41,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.history_outlined),
             selectedIcon: Icon(Icons.history),
             label: 'Historial',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.euro_outlined),
+            selectedIcon: Icon(Icons.euro),
+            label: 'Gastos',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
