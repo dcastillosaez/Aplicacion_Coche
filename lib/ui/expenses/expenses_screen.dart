@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/gastos.dart';
 import '../../providers/gastos_providers.dart';
+import '../../providers/mantenimiento_providers.dart';
+import '../../providers/providers.dart';
 import '../common/empty_state.dart';
 import '../common/error_con_reintento.dart';
 import '../common/formatters.dart';
@@ -29,7 +31,10 @@ class ExpensesScreen extends ConsumerWidget {
           debugPrint('Error al cargar los gastos: $e\n$st');
           return ErrorConReintento(
             mensaje: 'No se han podido cargar los gastos. Inténtalo de nuevo.',
-            onReintentar: () => ref.invalidate(gastosProvider),
+            onReintentar: () {
+              ref.invalidate(vehiculosProvider);
+              ref.invalidate(historialProvider);
+            },
           );
         },
         data: (lista) => lista.isEmpty
@@ -212,7 +217,7 @@ class _FilaGastoAnual extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         // 110px en vez de 90: un importe anual de cinco cifras como
-        // "12.345,67 €" (12 caracteres) debe caber entero. El ellipsis
+        // "12.345,67 €" (11 caracteres) debe caber entero. El ellipsis
         // queda solo como red de seguridad para casos aún más extremos.
         SizedBox(
           width: 110,
