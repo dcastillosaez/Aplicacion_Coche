@@ -42,6 +42,7 @@ void main() {
     silenciado: false,
     orden: 0,
     fuenteIntervalo: FuenteIntervalo.orientativo,
+    nombreAutogenerado: false,
   );
 
   // Igual que en vehicle_detail_screen_test.dart: se simulan los providers
@@ -197,6 +198,7 @@ void main() {
         silenciado: false,
         orden: 0,
         fuenteIntervalo: FuenteIntervalo.orientativo,
+        nombreAutogenerado: false,
       );
       final registroVendido = MaintenanceRecord(
         id: 4,

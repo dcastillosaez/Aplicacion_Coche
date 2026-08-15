@@ -2,10 +2,14 @@ import 'package:drift/drift.dart';
 
 import '../../domain/fuente_intervalo.dart';
 import '../../domain/maintenance_category.dart';
+import '../../domain/maintenance_type.dart';
+import '../../domain/posicion.dart';
 import 'vehicles.dart';
 
 export '../../domain/fuente_intervalo.dart';
 export '../../domain/maintenance_category.dart';
+export '../../domain/maintenance_type.dart';
+export '../../domain/posicion.dart';
 
 class MaintenanceSchedules extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -35,4 +39,18 @@ class MaintenanceSchedules extends Table {
   /// los que no la eligieron explícitamente: por defecto es orientativo.
   TextColumn get fuenteIntervalo =>
       textEnum<FuenteIntervalo>().withDefault(const Constant('orientativo'))();
+
+  /// Qué es, del catálogo. Nulo en los mantenimientos ya configurados
+  /// antes de que existiera este campo, y en cualquiera nuevo que no use
+  /// el catálogo: siguen funcionando igual, solo con nombre libre.
+  TextColumn get tipo => textEnum<MaintenanceType>().nullable()();
+
+  /// Dónde, cuando el tipo lo admite (`MaintenanceType.admitePosicion`).
+  TextColumn get posicion => textEnum<Posicion>().nullable()();
+
+  /// Si `nombre` se generó solo a partir de tipo+posición (y por tanto se
+  /// regenera si cambian) o si el usuario lo editó a mano (y por tanto se
+  /// queda quieto para siempre, aunque cambie el tipo o la posición).
+  BoolColumn get nombreAutogenerado =>
+      boolean().withDefault(const Constant(false))();
 }

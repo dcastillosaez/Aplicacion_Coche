@@ -35,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -72,6 +72,27 @@ class AppDatabase extends _$AppDatabase {
           maintenanceSchedules,
           maintenanceSchedules.fuenteIntervalo,
         );
+      }
+      // v5 -> v6: se añade la taxonomía de tipos de mantenimiento (tipo,
+      // posición y si el nombre es autogenerado en maintenance_schedules;
+      // kind en maintenance_records).
+      //
+      // Misma trampa que el paso anterior: maintenance_schedules y
+      // maintenance_records se crean las dos en el paso "from < 3" de
+      // arriba, con la definición ACTUAL de sus clases Dart, que ya
+      // incluye estas columnas. La guarda "from >= 3" evita duplicarlas
+      // en quien salte desde v1 o v2 directo a v6.
+      if (from >= 3 && from < 6) {
+        await m.addColumn(maintenanceSchedules, maintenanceSchedules.tipo);
+        await m.addColumn(
+          maintenanceSchedules,
+          maintenanceSchedules.posicion,
+        );
+        await m.addColumn(
+          maintenanceSchedules,
+          maintenanceSchedules.nombreAutogenerado,
+        );
+        await m.addColumn(maintenanceRecords, maintenanceRecords.kind);
       }
     },
     beforeOpen: (details) async {

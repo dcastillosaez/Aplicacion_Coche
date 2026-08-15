@@ -6,7 +6,12 @@ import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
 import '../common/empty_state.dart';
 import '../common/formatters.dart';
-import '../maintenance/maintenance_form_screen.dart' show etiquetasCategoria;
+import '../maintenance/maintenance_form_screen.dart'
+    show
+        etiquetasCategoria,
+        etiquetasMaintenanceOperationKind,
+        etiquetasMaintenanceType,
+        etiquetasPosicion;
 
 /// Historial de todos los vehículos: la línea temporal de todo lo que se les
 /// ha hecho. No es una lista técnica, es la prueba de que el coche está
@@ -217,6 +222,18 @@ String _nombreVehiculo(Vehicle v) {
   return v.archivado ? '$nombre (archivado)' : nombre;
 }
 
+/// Tipo (y posición, si la hay) del mantenimiento configurado, listo para
+/// mostrar como texto secundario, p. ej. "Pastillas de freno (Delantera)".
+/// Nulo si el mantenimiento no tiene tipo asignado.
+String? _tipoYPosicion(MaintenanceSchedule schedule) {
+  final tipo = schedule.tipo;
+  if (tipo == null) return null;
+  final etiquetaTipo = etiquetasMaintenanceType[tipo]!;
+  final posicion = schedule.posicion;
+  if (posicion == null) return etiquetaTipo;
+  return '$etiquetaTipo (${etiquetasPosicion[posicion]})';
+}
+
 /// Filtro simple y siempre visible: "Todos" más un distintivo por coche.
 class _FiltroVehiculo extends StatelessWidget {
   final List<Vehicle> vehiculos;
@@ -283,6 +300,8 @@ class _FilaHistorial extends StatelessWidget {
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
     final titulo = schedule?.nombre ?? 'Reparación puntual';
+    final tipoYPosicion = schedule == null ? null : _tipoYPosicion(schedule!);
+    final kind = registro.kind;
 
     return Card(
       child: Padding(
@@ -314,6 +333,15 @@ class _FilaHistorial extends StatelessWidget {
                 ),
               ),
             ],
+            if (tipoYPosicion != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                tipoYPosicion,
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Wrap(
               spacing: 14,
@@ -333,6 +361,11 @@ class _FilaHistorial extends StatelessWidget {
                       ? 'Vehículo no disponible'
                       : _nombreVehiculo(vehiculo!),
                 ),
+                if (kind != null)
+                  _Dato(
+                    icono: Icons.build_circle_outlined,
+                    texto: etiquetasMaintenanceOperationKind[kind]!,
+                  ),
               ],
             ),
             if (registro.taller != null) ...[

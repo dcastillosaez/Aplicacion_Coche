@@ -29,3 +29,6 @@ android/key.properties
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Copias de seguridad sueltas del repositorio, no versionadas
+*.zip

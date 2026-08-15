@@ -366,6 +366,18 @@ class _GrupoMantenimientos extends StatelessWidget {
   }
 }
 
+/// Tipo (y posición, si la hay) del mantenimiento configurado, listo para
+/// mostrar como texto secundario, p. ej. "Pastillas de freno (Delantera)".
+/// Nulo si el mantenimiento no tiene tipo asignado.
+String? _tipoYPosicion(MaintenanceSchedule schedule) {
+  final tipo = schedule.tipo;
+  if (tipo == null) return null;
+  final etiquetaTipo = etiquetasMaintenanceType[tipo]!;
+  final posicion = schedule.posicion;
+  if (posicion == null) return etiquetaTipo;
+  return '$etiquetaTipo (${etiquetasPosicion[posicion]})';
+}
+
 class _TarjetaDestacada extends StatelessWidget {
   final MantenimientoConVencimiento item;
 
@@ -375,6 +387,7 @@ class _TarjetaDestacada extends StatelessWidget {
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
     final v = item.vencimiento;
+    final tipoYPosicion = _tipoYPosicion(item.schedule);
     final lineas = [
       textoKmRestantes(v),
       textoDiasRestantes(v),
@@ -405,6 +418,15 @@ class _TarjetaDestacada extends StatelessWidget {
                 ),
               ],
             ),
+            if (tipoYPosicion != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                tipoYPosicion,
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.outline,
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             if (lineas.isEmpty)
               Text(
@@ -438,6 +460,7 @@ class _FilaMantenimiento extends ConsumerWidget {
     final tema = Theme.of(context);
     final v = item.vencimiento;
     final resumen = resumenVencimiento(v);
+    final tipoYPosicion = _tipoYPosicion(item.schedule);
     final patronReal = ref
         .watch(patronRealProvider(item.schedule.id))
         .valueOrNull;
@@ -462,6 +485,15 @@ class _FilaMantenimiento extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(item.schedule.nombre, style: tema.textTheme.bodyLarge),
+                    if (tipoYPosicion != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        tipoYPosicion,
+                        style: tema.textTheme.bodySmall?.copyWith(
+                          color: tema.colorScheme.outline,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       resumen.isEmpty ? 'Sin datos todavía' : resumen,
