@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/gastos.dart';
 import '../../providers/gastos_providers.dart';
 import '../common/empty_state.dart';
+import '../common/error_con_reintento.dart';
 import '../common/formatters.dart';
 
 /// Gastos por vehículo: el acumulado y su desglose por año, para cada
@@ -26,7 +27,7 @@ class ExpensesScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) {
           debugPrint('Error al cargar los gastos: $e\n$st');
-          return _ErrorConReintento(
+          return ErrorConReintento(
             mensaje: 'No se han podido cargar los gastos. Inténtalo de nuevo.',
             onReintentar: () => ref.invalidate(gastosProvider),
           );
@@ -46,33 +47,6 @@ class ExpensesScreen extends ConsumerWidget {
                 itemBuilder: (context, i) =>
                     _TarjetaGastosVehiculo(gastos: lista[i]),
               ),
-      ),
-    );
-  }
-}
-
-class _ErrorConReintento extends StatelessWidget {
-  final String mensaje;
-  final VoidCallback onReintentar;
-
-  const _ErrorConReintento({required this.mensaje, required this.onReintentar});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(mensaje, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onReintentar,
-              child: const Text('Reintentar'),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -208,7 +182,13 @@ class _FilaGastoAnual extends StatelessWidget {
       children: [
         SizedBox(
           width: 40,
-          child: Text('${gastoAnual.anio}', style: tema.textTheme.bodyMedium),
+          child: Text(
+            '${gastoAnual.anio}',
+            style: tema.textTheme.bodyMedium,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -231,12 +211,18 @@ class _FilaGastoAnual extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
+        // 110px en vez de 90: un importe anual de cinco cifras como
+        // "12.345,67 €" (12 caracteres) debe caber entero. El ellipsis
+        // queda solo como red de seguridad para casos aún más extremos.
         SizedBox(
-          width: 90,
+          width: 110,
           child: Text(
             formatearCoste(gastoAnual.total),
             textAlign: TextAlign.right,
             style: tema.textTheme.bodyMedium,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

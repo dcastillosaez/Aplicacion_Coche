@@ -5,6 +5,7 @@ import '../../data/database.dart';
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
 import '../common/empty_state.dart';
+import '../common/error_con_reintento.dart';
 import '../common/formatters.dart';
 import '../maintenance/maintenance_form_screen.dart'
     show
@@ -43,7 +44,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, st) {
           debugPrint('Error al cargar el historial: $e\n$st');
-          return _ErrorConReintento(
+          return ErrorConReintento(
             mensaje: 'No se ha podido cargar el historial. Inténtalo de nuevo.',
             onReintentar: () => ref.invalidate(historialProvider),
           );
@@ -52,7 +53,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, st) {
             debugPrint('Error al cargar los vehículos: $e\n$st');
-            return _ErrorConReintento(
+            return ErrorConReintento(
               mensaje:
                   'No se han podido cargar los vehículos. Inténtalo de '
                   'nuevo.',
@@ -65,33 +66,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             filtroVehiculoId: _filtroVehiculoId,
             onFiltroChanged: (id) => setState(() => _filtroVehiculoId = id),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorConReintento extends StatelessWidget {
-  final String mensaje;
-  final VoidCallback onReintentar;
-
-  const _ErrorConReintento({required this.mensaje, required this.onReintentar});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(mensaje, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onReintentar,
-              child: const Text('Reintentar'),
-            ),
-          ],
         ),
       ),
     );
@@ -149,7 +123,7 @@ class _ContenidoHistorial extends ConsumerWidget {
         'Error al cargar los mantenimientos: '
         '${conError.error}\n${conError.stackTrace}',
       );
-      return _ErrorConReintento(
+      return ErrorConReintento(
         mensaje:
             'No se han podido cargar los mantenimientos. Inténtalo de '
             'nuevo.',
