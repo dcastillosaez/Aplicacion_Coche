@@ -8,14 +8,18 @@ void main() {
   List<AvisoProgramado> calcular(
     List<DatosAviso> datos, {
     double kmPorDia = 50,
+    DateTime? ahoraPersonalizado,
   }) {
     return calcularAvisos(
       mantenimientos: datos,
       kmPorDia: kmPorDia,
-      ahora: ahora,
+      ahora: ahoraPersonalizado ?? ahora,
       horizonte: horizonte,
     );
   }
+
+  List<String> nombresDe(AvisoProgramado aviso) =>
+      aviso.nombres.map((n) => n.nombre).toList();
 
   test('sin mantenimientos no hay avisos', () {
     expect(calcular([]), isEmpty);
@@ -38,8 +42,10 @@ void main() {
 
     expect(avisos, hasLength(2));
     expect(avisos.first.fecha, DateTime(2026, 1, 30));
-    expect(avisos.first.nombres, ['Líquido de frenos']);
+    expect(nombresDe(avisos.first), ['Líquido de frenos']);
+    expect(avisos.first.nombres.single.tipo, TipoAviso.mantenimientoEnMargen);
     expect(avisos.last.fecha, DateTime(2026, 3, 1));
+    expect(avisos.last.nombres.single.tipo, TipoAviso.mantenimientoVencido);
   });
 
   test('los avisos salen ordenados por fecha', () {
@@ -81,8 +87,8 @@ void main() {
 
     // Dos fechas distintas (atención y vencimiento), no cuatro avisos.
     expect(avisos, hasLength(2));
-    expect(avisos.first.nombres, ['Aceite', 'Filtro de aire']);
-    expect(avisos.last.nombres, ['Aceite', 'Filtro de aire']);
+    expect(nombresDe(avisos.first), ['Aceite', 'Filtro de aire']);
+    expect(nombresDe(avisos.last), ['Aceite', 'Filtro de aire']);
   });
 
   test('lo que ya venció no genera aviso', () {
@@ -181,5 +187,88 @@ void main() {
     // pueda traducir a días.
     expect(avisos.map((a) => a.fecha), contains(DateTime(2026, 3, 1)));
     expect(avisos.every((a) => a.fecha.isAfter(ahora)), isTrue);
+  });
+
+  test('un aviso que cae hoy se conserva, no solo lo que cae después', () {
+    // "ahora" incluye una hora del día (las 8:00): el vencimiento cae
+    // exactamente hoy. Antes se descartaba por comparar por instante en
+    // vez de por día natural, perdiendo el aviso del propio día.
+    final avisos = calcular([
+      DatosAviso(
+        nombre: 'Justo hoy',
+        proximaFecha: DateTime(2026, 1, 1),
+        margenKm: 1000,
+        margenDias: 0,
+      ),
+    ], ahoraPersonalizado: DateTime(2026, 1, 1, 8));
+
+    expect(avisos, hasLength(1));
+    expect(avisos.single.fecha, DateTime(2026, 1, 1));
+  });
+
+  test('con margen de 0 días no se duplica el nombre el mismo día', () {
+    final avisos = calcular([
+      DatosAviso(
+        nombre: 'Aceite',
+        proximaFecha: DateTime(2026, 3, 1),
+        margenKm: 1000,
+        margenDias: 0,
+      ),
+    ]);
+
+    // Atención y vencimiento coinciden en el mismo día: un aviso, no dos, y
+    // sin el nombre repetido dentro de él.
+    expect(avisos, hasLength(1));
+    expect(nombresDe(avisos.single), ['Aceite']);
+    expect(avisos.single.nombres.single.tipo, TipoAviso.mantenimientoVencido);
+  });
+
+  group('cuerpoDeAviso', () {
+    test('un recordatorio de kilometraje no habla de mantenimientos', () {
+      final texto = cuerpoDeAviso(
+        AvisoProgramado(
+          fecha: DateTime(2026, 1, 1),
+          nombres: const [
+            NombreAviso(
+              nombre: 'Actualiza el kilometraje',
+              tipo: TipoAviso.recordatorioLectura,
+            ),
+          ],
+        ),
+      );
+
+      expect(texto, isNot(contains('mantenimiento')));
+      expect(texto, contains('kilometraje'));
+    });
+
+    test('un vencimiento dice que ha vencido, no que necesita atención', () {
+      final texto = cuerpoDeAviso(
+        AvisoProgramado(
+          fecha: DateTime(2026, 1, 1),
+          nombres: const [
+            NombreAviso(nombre: 'Aceite', tipo: TipoAviso.mantenimientoVencido),
+          ],
+        ),
+      );
+
+      expect(texto, contains('vencido'));
+      expect(texto, isNot(contains('necesita atención')));
+    });
+
+    test('lo que está en margen sigue diciendo que necesita atención', () {
+      final texto = cuerpoDeAviso(
+        AvisoProgramado(
+          fecha: DateTime(2026, 1, 1),
+          nombres: const [
+            NombreAviso(
+              nombre: 'Aceite',
+              tipo: TipoAviso.mantenimientoEnMargen,
+            ),
+          ],
+        ),
+      );
+
+      expect(texto, contains('necesita atención'));
+    });
   });
 }

@@ -30,8 +30,32 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Requeridos por flutter_local_notifications para poder entregar
+             las notificaciones programadas: sin el primero, el sistema
+             descarta la alarma porque el componente destino no existe; sin
+             el segundo, un reinicio del móvil borra todas las alarmas
+             pendientes y no se reprograman hasta la siguiente apertura de
+             la app. -->
+        <receiver android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
     </application>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Permite que el plugin reprograme las alarmas al reiniciar el
+         dispositivo: sin él, todas las notificaciones pendientes se
+         pierden en cada reinicio. No se añade ningún permiso de alarma
+         exacta (SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM): el modo sigue
+         siendo inexacto a propósito. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

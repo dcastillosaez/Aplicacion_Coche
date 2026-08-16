@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/avisos.dart';
@@ -28,6 +29,20 @@ final servicioNotificacionesProvider = Provider<ServicioNotificaciones>(
 /// recálculo en cada llamada en vez de quedarse con el resultado cacheado de
 /// la primera vez.
 final reprogramacionDeAvisosProvider = FutureProvider<void>(reprogramarAvisos);
+
+/// Dispara la reprogramación de avisos sin bloquear la interfaz.
+///
+/// La spec pide reprogramar tras guardar cualquier vehículo, lectura de
+/// kilometraje, mantenimiento o registro, además de al arrancar y al volver
+/// a primer plano (ver [RecalculoAlReanudar]). Se llama desde cada pantalla
+/// de guardado sin `await`: lo importante es que el guardado en sí no
+/// dependa de que el plugin de notificaciones funcione, así que un fallo
+/// aquí solo se registra por `debugPrint`.
+void dispararReprogramacionDeAvisos(WidgetRef ref) {
+  ref.refresh(reprogramacionDeAvisosProvider.future).catchError((Object e) {
+    debugPrint('No se pudieron reprogramar los avisos: $e');
+  });
+}
 
 /// Recalcula todos los avisos de todos los vehículos y los reprograma desde
 /// cero, cancelando lo anterior.
@@ -104,6 +119,12 @@ Future<List<AvisoDeVehiculo>> _recordatoriosDeLectura(
   DateTime ahora,
   DateTime horizonte,
 ) async {
+  // Un valor no positivo haría que el bucle de abajo nunca avanzara de
+  // fecha: hoy es inalcanzable desde la interfaz (avisoDiasPorDefecto no
+  // tiene pantalla de Ajustes todavía), pero es una guarda barata contra
+  // cuando la tenga.
+  if (cadaCuantosDias <= 0) return const [];
+
   final ultima = await ref.read(ultimaLecturaProvider(vehicleId).future);
   // Sin ninguna lectura todavía, se cuenta desde hoy.
   var fecha = (ultima?.fecha ?? ahora).add(Duration(days: cadaCuantosDias));
@@ -116,7 +137,12 @@ Future<List<AvisoDeVehiculo>> _recordatoriosDeLectura(
           nombreVehiculo: nombreVehiculo,
           aviso: AvisoProgramado(
             fecha: DateTime(fecha.year, fecha.month, fecha.day),
-            nombres: const ['Actualiza el kilometraje'],
+            nombres: const [
+              NombreAviso(
+                nombre: 'Actualiza el kilometraje',
+                tipo: TipoAviso.recordatorioLectura,
+              ),
+            ],
           ),
         ),
       );

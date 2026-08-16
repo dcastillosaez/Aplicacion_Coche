@@ -75,13 +75,20 @@ class NotificacionesLocales implements ServicioNotificaciones {
   Future<void> programarAvisos(List<AvisoDeVehiculo> avisos) async {
     await _plugin.cancelAll();
 
+    final ahora = DateTime.now();
     var id = 0;
     for (final a in avisos) {
+      final instante = _instanteDeEntrega(a.aviso.fecha);
+      // El dominio conserva los avisos de hoy (para no perderlos si la app
+      // se abre antes de la hora de entrega), pero si esa hora ya pasó
+      // programar la alarma no tiene sentido: el plugin la entregaría de
+      // inmediato o nunca, según la implementación. Se omite sin más.
+      if (instante.isBefore(ahora)) continue;
       await _plugin.zonedSchedule(
         id: id++,
         title: a.nombreVehiculo,
-        body: _cuerpo(a.aviso),
-        scheduledDate: _instanteDeEntrega(a.aviso.fecha),
+        body: cuerpoDeAviso(a.aviso),
+        scheduledDate: instante,
         notificationDetails: _detalles,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );
@@ -98,13 +105,5 @@ class NotificacionesLocales implements ServicioNotificaciones {
   static tz.TZDateTime _instanteDeEntrega(DateTime dia) {
     final local = DateTime(dia.year, dia.month, dia.day, kHoraDeAviso);
     return tz.TZDateTime.from(local.toUtc(), tz.UTC);
-  }
-
-  static String _cuerpo(AvisoProgramado aviso) {
-    final cuantos = aviso.nombres.length;
-    final cabecera = cuantos == 1
-        ? '1 mantenimiento necesita atención'
-        : '$cuantos mantenimientos necesitan atención';
-    return '$cabecera: ${aviso.nombres.join(', ')}';
   }
 }

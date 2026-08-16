@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/tables/maintenance_records.dart'
     show MaintenanceOperationKind;
 import '../../data/tables/maintenance_schedules.dart';
+import '../../providers/notificaciones_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 
@@ -529,7 +530,11 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
       return;
     }
 
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    // Sin await: el guardado ya ha terminado y no debe esperar al plugin
+    // de notificaciones para cerrar la pantalla.
+    dispararReprogramacionDeAvisos(ref);
+    Navigator.of(context).pop();
   }
 
   Future<void> _confirmarBorrar() async {
@@ -584,7 +589,10 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
       return;
     }
 
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    // Borrar un mantenimiento quita también sus avisos futuros.
+    dispararReprogramacionDeAvisos(ref);
+    Navigator.of(context).pop();
   }
 
   @override

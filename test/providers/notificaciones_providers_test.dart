@@ -1,5 +1,6 @@
 import 'package:car_care/data/database.dart';
 import 'package:car_care/data/tables/vehicles.dart';
+import 'package:car_care/domain/avisos.dart';
 import 'package:car_care/domain/usage_rate.dart';
 import 'package:car_care/providers/mantenimiento_providers.dart';
 import 'package:car_care/providers/notificaciones_providers.dart';
@@ -88,9 +89,46 @@ void main() {
       await container.read(_disparador.future);
 
       expect(servicio.programados, hasLength(kRecordatoriosDeLectura));
-      expect(servicio.programados.first.aviso.nombres, [
-        'Actualiza el kilometraje',
-      ]);
+      final nombres = servicio.programados.first.aviso.nombres;
+      expect(nombres, hasLength(1));
+      expect(nombres.single.nombre, 'Actualiza el kilometraje');
+      expect(nombres.single.tipo, TipoAviso.recordatorioLectura);
     },
+  );
+
+  test(
+    'con diasRecordatorioLectura en 0 no se cuelga y no genera recordatorios',
+    () async {
+      final servicio = ServicioFalso();
+      final container = ProviderContainer(
+        overrides: [
+          servicioNotificacionesProvider.overrideWithValue(servicio),
+          vehiculosProvider.overrideWith((ref) => Stream.value([_vehiculo()])),
+          ultimaLecturaProvider(1).overrideWith((ref) => Stream.value(null)),
+          vencimientosProvider(1).overrideWith((ref) => []),
+          ajustesProvider.overrideWith(
+            (ref) => const Setting(
+              id: 1,
+              avisoKmPorDefecto: 1000,
+              avisoDiasPorDefecto: 30,
+              diasRecordatorioLectura: 0,
+              tema: 'automatico',
+            ),
+          ),
+          ritmoUsoProvider(1).overrideWith(
+            (ref) => const UsageRateResult(kmPorDia: 50, esPorDefecto: false),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(_disparador.future);
+
+      expect(servicio.programados, isEmpty);
+    },
+    // Si la guarda contra valores no positivos fallara, _recordatoriosDeLectura
+    // se colgaría en un bucle infinito: con timeout corto, el test falla
+    // rápido en vez de bloquear el resto de la suite.
+    timeout: const Timeout(Duration(seconds: 5)),
   );
 }

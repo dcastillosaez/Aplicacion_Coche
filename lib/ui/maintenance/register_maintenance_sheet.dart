@@ -8,6 +8,7 @@ import '../../data/tables/maintenance_records.dart'
     show MaintenanceOperationKind;
 import '../../data/tables/mileage_readings.dart' show MileageOrigin;
 import '../../providers/mantenimiento_providers.dart';
+import '../../providers/notificaciones_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 import 'maintenance_form_screen.dart' show etiquetasMaintenanceOperationKind;
@@ -228,6 +229,9 @@ class _HojaRegistroMantenimientoState
     }
     ref.invalidate(vencimientosProvider(widget.vehicleId));
     ref.invalidate(estadoVehiculoProvider(widget.vehicleId));
+    // Sin await: el guardado ya ha terminado y no debe esperar al plugin
+    // de notificaciones para cerrar la hoja.
+    dispararReprogramacionDeAvisos(ref);
 
     Navigator.of(context).pop();
   }
