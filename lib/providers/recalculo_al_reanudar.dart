@@ -52,9 +52,7 @@ class _RecalculoAlReanudarState extends ConsumerState<RecalculoAlReanudar>
       // ref.refresh) da los valores ya recalculados. Un fallo del plugin no
       // debe interrumpir el ciclo de vida de la app, así que se contiene
       // aquí.
-      ref.refresh(reprogramacionDeAvisosProvider.future).catchError((
-        Object e,
-      ) {
+      ref.refresh(reprogramacionDeAvisosProvider.future).catchError((Object e) {
         debugPrint('No se pudieron reprogramar los avisos: $e');
       });
     }
