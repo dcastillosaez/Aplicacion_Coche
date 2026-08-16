@@ -126,9 +126,12 @@ void main() {
 
       expect(servicio.programados, isEmpty);
     },
-    // Si la guarda contra valores no positivos fallara, _recordatoriosDeLectura
-    // se colgaría en un bucle infinito: con timeout corto, el test falla
-    // rápido en vez de bloquear el resto de la suite.
+    // El timeout es una red parcial, no una garantía: si la guarda contra
+    // valores no positivos fallara, el bucle de _recordatoriosDeLectura es
+    // síncrono y bloquearía el isolate, así que el temporizador en el que se
+    // apoya este timeout nunca llegaría a dispararse y la suite se quedaría
+    // colgada. Se deja porque no cuesta nada, pero quien toque esa guarda no
+    // debe confiar en que el test avise por sí solo.
     timeout: const Timeout(Duration(seconds: 5)),
   );
 }
