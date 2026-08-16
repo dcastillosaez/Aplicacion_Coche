@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'mantenimiento_providers.dart';
+import 'notificaciones_providers.dart';
 import 'providers.dart';
 
 /// Providers que se recalculan cada vez que la app vuelve a primer plano,
@@ -47,6 +48,15 @@ class _RecalculoAlReanudarState extends ConsumerState<RecalculoAlReanudar>
       for (final provider in providersARecalcularAlReanudar) {
         ref.invalidate(provider);
       }
+      // Invalidar y leer a continuación (dentro de reprogramarAvisos, vía
+      // ref.refresh) da los valores ya recalculados. Un fallo del plugin no
+      // debe interrumpir el ciclo de vida de la app, así que se contiene
+      // aquí.
+      ref.refresh(reprogramacionDeAvisosProvider.future).catchError((
+        Object e,
+      ) {
+        debugPrint('No se pudieron reprogramar los avisos: $e');
+      });
     }
   }
 

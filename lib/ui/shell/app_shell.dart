@@ -1,18 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../providers/notificaciones_providers.dart';
 import '../expenses/expenses_screen.dart';
 import '../history/history_screen.dart';
 import '../home/home_screen.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   int _indice = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _inicializarAvisos());
+  }
+
+  /// Un fallo del plugin de notificaciones no debe impedir que la
+  /// aplicación se abra: se intenta la reprogramación aunque el usuario
+  /// deniegue el permiso, y cualquier excepción queda contenida aquí.
+  Future<void> _inicializarAvisos() async {
+    try {
+      final servicio = ref.read(servicioNotificacionesProvider);
+      await servicio.inicializar();
+      await servicio.pedirPermiso();
+      final _ = await ref.refresh(reprogramacionDeAvisosProvider.future);
+    } catch (e) {
+      debugPrint('No se pudieron inicializar los avisos: $e');
+    }
+  }
 
   static const _pantallas = [
     HomeScreen(),
