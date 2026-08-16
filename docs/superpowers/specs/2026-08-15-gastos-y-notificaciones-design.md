@@ -87,7 +87,7 @@ Seat León — 3 mantenimientos necesitan atención
 Aceite y filtro, pastillas delanteras, filtro de aire
 ```
 
-Al tocarla, la aplicación abre la ficha de ese vehículo.
+Al tocarla, la aplicación se abre por Inicio, que ya muestra los avisos pendientes de los dos coches. Llevar directamente a la ficha del vehículo concreto exigiría una clave de navegación global y distinguir si la aplicación estaba ya abierta o arrancando de cero: demasiada complejidad para el extra que aporta, así que queda anotado como mejora y fuera de esta fase.
 
 Si varias transiciones caen el mismo día natural, se funden en una sola notificación. Si la práctica demuestra que sigue siendo ruidoso, subir la ventana de agrupación de un día a una semana es un cambio de una constante, no de arquitectura.
 
