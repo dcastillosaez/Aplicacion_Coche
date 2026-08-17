@@ -21,6 +21,12 @@ class AppTheme {
 
   static ThemeData oscuro() => _base(Brightness.dark);
 
+  static ThemeMode modoDesdeTema(String? tema) => switch (tema) {
+    'claro' => ThemeMode.light,
+    'oscuro' => ThemeMode.dark,
+    _ => ThemeMode.system,
+  };
+
   static ThemeData _base(Brightness brillo) {
     final claro = brillo == Brightness.light;
     final esquema = ColorScheme.fromSeed(

@@ -57,7 +57,7 @@ void main() {
       overrides: [
         servicioNotificacionesProvider.overrideWithValue(servicio),
         vehiculosProvider.overrideWith((ref) => Stream.value([])),
-        ajustesProvider.overrideWith((ref) => _ajustesDePrueba()),
+        ajustesProvider.overrideWith((ref) => Stream.value(_ajustesDePrueba())),
       ],
     );
     addTearDown(container.dispose);
@@ -78,7 +78,9 @@ void main() {
           vehiculosProvider.overrideWith((ref) => Stream.value([_vehiculo()])),
           ultimaLecturaProvider(1).overrideWith((ref) => Stream.value(null)),
           vencimientosProvider(1).overrideWith((ref) => []),
-          ajustesProvider.overrideWith((ref) => _ajustesDePrueba()),
+          ajustesProvider.overrideWith(
+            (ref) => Stream.value(_ajustesDePrueba()),
+          ),
           ritmoUsoProvider(1).overrideWith(
             (ref) => const UsageRateResult(kmPorDia: 50, esPorDefecto: false),
           ),
@@ -107,12 +109,14 @@ void main() {
           ultimaLecturaProvider(1).overrideWith((ref) => Stream.value(null)),
           vencimientosProvider(1).overrideWith((ref) => []),
           ajustesProvider.overrideWith(
-            (ref) => const Setting(
-              id: 1,
-              avisoKmPorDefecto: 1000,
-              avisoDiasPorDefecto: 30,
-              diasRecordatorioLectura: 0,
-              tema: 'automatico',
+            (ref) => Stream.value(
+              const Setting(
+                id: 1,
+                avisoKmPorDefecto: 1000,
+                avisoDiasPorDefecto: 30,
+                diasRecordatorioLectura: 0,
+                tema: 'automatico',
+              ),
             ),
           ),
           ritmoUsoProvider(1).overrideWith(

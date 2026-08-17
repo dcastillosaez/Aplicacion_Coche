@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'mantenimiento_providers.dart';
 import 'notificaciones_providers.dart';
+import 'permisos_providers.dart';
 import 'providers.dart';
 
 /// Providers que se recalculan cada vez que la app vuelve a primer plano,
@@ -12,6 +13,7 @@ final providersARecalcularAlReanudar = <ProviderOrFamily>[
   ritmoUsoProvider,
   vencimientosProvider,
   estadoVehiculoProvider,
+  permisoNotificacionesProvider,
 ];
 
 /// Widget sin apariencia propia que observa el ciclo de vida de la app e

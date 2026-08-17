@@ -17,9 +17,9 @@ class MantenimientoConVencimiento {
   });
 }
 
-final ajustesProvider = FutureProvider<Setting>((ref) {
+final ajustesProvider = StreamProvider<Setting>((ref) {
   final db = ref.watch(databaseProvider);
-  return db.select(db.settings).getSingle();
+  return db.select(db.settings).watchSingle();
 });
 
 final schedulesProvider = StreamProvider.family<List<MaintenanceSchedule>, int>(
