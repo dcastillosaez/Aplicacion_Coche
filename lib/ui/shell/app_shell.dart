@@ -5,6 +5,7 @@ import '../../providers/notificaciones_providers.dart';
 import '../expenses/expenses_screen.dart';
 import '../history/history_screen.dart';
 import '../home/home_screen.dart';
+import '../settings/settings_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -40,10 +41,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     HomeScreen(),
     HistoryScreen(),
     ExpensesScreen(),
-    _PendienteFase2(
-      titulo: 'Ajustes',
-      descripcion: 'Los ajustes llegan en la próxima fase.',
-    ),
+    SettingsScreen(),
   ];
 
   @override
@@ -80,22 +78,3 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 }
 
-class _PendienteFase2 extends StatelessWidget {
-  final String titulo;
-  final String descripcion;
-
-  const _PendienteFase2({required this.titulo, required this.descripcion});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(titulo)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(descripcion, textAlign: TextAlign.center),
-        ),
-      ),
-    );
-  }
-}
