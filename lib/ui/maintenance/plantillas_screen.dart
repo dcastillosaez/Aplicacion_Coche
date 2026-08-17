@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../domain/plantillas_mantenimiento.dart';
+import '../../providers/notificaciones_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 import 'maintenance_form_screen.dart' show etiquetasCategoria;
@@ -101,6 +102,12 @@ class _PlantillasScreenState extends ConsumerState<PlantillasScreen> {
     }
 
     if (!mounted) return;
+    // Es el único sitio donde nacen varios mantenimientos de golpe. La
+    // reprogramación del formulario de vehículo no vale aquí: se ejecuta
+    // antes de llegar a esta pantalla, cuando el coche todavía no tiene
+    // ninguno, así que sin esta llamada un vehículo recién dado de alta se
+    // quedaría sin un solo aviso hasta el siguiente arranque.
+    dispararReprogramacionDeAvisos(ref);
     Navigator.of(context).pop();
   }
 

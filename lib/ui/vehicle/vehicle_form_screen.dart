@@ -11,6 +11,7 @@ import '../../data/photo_storage.dart';
 import '../../data/tables/vehicles.dart';
 import '../../domain/catalogo_vehiculos.dart';
 import '../../domain/colores_vehiculo.dart';
+import '../../providers/notificaciones_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 import '../maintenance/plantillas_screen.dart';
@@ -271,6 +272,9 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     if (original != null && original != _fotoPath) _borrarFoto(original);
 
     if (!mounted) return;
+    // Sin await: el guardado ya ha terminado y no debe esperar al plugin
+    // de notificaciones para navegar a la pantalla siguiente.
+    dispararReprogramacionDeAvisos(ref);
     if (idNuevoVehiculo != null) {
       // Se reemplaza esta pantalla en vez de apilarse: al terminar con las
       // plantillas (o saltarlas), se vuelve directamente a Inicio, no al
@@ -340,7 +344,10 @@ class _VehicleFormScreenState extends ConsumerState<VehicleFormScreen> {
     // que la fila referencia en base de datos (sigue siendo _fotoOriginal),
     // así que dispose() debe limpiar cualquier foto elegida en esta sesión
     // y debe dejar _fotoOriginal intacta, igual que en una edición cancelada.
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    // Un vehículo archivado no debe seguir generando avisos.
+    dispararReprogramacionDeAvisos(ref);
+    Navigator.of(context).pop();
   }
 
   @override

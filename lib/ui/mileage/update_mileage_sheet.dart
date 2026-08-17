@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../providers/notificaciones_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
 import '../theme/app_theme.dart';
@@ -120,6 +121,9 @@ class _HojaKilometrajeState extends ConsumerState<_HojaKilometraje> {
 
     if (!mounted) return;
     ref.invalidate(ritmoUsoProvider(widget.vehiculo.id));
+    // Sin await: el guardado ya ha terminado y no debe esperar al plugin
+    // de notificaciones para cerrar la hoja.
+    dispararReprogramacionDeAvisos(ref);
     Navigator.of(context).pop();
   }
 
