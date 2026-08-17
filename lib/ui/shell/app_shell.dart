@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/notificaciones_providers.dart';
+import '../../providers/permisos_providers.dart';
 import '../expenses/expenses_screen.dart';
 import '../history/history_screen.dart';
 import '../home/home_screen.dart';
@@ -31,6 +32,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       final servicio = ref.read(servicioNotificacionesProvider);
       await servicio.inicializar();
       await servicio.pedirPermiso();
+      ref.invalidate(permisoNotificacionesProvider);
       final _ = await ref.refresh(reprogramacionDeAvisosProvider.future);
     } catch (e) {
       debugPrint('No se pudieron inicializar los avisos: $e');
@@ -77,4 +79,3 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 }
-

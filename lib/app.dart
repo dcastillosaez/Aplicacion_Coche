@@ -13,6 +13,9 @@ class CarCareApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ajustes = ref.watch(ajustesProvider);
+    if (ajustes.hasError) {
+      debugPrint('Error al cargar los ajustes: ${ajustes.error}');
+    }
 
     return MaterialApp(
       title: 'Mis Vehículos',

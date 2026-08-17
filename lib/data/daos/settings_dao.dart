@@ -11,9 +11,9 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
   SettingsDao(super.db);
 
   Future<int> actualizarTema(String tema) {
-    return (update(
-      settings,
-    )..where((s) => s.id.equals(1))).write(SettingsCompanion(tema: Value(tema)));
+    return (update(settings)..where((s) => s.id.equals(1))).write(
+      SettingsCompanion(tema: Value(tema)),
+    );
   }
 
   Future<int> actualizarAvisoKmPorDefecto(int km) {

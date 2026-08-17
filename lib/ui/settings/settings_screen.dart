@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../providers/mantenimiento_providers.dart';
+import '../../providers/notificaciones_providers.dart';
 import '../../providers/permisos_providers.dart';
 import '../../providers/providers.dart';
 import '../common/formatters.dart';
@@ -52,10 +53,13 @@ class _Contenido extends ConsumerWidget {
           ayuda: 'Avisar cuando falten estos kilómetros',
           sufijo: 'km',
           valorInicial: ajustes.avisoKmPorDefecto,
-          alGuardar: (v) => ref
-              .read(databaseProvider)
-              .settingsDao
-              .actualizarAvisoKmPorDefecto(v),
+          alGuardar: (v) async {
+            await ref
+                .read(databaseProvider)
+                .settingsDao
+                .actualizarAvisoKmPorDefecto(v);
+            dispararReprogramacionDeAvisos(ref);
+          },
         ),
         const SizedBox(height: 12),
         _CampoNumericoAutoguardado(
@@ -64,10 +68,13 @@ class _Contenido extends ConsumerWidget {
           ayuda: 'Avisar cuando falten estos días',
           sufijo: 'días',
           valorInicial: ajustes.avisoDiasPorDefecto,
-          alGuardar: (v) => ref
-              .read(databaseProvider)
-              .settingsDao
-              .actualizarAvisoDiasPorDefecto(v),
+          alGuardar: (v) async {
+            await ref
+                .read(databaseProvider)
+                .settingsDao
+                .actualizarAvisoDiasPorDefecto(v);
+            dispararReprogramacionDeAvisos(ref);
+          },
         ),
         const SizedBox(height: 12),
         _CampoNumericoAutoguardado(
@@ -76,10 +83,13 @@ class _Contenido extends ConsumerWidget {
           ayuda: 'Cada cuántos días recordar introducirlo',
           sufijo: 'días',
           valorInicial: ajustes.diasRecordatorioLectura,
-          alGuardar: (v) => ref
-              .read(databaseProvider)
-              .settingsDao
-              .actualizarDiasRecordatorioLectura(v),
+          alGuardar: (v) async {
+            await ref
+                .read(databaseProvider)
+                .settingsDao
+                .actualizarDiasRecordatorioLectura(v);
+            dispararReprogramacionDeAvisos(ref);
+          },
         ),
         const SizedBox(height: 12),
         const _EstadoPermiso(),
@@ -190,7 +200,11 @@ class _SelectorTema extends ConsumerWidget {
 
   const _SelectorTema({required this.temaActual});
 
-  Future<void> _guardar(BuildContext context, WidgetRef ref, String tema) async {
+  Future<void> _guardar(
+    BuildContext context,
+    WidgetRef ref,
+    String tema,
+  ) async {
     try {
       await ref.read(databaseProvider).settingsDao.actualizarTema(tema);
     } catch (e) {
@@ -252,9 +266,7 @@ class _CampoNumericoAutoguardadoState
   void initState() {
     super.initState();
     _ultimoValorValido = widget.valorInicial;
-    _controlador = TextEditingController(
-      text: widget.valorInicial.toString(),
-    );
+    _controlador = TextEditingController(text: widget.valorInicial.toString());
     _foco = FocusNode()..addListener(_alCambiarFoco);
   }
 
@@ -282,6 +294,7 @@ class _CampoNumericoAutoguardadoState
     try {
       await widget.alGuardar(valor);
       _ultimoValorValido = valor;
+      _controlador.text = valor.toString();
     } catch (e) {
       debugPrint('No se ha podido guardar "${widget.etiqueta}": $e');
       if (!mounted) return;

@@ -78,7 +78,9 @@ void main() {
           vehiculosProvider.overrideWith((ref) => Stream.value([_vehiculo()])),
           ultimaLecturaProvider(1).overrideWith((ref) => Stream.value(null)),
           vencimientosProvider(1).overrideWith((ref) => []),
-          ajustesProvider.overrideWith((ref) => Stream.value(_ajustesDePrueba())),
+          ajustesProvider.overrideWith(
+            (ref) => Stream.value(_ajustesDePrueba()),
+          ),
           ritmoUsoProvider(1).overrideWith(
             (ref) => const UsageRateResult(kmPorDia: 50, esPorDefecto: false),
           ),

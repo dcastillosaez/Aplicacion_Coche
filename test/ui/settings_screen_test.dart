@@ -1,7 +1,9 @@
 import 'package:car_care/data/database.dart';
 import 'package:car_care/providers/mantenimiento_providers.dart';
+import 'package:car_care/providers/notificaciones_providers.dart';
 import 'package:car_care/providers/permisos_providers.dart';
 import 'package:car_care/providers/providers.dart';
+import 'package:car_care/services/notificaciones.dart';
 import 'package:car_care/services/permisos.dart';
 import 'package:car_care/ui/settings/settings_screen.dart';
 import 'package:drift/native.dart';
@@ -23,6 +25,22 @@ class _ServicioPermisosFalso implements ServicioPermisos {
   Future<void> abrirAjustesDeLaAplicacion() async {
     vecesAbierto++;
   }
+}
+
+/// Doble de prueba, igual que en notificaciones_providers_test.dart: los
+/// campos numéricos ahora disparan la reprogramación al guardar (ver
+/// dispararReprogramacionDeAvisos), y sin este doble el servicio real
+/// intentaría llegar al plugin nativo de notificaciones, inexistente en un
+/// test de Dart.
+class _ServicioNotificacionesFalso implements ServicioNotificaciones {
+  @override
+  Future<void> inicializar() async {}
+
+  @override
+  Future<bool> pedirPermiso() async => true;
+
+  @override
+  Future<void> programarAvisos(List<AvisoDeVehiculo> avisos) async {}
 }
 
 Setting _ajustesDePrueba({DateTime? fechaUltimaCopia}) => Setting(
@@ -50,9 +68,16 @@ void main() {
         databaseProvider.overrideWithValue(db),
         ajustesProvider.overrideWith((ref) => Stream.value(ajustes)),
         servicioPermisosProvider.overrideWithValue(servicioPermisos),
-        permisoNotificacionesProvider.overrideWith(
-          (ref) => servicioPermisos.tienePermisoNotificaciones(),
+        // El guardado de los campos numéricos dispara la reprogramación de
+        // avisos (dispararReprogramacionDeAvisos). Se sustituyen el
+        // servicio y el proveedor de vehículos por dobles síncronos para
+        // que ese guardado no deje un stream de Drift vivo ni intente
+        // llegar al plugin nativo, igual que en notificaciones_providers_
+        // test.dart.
+        servicioNotificacionesProvider.overrideWithValue(
+          _ServicioNotificacionesFalso(),
         ),
+        vehiculosProvider.overrideWith((ref) => Stream.value(const [])),
       ],
       child: MaterialApp(
         locale: const Locale('es', 'ES'),
