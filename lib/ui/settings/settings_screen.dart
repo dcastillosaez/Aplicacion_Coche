@@ -154,6 +154,8 @@ class _EstadoPermiso extends ConsumerWidget {
   Future<void> _abrirAjustes(BuildContext context, WidgetRef ref) async {
     try {
       await ref.read(servicioPermisosProvider).abrirAjustesDeLaAplicacion();
+      if (!context.mounted) return;
+      ref.invalidate(permisoNotificacionesProvider);
     } catch (e) {
       debugPrint('No se han podido abrir los ajustes de la aplicación: $e');
       if (!context.mounted) return;
@@ -205,6 +207,8 @@ class _EstadoAlarmasExactas extends ConsumerWidget {
   Future<void> _abrirAjustes(BuildContext context, WidgetRef ref) async {
     try {
       await ref.read(servicioPermisosProvider).abrirAjustesDeAlarmasExactas();
+      if (!context.mounted) return;
+      ref.invalidate(permisoAlarmasExactasProvider);
     } catch (e) {
       debugPrint('No se han podido abrir los ajustes de alarmas exactas: $e');
       if (!context.mounted) return;
@@ -266,6 +270,7 @@ class _EstadoOptimizacionBateria extends ConsumerWidget {
       if (!concedido) {
         await servicio.abrirAjustesDeLaAplicacion();
       }
+      if (!context.mounted) return;
       ref.invalidate(optimizacionBateriaIgnoradaProvider);
     } catch (e) {
       debugPrint('No se pudo solicitar la exclusión de batería: $e');
@@ -322,11 +327,11 @@ class _EstadoOptimizacionBateria extends ConsumerWidget {
   }
 }
 
-class _AvisoFabricantes extends StatelessWidget {
+class _AvisoFabricantes extends ConsumerWidget {
   const _AvisoFabricantes();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tema = Theme.of(context);
     return Card(
       elevation: 0,
@@ -361,6 +366,17 @@ class _AvisoFabricantes extends StatelessWidget {
             '2. En Xiaomi, activa «Inicio automático» en los ajustes de la app.\n'
             '3. En Samsung, retira la app de «Aplicaciones en suspensión profunda».',
             style: tema.textTheme.bodySmall?.copyWith(height: 1.4),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => ref
+                  .read(servicioPermisosProvider)
+                  .abrirAjustesDeLaAplicacion(),
+              icon: const Icon(Icons.settings_outlined),
+              label: const Text('Abrir ajustes de la aplicación'),
+            ),
           ),
         ],
       ),

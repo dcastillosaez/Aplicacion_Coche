@@ -93,6 +93,7 @@ class NotificacionesLocales implements ServicioNotificaciones {
         ? AndroidScheduleMode.exactAllowWhileIdle
         : AndroidScheduleMode.inexactAllowWhileIdle;
 
+    var modoActual = modo;
     final ahora = DateTime.now();
     var id = 0;
     for (final a in avisos) {
@@ -110,13 +111,14 @@ class NotificacionesLocales implements ServicioNotificaciones {
           body: cuerpoDeAviso(a.aviso),
           scheduledDate: instante,
           notificationDetails: _detalles,
-          androidScheduleMode: modo,
+          androidScheduleMode: modoActual,
         );
       } catch (_) {
         // Red de seguridad: si falla en modo exacto (p. ej. restricción de
-        // fabricante en ejecución), reintentar en modo inexacto para no perder
-        // la notificación.
-        if (modo == AndroidScheduleMode.exactAllowWhileIdle) {
+        // fabricante en ejecución), degradar a modo inexacto para este y los
+        // avisos restantes para no perder la entrega ni repetir excepciones.
+        if (modoActual == AndroidScheduleMode.exactAllowWhileIdle) {
+          modoActual = AndroidScheduleMode.inexactAllowWhileIdle;
           await _plugin.zonedSchedule(
             id: idActual,
             title: a.nombreVehiculo,

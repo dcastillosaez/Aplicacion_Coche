@@ -54,7 +54,10 @@ class PermisosDelSistema implements ServicioPermisos {
 
   @override
   Future<void> abrirAjustesDeAlarmasExactas() async {
-    await openAppSettings();
+    final estado = await Permission.scheduleExactAlarm.request();
+    if (!estado.isGranted) {
+      await openAppSettings();
+    }
   }
 
   @override

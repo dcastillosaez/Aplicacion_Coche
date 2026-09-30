@@ -398,21 +398,34 @@ void main() {
     },
   );
 
-  testWidgets('muestra tarjeta explicativa de fabricantes agresivos', (
-    tester,
-  ) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
+  testWidgets(
+    'muestra tarjeta explicativa de fabricantes agresivos y permite abrir ajustes',
+    (tester) async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      tester.view.physicalSize = const Size(1000, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final servicio = _ServicioPermisosFalso();
 
-    await tester.pumpWidget(
-      envolver(
-        ajustes: _ajustesDePrueba(),
-        servicioPermisos: _ServicioPermisosFalso(),
-        db: db,
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        envolver(
+          ajustes: _ajustesDePrueba(),
+          servicioPermisos: servicio,
+          db: db,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Avisos en Xiaomi, Samsung y otros'), findsOneWidget);
-  });
+      expect(find.text('Avisos en Xiaomi, Samsung y otros'), findsOneWidget);
+      await tester.tap(find.text('Avisos en Xiaomi, Samsung y otros'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Abrir ajustes de la aplicación'), findsOneWidget);
+      await tester.tap(find.text('Abrir ajustes de la aplicación'));
+      await tester.pumpAndSettle();
+
+      expect(servicio.vecesAbierto, 1);
+    },
+  );
 }
