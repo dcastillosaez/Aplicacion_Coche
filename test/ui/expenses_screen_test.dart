@@ -1,6 +1,7 @@
 import 'package:car_care/data/database.dart';
 import 'package:car_care/data/tables/vehicles.dart';
 import 'package:car_care/domain/gastos.dart';
+import 'package:car_care/domain/maintenance_category.dart';
 import 'package:car_care/providers/gastos_providers.dart';
 import 'package:car_care/ui/common/formatters.dart';
 import 'package:car_care/ui/expenses/expenses_screen.dart';
@@ -92,5 +93,59 @@ void main() {
 
     expect(find.text('Seat León'), findsOneWidget);
     expect(find.text(formatearCoste(0)), findsNothing);
+  });
+
+  testWidgets('permite alternar entre desglose por año y por categoría', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app([
+        GastosDeVehiculo(
+          vehiculo: _vehiculo(),
+          resumen: const ResumenGastos(
+            total: 300,
+            porAnio: [
+              GastoAnual(anio: 2026, total: 300),
+            ],
+            porCategoria: [
+              GastoPorCategoria(
+                categoria: MaintenanceCategory.motor,
+                total: 200,
+                cantidad: 2,
+              ),
+              GastoPorCategoria(
+                categoria: MaintenanceCategory.frenos,
+                total: 100,
+                cantidad: 1,
+              ),
+            ],
+            registrosSinCoste: 0,
+          ),
+        ),
+      ]),
+    );
+    await tester.pumpAndSettle();
+
+    // Por defecto se muestra la vista por año
+    expect(find.text('2026'), findsOneWidget);
+    expect(find.text('Motor'), findsNothing);
+
+    // Cambiar a vista por categoría
+    await tester.tap(find.text('Por categoría'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Motor'), findsOneWidget);
+    expect(find.text('Frenos'), findsOneWidget);
+    expect(find.text(formatearCoste(200)), findsOneWidget);
+    expect(find.text(formatearCoste(100)), findsOneWidget);
+    expect(find.text('67%'), findsOneWidget);
+    expect(find.text('33%'), findsOneWidget);
+
+    // Volver a vista por año
+    await tester.tap(find.text('Por año'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2026'), findsOneWidget);
+    expect(find.text('Motor'), findsNothing);
   });
 }

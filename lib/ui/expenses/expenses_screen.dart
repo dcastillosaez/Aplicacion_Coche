@@ -8,6 +8,7 @@ import '../../providers/providers.dart';
 import '../common/empty_state.dart';
 import '../common/error_con_reintento.dart';
 import '../common/formatters.dart';
+import '../maintenance/maintenance_form_screen.dart' show etiquetasCategoria;
 
 /// Gastos por vehículo: el acumulado y su desglose por año, para cada
 /// vehículo activo.
@@ -120,17 +121,35 @@ class _SinCostesAnotados extends StatelessWidget {
   }
 }
 
-class _ResumenConCostes extends StatelessWidget {
+enum _VistaGastos { anio, categoria }
+
+class _ResumenConCostes extends StatefulWidget {
   final ResumenGastos resumen;
 
   const _ResumenConCostes({required this.resumen});
 
   @override
+  State<_ResumenConCostes> createState() => _ResumenConCostesState();
+}
+
+class _ResumenConCostesState extends State<_ResumenConCostes> {
+  _VistaGastos _vista = _VistaGastos.anio;
+
+  @override
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
-    final maxAnual = resumen.porAnio
-        .map((g) => g.total)
-        .reduce((a, b) => a > b ? a : b);
+    final resumen = widget.resumen;
+    final maxAnual = resumen.porAnio.isEmpty
+        ? 0.0
+        : resumen.porAnio
+            .map((g) => g.total)
+            .reduce((a, b) => a > b ? a : b);
+
+    final maxCategoria = resumen.porCategoria.isEmpty
+        ? 0.0
+        : resumen.porCategoria
+            .map((g) => g.total)
+            .reduce((a, b) => a > b ? a : b);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,12 +169,134 @@ class _ResumenConCostes extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 16),
-        for (final gastoAnual in resumen.porAnio)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _FilaGastoAnual(gastoAnual: gastoAnual, maxAnual: maxAnual),
+        if (resumen.porCategoria.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<_VistaGastos>(
+              segments: const [
+                ButtonSegment(
+                  value: _VistaGastos.anio,
+                  label: Text('Por año'),
+                  icon: Icon(Icons.calendar_today_outlined, size: 16),
+                ),
+                ButtonSegment(
+                  value: _VistaGastos.categoria,
+                  label: Text('Por categoría'),
+                  icon: Icon(Icons.pie_chart_outline, size: 16),
+                ),
+              ],
+              selected: {_vista},
+              onSelectionChanged: (nuevo) {
+                setState(() => _vista = nuevo.first);
+              },
+            ),
           ),
+        ],
+        const SizedBox(height: 16),
+        if (_vista == _VistaGastos.anio) ...[
+          for (final gastoAnual in resumen.porAnio)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _FilaGastoAnual(gastoAnual: gastoAnual, maxAnual: maxAnual),
+            ),
+        ] else ...[
+          for (final gastoCat in resumen.porCategoria)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _FilaGastoCategoria(
+                gastoCat: gastoCat,
+                maxCategoria: maxCategoria,
+                totalVehiculo: resumen.total,
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Una fila del desglose por categoría: el nombre de la categoría, el
+/// porcentaje sobre el total, el importe, y una barra proporcional.
+class _FilaGastoCategoria extends StatelessWidget {
+  final GastoPorCategoria gastoCat;
+  final double maxCategoria;
+  final double totalVehiculo;
+
+  const _FilaGastoCategoria({
+    required this.gastoCat,
+    required this.maxCategoria,
+    required this.totalVehiculo,
+  });
+
+  double get _factorBarra {
+    if (maxCategoria <= 0) return 0;
+    return (gastoCat.total / maxCategoria).clamp(0.0, 1.0);
+  }
+
+  String get _nombreCategoria {
+    final cat = gastoCat.categoria;
+    if (cat == null) return 'Reparación puntual';
+    return etiquetasCategoria[cat] ?? cat.name;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    final porcentaje = totalVehiculo > 0
+        ? ((gastoCat.total / totalVehiculo) * 100).round()
+        : 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                _nombreCategoria,
+                style: tema.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '$porcentaje%',
+              style: tema.textTheme.bodySmall?.copyWith(
+                color: tema.colorScheme.outline,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              formatearCoste(gastoCat.total),
+              style: tema.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 8,
+          decoration: BoxDecoration(
+            color: tema.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: FractionallySizedBox(
+            widthFactor: _factorBarra,
+            alignment: Alignment.centerLeft,
+            child: Container(
+              decoration: BoxDecoration(
+                color: tema.colorScheme.primary,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

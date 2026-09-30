@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
 import '../domain/gastos.dart';
+import '../domain/maintenance_category.dart';
 import 'mantenimiento_providers.dart';
 import 'providers.dart';
 
@@ -13,6 +14,16 @@ class GastosDeVehiculo {
   const GastosDeVehiculo({required this.vehiculo, required this.resumen});
 }
 
+/// Categorías de los mantenimientos configurados, indexadas por `scheduleId`.
+final categoriasDeSchedulesProvider =
+    StreamProvider<Map<int, MaintenanceCategory>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db
+      .select(db.maintenanceSchedules)
+      .watch()
+      .map((lista) => {for (final s in lista) s.id: s.categoria});
+});
+
 /// Gastos de cada vehículo activo, en el mismo orden en que los devuelve
 /// `vehiculosProvider`.
 ///
@@ -22,6 +33,8 @@ class GastosDeVehiculo {
 final gastosProvider = FutureProvider<List<GastosDeVehiculo>>((ref) async {
   final vehiculos = await ref.watch(vehiculosProvider.future);
   final registros = await ref.watch(historialProvider.future);
+  final categoriasPorSchedule =
+      await ref.watch(categoriasDeSchedulesProvider.future);
 
   return [
     for (final vehiculo in vehiculos)
@@ -29,7 +42,14 @@ final gastosProvider = FutureProvider<List<GastosDeVehiculo>>((ref) async {
         vehiculo: vehiculo,
         resumen: calcularResumenGastos([
           for (final r in registros)
-            if (r.vehicleId == vehiculo.id) (fecha: r.fecha, coste: r.coste),
+            if (r.vehicleId == vehiculo.id)
+              (
+                fecha: r.fecha,
+                coste: r.coste,
+                categoria: r.scheduleId != null
+                    ? categoriasPorSchedule[r.scheduleId]
+                    : null,
+              ),
         ]),
       ),
   ];
