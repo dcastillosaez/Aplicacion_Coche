@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/notificaciones_providers.dart';
 import '../../providers/permisos_providers.dart';
+import '../../services/shortcuts.dart';
 import '../expenses/expenses_screen.dart';
 import '../history/history_screen.dart';
 import '../home/home_screen.dart';
@@ -17,11 +18,34 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   int _indice = 0;
+  late final ServicioShortcuts _servicioShortcuts;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _inicializarAvisos());
+    _servicioShortcuts = ServicioShortcuts(
+      onShortcutRecibido: _manejarShortcut,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _inicializarAvisos();
+      _comprobarShortcutInicial();
+    });
+  }
+
+  void _manejarShortcut(String shortcut) {
+    if (!mounted) return;
+    if (shortcut == 'historial') {
+      setState(() => _indice = 1);
+    } else if (shortcut == 'gastos') {
+      setState(() => _indice = 2);
+    }
+  }
+
+  Future<void> _comprobarShortcutInicial() async {
+    final inicial = await _servicioShortcuts.obtenerShortcutInicial();
+    if (inicial != null) {
+      _manejarShortcut(inicial);
+    }
   }
 
   /// Un fallo del plugin de notificaciones no debe impedir que la

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="shortcut_historial"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_historial_short"
+        android:shortcutLongLabel="@string/shortcut_historial_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.dcastillo.car_care"
+            android:targetClass="com.dcastillo.car_care.MainActivity"
+            android:data="carcare://historial" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="shortcut_gastos"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_gastos_short"
+        android:shortcutLongLabel="@string/shortcut_gastos_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.dcastillo.car_care"
+            android:targetClass="com.dcastillo.car_care.MainActivity"
+            android:data="carcare://gastos" />
+    </shortcut>
+</shortcuts>
