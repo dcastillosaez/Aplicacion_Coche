@@ -225,7 +225,7 @@ void main() {
       expect(find.text('Revisión general'), findsOneWidget);
       expect(
         find.text(etiquetasCategoria[MaintenanceCategory.motor]!),
-        findsOneWidget,
+        findsWidgets,
       );
       // La marca y el modelo reales, no "Vehículo no disponible".
       expect(find.text('Vehículo no disponible'), findsNothing);
@@ -298,4 +298,179 @@ void main() {
       expect(find.text('Aceite y filtro'), findsOneWidget);
     },
   );
+
+  testWidgets('la búsqueda por texto filtra por concepto, taller y notas', (
+    tester,
+  ) async {
+    const frenos = MaintenanceSchedule(
+      id: 11,
+      vehicleId: 1,
+      nombre: 'Pastillas delanteras',
+      categoria: MaintenanceCategory.frenos,
+      intervalKm: 30000,
+      activo: true,
+      silenciado: false,
+      orden: 1,
+      fuenteIntervalo: FuenteIntervalo.orientativo,
+      nombreAutogenerado: false,
+    );
+    final reg1 = MaintenanceRecord(
+      id: 1,
+      vehicleId: 1,
+      scheduleId: 10,
+      fecha: DateTime(2026, 5, 1),
+      km: 95000,
+      taller: 'Taller Rápido',
+      notas: 'Castrol 5W30',
+      esSembrado: false,
+    );
+    final reg2 = MaintenanceRecord(
+      id: 2,
+      vehicleId: 1,
+      scheduleId: 11,
+      fecha: DateTime(2026, 6, 1),
+      km: 98000,
+      taller: 'Frenos Paco',
+      notas: 'Brembo',
+      esSembrado: false,
+    );
+
+    await tester.pumpWidget(
+      envolver(
+        registros: [reg1, reg2],
+        vehiculos: [seat],
+        schedulesPorVehiculo: {
+          1: [aceite, frenos],
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aceite y filtro'), findsOneWidget);
+    expect(find.text('Pastillas delanteras'), findsOneWidget);
+
+    // Buscar por taller
+    await tester.enterText(find.byType(TextField), 'Frenos Paco');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pastillas delanteras'), findsOneWidget);
+    expect(find.text('Aceite y filtro'), findsNothing);
+
+    // Buscar por notas sin acento
+    await tester.enterText(find.byType(TextField), 'castrol');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aceite y filtro'), findsOneWidget);
+    expect(find.text('Pastillas delanteras'), findsNothing);
+
+    // Borrar búsqueda con el botón de clear
+    await tester.tap(find.byIcon(Icons.clear));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aceite y filtro'), findsOneWidget);
+    expect(find.text('Pastillas delanteras'), findsOneWidget);
+  });
+
+  testWidgets(
+    'cuando la búsqueda no coincide con nada, muestra estado sin resultados y botón de limpiar',
+    (tester) async {
+      final reg = MaintenanceRecord(
+        id: 1,
+        vehicleId: 1,
+        scheduleId: 10,
+        fecha: DateTime(2026, 5, 1),
+        km: 95000,
+        esSembrado: false,
+      );
+
+      await tester.pumpWidget(
+        envolver(
+          registros: [reg],
+          vehiculos: [seat],
+          schedulesPorVehiculo: {
+            1: [aceite],
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Aceite y filtro'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'inexistente 12345');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sin resultados'), findsOneWidget);
+      expect(
+        find.text('No se encontraron intervenciones con los filtros actuales.'),
+        findsOneWidget,
+      );
+      expect(find.text('Limpiar filtros'), findsOneWidget);
+
+      // Al pulsar Limpiar filtros se restaura
+      await tester.tap(find.text('Limpiar filtros'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Aceite y filtro'), findsOneWidget);
+      expect(find.text('Sin resultados'), findsNothing);
+    },
+  );
+
+  testWidgets('el filtro por categoría filtra correctamente', (tester) async {
+    const frenos = MaintenanceSchedule(
+      id: 11,
+      vehicleId: 1,
+      nombre: 'Pastillas de freno',
+      categoria: MaintenanceCategory.frenos,
+      intervalKm: 30000,
+      activo: true,
+      silenciado: false,
+      orden: 1,
+      fuenteIntervalo: FuenteIntervalo.orientativo,
+      nombreAutogenerado: false,
+    );
+    final reg1 = MaintenanceRecord(
+      id: 1,
+      vehicleId: 1,
+      scheduleId: 10,
+      fecha: DateTime(2026, 5, 1),
+      km: 95000,
+      esSembrado: false,
+    );
+    final reg2 = MaintenanceRecord(
+      id: 2,
+      vehicleId: 1,
+      scheduleId: 11,
+      fecha: DateTime(2026, 6, 1),
+      km: 98000,
+      esSembrado: false,
+    );
+
+    await tester.pumpWidget(
+      envolver(
+        registros: [reg1, reg2],
+        vehiculos: [seat],
+        schedulesPorVehiculo: {
+          1: [aceite, frenos],
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aceite y filtro'), findsOneWidget);
+    expect(find.text('Pastillas de freno'), findsOneWidget);
+
+    // Filtrar por Frenos
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Frenos'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pastillas de freno'), findsOneWidget);
+    expect(find.text('Aceite y filtro'), findsNothing);
+
+    // Volver a Todas las categorías
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Todas las categorías'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aceite y filtro'), findsOneWidget);
+    expect(find.text('Pastillas de freno'), findsOneWidget);
+  });
 }

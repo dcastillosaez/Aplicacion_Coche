@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../domain/maintenance_category.dart';
 import '../../providers/mantenimiento_providers.dart';
 import '../../providers/providers.dart';
 import '../common/empty_state.dart';
@@ -29,6 +30,24 @@ class HistoryScreen extends ConsumerStatefulWidget {
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   /// Nulo significa "todos los vehículos".
   int? _filtroVehiculoId;
+  MaintenanceCategory? _filtroCategoria;
+  final _busquedaController = TextEditingController();
+  String _busqueda = '';
+
+  @override
+  void dispose() {
+    _busquedaController.dispose();
+    super.dispose();
+  }
+
+  void _limpiarFiltros() {
+    setState(() {
+      _filtroVehiculoId = null;
+      _filtroCategoria = null;
+      _busqueda = '';
+      _busquedaController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +83,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             registros: registros,
             vehiculos: listaVehiculos,
             filtroVehiculoId: _filtroVehiculoId,
-            onFiltroChanged: (id) => setState(() => _filtroVehiculoId = id),
+            filtroCategoria: _filtroCategoria,
+            busqueda: _busqueda,
+            busquedaController: _busquedaController,
+            onVehiculoChanged: (id) => setState(() => _filtroVehiculoId = id),
+            onCategoriaChanged: (cat) => setState(() => _filtroCategoria = cat),
+            onBusquedaChanged: (texto) => setState(() => _busqueda = texto),
+            onLimpiarFiltros: _limpiarFiltros,
           ),
         ),
       ),
@@ -72,23 +97,91 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 }
 
+/// Normaliza un texto para búsqueda insensible a mayúsculas y acentos.
+String _normalizar(String texto) {
+  return texto
+      .toLowerCase()
+      .replaceAll('á', 'a')
+      .replaceAll('é', 'e')
+      .replaceAll('í', 'i')
+      .replaceAll('ó', 'o')
+      .replaceAll('ú', 'u')
+      .replaceAll('ü', 'u');
+}
+
 /// Cuerpo de la pantalla una vez resueltos el historial y los vehículos: el
-/// filtro, y la lista o el estado vacío que corresponda.
+/// buscador, los filtros, y la lista o el estado vacío que corresponda.
 class _ContenidoHistorial extends ConsumerWidget {
   final List<MaintenanceRecord> registros;
   final List<Vehicle> vehiculos;
   final int? filtroVehiculoId;
-  final ValueChanged<int?> onFiltroChanged;
+  final MaintenanceCategory? filtroCategoria;
+  final String busqueda;
+  final TextEditingController busquedaController;
+  final ValueChanged<int?> onVehiculoChanged;
+  final ValueChanged<MaintenanceCategory?> onCategoriaChanged;
+  final ValueChanged<String> onBusquedaChanged;
+  final VoidCallback onLimpiarFiltros;
 
   const _ContenidoHistorial({
     required this.registros,
     required this.vehiculos,
     required this.filtroVehiculoId,
-    required this.onFiltroChanged,
+    required this.filtroCategoria,
+    required this.busqueda,
+    required this.busquedaController,
+    required this.onVehiculoChanged,
+    required this.onCategoriaChanged,
+    required this.onBusquedaChanged,
+    required this.onLimpiarFiltros,
   });
+
+  bool _coincideBusqueda({
+    required MaintenanceRecord registro,
+    required MaintenanceSchedule? schedule,
+    required Vehicle? vehiculo,
+    required String queryNorm,
+  }) {
+    if (queryNorm.isEmpty) return true;
+
+    final campos = <String>[];
+    if (schedule != null) {
+      campos.add(schedule.nombre);
+      final catEtiqueta = etiquetasCategoria[schedule.categoria];
+      if (catEtiqueta != null) campos.add(catEtiqueta);
+      if (schedule.tipo != null) {
+        final tipoEtiqueta = etiquetasMaintenanceType[schedule.tipo];
+        if (tipoEtiqueta != null) campos.add(tipoEtiqueta);
+      }
+      if (schedule.posicion != null) {
+        final posEtiqueta = etiquetasPosicion[schedule.posicion];
+        if (posEtiqueta != null) campos.add(posEtiqueta);
+      }
+    } else {
+      campos.add('Reparación puntual');
+    }
+
+    if (registro.taller != null) campos.add(registro.taller!);
+    if (registro.notas != null) campos.add(registro.notas!);
+    if (registro.kind != null) {
+      final kindEtiqueta = etiquetasMaintenanceOperationKind[registro.kind];
+      if (kindEtiqueta != null) campos.add(kindEtiqueta);
+    }
+    if (vehiculo != null) {
+      campos.add('${vehiculo.marca} ${vehiculo.modelo}');
+    }
+
+    for (final campo in campos) {
+      if (_normalizar(campo).contains(queryNorm)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tema = Theme.of(context);
     final porVehiculoId = {for (final v in vehiculos) v.id: v};
 
     // Nombre del mantenimiento de cada registro, combinando los
@@ -97,12 +190,6 @@ class _ContenidoHistorial extends ConsumerWidget {
     // de datos pone su scheduleId a nulo. Así que basta con mirar los
     // mantenimientos actuales de cada vehículo, no hace falta guardar nada
     // de los borrados.
-    //
-    // Cada stream de mantenimientos se resuelve por separado (uno por
-    // vehículo), así que no basta con el `.when` de un único provider: hay
-    // que esperar a que todos hayan emitido antes de afirmar el nombre de un
-    // registro. Mientras alguno siga cargando, un registro con mantenimiento
-    // vivo podría mostrarse falsamente como "Reparación puntual".
     final estadosSchedules = [
       for (final v in vehiculos) ref.watch(schedulesProvider(v.id)),
     ];
@@ -142,31 +229,146 @@ class _ContenidoHistorial extends ConsumerWidget {
       }
     }
 
-    final filtrados = filtroVehiculoId == null
-        ? registros
-        : registros.where((r) => r.vehicleId == filtroVehiculoId).toList();
+    final categoriasPresentes =
+        schedulesPorId.values.map((s) => s.categoria).toSet().toList()
+          ..sort(
+            (a, b) => (etiquetasCategoria[a] ?? '').compareTo(
+              etiquetasCategoria[b] ?? '',
+            ),
+          );
+
+    final queryNorm = _normalizar(busqueda.trim());
+    final filtrados = registros.where((r) {
+      if (filtroVehiculoId != null && r.vehicleId != filtroVehiculoId) {
+        return false;
+      }
+      final schedule = schedulesPorId[r.scheduleId];
+      if (filtroCategoria != null && schedule?.categoria != filtroCategoria) {
+        return false;
+      }
+      final vehiculo = porVehiculoId[r.vehicleId];
+      return _coincideBusqueda(
+        registro: r,
+        schedule: schedule,
+        vehiculo: vehiculo,
+        queryNorm: queryNorm,
+      );
+    }).toList();
+
+    final hayFiltrosActivos =
+        busqueda.trim().isNotEmpty ||
+        filtroCategoria != null ||
+        filtroVehiculoId != null;
 
     return Column(
       children: [
-        if (vehiculos.length > 1)
-          _FiltroVehiculo(
-            vehiculos: vehiculos,
-            seleccionado: filtroVehiculoId,
-            onChanged: onFiltroChanged,
+        if (registros.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: TextField(
+              controller: busquedaController,
+              decoration: InputDecoration(
+                hintText: 'Buscar por concepto, taller o notas...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: busqueda.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        tooltip: 'Borrar búsqueda',
+                        onPressed: () {
+                          busquedaController.clear();
+                          onBusquedaChanged('');
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: tema.colorScheme.outlineVariant,
+                  ),
+                ),
+                filled: true,
+                fillColor: tema.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
+              ),
+              onChanged: onBusquedaChanged,
+            ),
           ),
+          if (vehiculos.length > 1)
+            _FiltroVehiculo(
+              vehiculos: vehiculos,
+              seleccionado: filtroVehiculoId,
+              onChanged: onVehiculoChanged,
+            ),
+          if (categoriasPresentes.isNotEmpty)
+            _FiltroCategorias(
+              categorias: categoriasPresentes,
+              seleccionada: filtroCategoria,
+              onChanged: onCategoriaChanged,
+            ),
+        ],
         Expanded(
           child: filtrados.isEmpty
-              ? EmptyState(
-                  icono: Icons.history,
-                  titulo: registros.isEmpty
-                      ? 'Todavía no hay nada registrado'
-                      : 'Sin registros para este vehículo',
-                  descripcion: registros.isEmpty
-                      ? 'Aquí irá apareciendo cada mantenimiento y '
-                            'reparación que registres.'
-                      : 'Prueba a quitar el filtro para ver el resto del '
-                            'historial.',
-                )
+              ? (registros.isEmpty
+                    ? const EmptyState(
+                        icono: Icons.history,
+                        titulo: 'Todavía no hay nada registrado',
+                        descripcion:
+                            'Aquí irá apareciendo cada mantenimiento y '
+                            'reparación que registres.',
+                      )
+                    : (filtroVehiculoId != null &&
+                            busqueda.trim().isEmpty &&
+                            filtroCategoria == null
+                        ? const EmptyState(
+                            icono: Icons.history,
+                            titulo: 'Sin registros para este vehículo',
+                            descripcion:
+                                'Prueba a quitar el filtro para ver el resto del '
+                                'historial.',
+                          )
+                        : Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 56,
+                                    color: tema.colorScheme.outline,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Sin resultados',
+                                    style: tema.textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'No se encontraron intervenciones con los filtros actuales.',
+                                    textAlign: TextAlign.center,
+                                    style: tema.textTheme.bodyMedium?.copyWith(
+                                      color: tema.colorScheme.outline,
+                                    ),
+                                  ),
+                                  if (hayFiltrosActivos) ...[
+                                    const SizedBox(height: 16),
+                                    OutlinedButton.icon(
+                                      onPressed: onLimpiarFiltros,
+                                      icon: const Icon(
+                                        Icons.filter_alt_off_outlined,
+                                      ),
+                                      label: const Text('Limpiar filtros'),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          )))
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   itemCount: filtrados.length,
@@ -239,6 +441,46 @@ class _FiltroVehiculo extends StatelessWidget {
                 label: Text(_nombreVehiculo(v)),
                 selected: seleccionado == v.id,
                 onSelected: (_) => onChanged(v.id),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Filtro por categoría: "Todas" más un chip por cada categoría con mantenimientos.
+class _FiltroCategorias extends StatelessWidget {
+  final List<MaintenanceCategory> categorias;
+  final MaintenanceCategory? seleccionada;
+  final ValueChanged<MaintenanceCategory?> onChanged;
+
+  const _FiltroCategorias({
+    required this.categorias,
+    required this.seleccionada,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ChoiceChip(
+              label: const Text('Todas las categorías'),
+              selected: seleccionada == null,
+              onSelected: (_) => onChanged(null),
+            ),
+            for (final cat in categorias) ...[
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: Text(etiquetasCategoria[cat] ?? cat.name),
+                selected: seleccionada == cat,
+                onSelected: (_) => onChanged(cat),
               ),
             ],
           ],
