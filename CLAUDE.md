@@ -50,7 +50,7 @@ Toolchain no está en el PATH de la shell, y **Gradle no arranca sin redirigir T
 
 ```powershell
 $env:Path = "F:\dev\flutter\bin;F:\dev\android-sdk\platform-tools;$env:Path"
-$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot'
+$env:JAVA_HOME = 'F:\dev\jdk-17.0.20+8'
 $env:ANDROID_HOME = 'F:\dev\android-sdk'
 $env:TMP = 'F:\dev\tmp'; $env:TEMP = 'F:\dev\tmp'
 ```
