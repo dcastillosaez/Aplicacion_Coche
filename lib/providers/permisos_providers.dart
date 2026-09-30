@@ -9,3 +9,11 @@ final servicioPermisosProvider = Provider<ServicioPermisos>(
 final permisoNotificacionesProvider = FutureProvider<bool>((ref) {
   return ref.watch(servicioPermisosProvider).tienePermisoNotificaciones();
 });
+
+final permisoAlarmasExactasProvider = FutureProvider<bool>((ref) {
+  return ref.watch(servicioPermisosProvider).puedeProgramarAlarmasExactas();
+});
+
+final optimizacionBateriaIgnoradaProvider = FutureProvider<bool>((ref) {
+  return ref.watch(servicioPermisosProvider).tieneBateriaOptimizadaIgnorada();
+});

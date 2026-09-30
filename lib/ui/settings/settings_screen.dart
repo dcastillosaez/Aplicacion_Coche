@@ -93,6 +93,10 @@ class _Contenido extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         const _EstadoPermiso(),
+        const _EstadoAlarmasExactas(),
+        const _EstadoOptimizacionBateria(),
+        const SizedBox(height: 12),
+        const _AvisoFabricantes(),
         const SizedBox(height: 24),
         const _CabeceraSeccion(titulo: 'Apariencia'),
         const SizedBox(height: 8),
@@ -190,6 +194,175 @@ class _EstadoPermiso extends ConsumerWidget {
                 onPressed: () => _abrirAjustes(context, ref),
                 child: const Text('Abrir ajustes'),
               ),
+      ),
+    );
+  }
+}
+
+class _EstadoAlarmasExactas extends ConsumerWidget {
+  const _EstadoAlarmasExactas();
+
+  Future<void> _abrirAjustes(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(servicioPermisosProvider).abrirAjustesDeAlarmasExactas();
+    } catch (e) {
+      debugPrint('No se han podido abrir los ajustes de alarmas exactas: $e');
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se han podido abrir los ajustes.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final estado = ref.watch(permisoAlarmasExactasProvider);
+
+    return estado.when(
+      loading: () => const ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.alarm_outlined),
+        title: Text('Alarmas exactas'),
+        subtitle: Text('Comprobando...'),
+      ),
+      error: (e, st) {
+        debugPrint('Error al comprobar alarmas exactas: $e\n$st');
+        return const ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.alarm_outlined),
+          title: Text('Alarmas exactas'),
+          subtitle: Text('No se ha podido comprobar'),
+        );
+      },
+      data: (permitido) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(
+          permitido ? Icons.alarm_on_outlined : Icons.alarm_off_outlined,
+        ),
+        title: const Text('Alarmas exactas'),
+        subtitle: Text(
+          permitido
+              ? 'Puntuales a las 9:00'
+              : 'Inexactas (pueden retrasarse por el sistema)',
+        ),
+        trailing: permitido
+            ? null
+            : TextButton(
+                onPressed: () => _abrirAjustes(context, ref),
+                child: const Text('Configurar'),
+              ),
+      ),
+    );
+  }
+}
+
+class _EstadoOptimizacionBateria extends ConsumerWidget {
+  const _EstadoOptimizacionBateria();
+
+  Future<void> _gestionarBateria(BuildContext context, WidgetRef ref) async {
+    try {
+      final servicio = ref.read(servicioPermisosProvider);
+      final concedido = await servicio.solicitarIgnorarOptimizacionBateria();
+      if (!concedido) {
+        await servicio.abrirAjustesDeLaAplicacion();
+      }
+      ref.invalidate(optimizacionBateriaIgnoradaProvider);
+    } catch (e) {
+      debugPrint('No se pudo solicitar la exclusión de batería: $e');
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se ha podido cambiar el ajuste de batería.'),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final estado = ref.watch(optimizacionBateriaIgnoradaProvider);
+
+    return estado.when(
+      loading: () => const ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.battery_saver_outlined),
+        title: Text('Optimización de batería'),
+        subtitle: Text('Comprobando...'),
+      ),
+      error: (e, st) {
+        debugPrint('Error al comprobar optimización de batería: $e\n$st');
+        return const ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.battery_saver_outlined),
+          title: Text('Optimización de batería'),
+          subtitle: Text('No se ha podido comprobar'),
+        );
+      },
+      data: (sinRestricciones) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(
+          sinRestricciones
+              ? Icons.battery_charging_full_outlined
+              : Icons.battery_alert_outlined,
+        ),
+        title: const Text('Optimización de batería'),
+        subtitle: Text(
+          sinRestricciones
+              ? 'Sin restricciones (óptimo para avisos)'
+              : 'Optimizada (el sistema puede silenciar avisos)',
+        ),
+        trailing: sinRestricciones
+            ? null
+            : TextButton(
+                onPressed: () => _gestionarBateria(context, ref),
+                child: const Text('Desactivar ahorro'),
+              ),
+      ),
+    );
+  }
+}
+
+class _AvisoFabricantes extends StatelessWidget {
+  const _AvisoFabricantes();
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    return Card(
+      elevation: 0,
+      color: tema.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      margin: EdgeInsets.zero,
+      child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        leading: Icon(
+          Icons.info_outline,
+          color: tema.colorScheme.primary,
+        ),
+        title: Text(
+          'Avisos en Xiaomi, Samsung y otros',
+          style: tema.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(
+          '¿No te llegan las notificaciones?',
+          style: tema.textTheme.bodySmall?.copyWith(
+            color: tema.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        children: [
+          Text(
+            'Fabricantes como Xiaomi (MIUI/HyperOS), Samsung (OneUI) o Huawei aplican un ahorro de batería estricto que silencia aplicaciones locales en segundo plano.\n\n'
+            'Para asegurar que los recordatorios de ITV y revisiones suenen a las 9:00:\n'
+            '1. Pon la batería de «Mis Vehículos» en «Sin restricciones».\n'
+            '2. En Xiaomi, activa «Inicio automático» en los ajustes de la app.\n'
+            '3. En Samsung, retira la app de «Aplicaciones en suspensión profunda».',
+            style: tema.textTheme.bodySmall?.copyWith(height: 1.4),
+          ),
+        ],
       ),
     );
   }

@@ -14,12 +14,38 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _ServicioPermisosFalso implements ServicioPermisos {
   final bool concedido;
+  final bool alarmasExactas;
+  final bool bateriaOptimizadaIgnorada;
   int vecesAbierto = 0;
+  int vecesAbiertoAlarmas = 0;
+  int vecesSolicitadoBateria = 0;
 
-  _ServicioPermisosFalso({this.concedido = true});
+  _ServicioPermisosFalso({
+    this.concedido = true,
+    this.alarmasExactas = true,
+    this.bateriaOptimizadaIgnorada = true,
+  });
 
   @override
   Future<bool> tienePermisoNotificaciones() async => concedido;
+
+  @override
+  Future<bool> puedeProgramarAlarmasExactas() async => alarmasExactas;
+
+  @override
+  Future<bool> tieneBateriaOptimizadaIgnorada() async =>
+      bateriaOptimizadaIgnorada;
+
+  @override
+  Future<bool> solicitarIgnorarOptimizacionBateria() async {
+    vecesSolicitadoBateria++;
+    return true;
+  }
+
+  @override
+  Future<void> abrirAjustesDeAlarmasExactas() async {
+    vecesAbiertoAlarmas++;
+  }
 
   @override
   Future<void> abrirAjustesDeLaAplicacion() async {
@@ -166,6 +192,9 @@ void main() {
   testWidgets('tocar Oscuro guarda el nuevo tema', (tester) async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
+    tester.view.physicalSize = const Size(1000, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
       envolver(
@@ -292,5 +321,98 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('01/08/2026'), findsOneWidget);
+  });
+
+  testWidgets(
+    'alarmas exactas desactivadas muestra boton Configurar y abre ajustes',
+    (tester) async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      final servicio = _ServicioPermisosFalso(alarmasExactas: false);
+
+      await tester.pumpWidget(
+        envolver(
+          ajustes: _ajustesDePrueba(),
+          servicioPermisos: servicio,
+          db: db,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Inexactas (pueden retrasarse por el sistema)'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Configurar'));
+      await tester.pumpAndSettle();
+
+      expect(servicio.vecesAbiertoAlarmas, 1);
+    },
+  );
+
+  testWidgets(
+    'alarmas exactas activas muestra estado puntual sin boton',
+    (tester) async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      final servicio = _ServicioPermisosFalso(alarmasExactas: true);
+
+      await tester.pumpWidget(
+        envolver(
+          ajustes: _ajustesDePrueba(),
+          servicioPermisos: servicio,
+          db: db,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Puntuales a las 9:00'), findsOneWidget);
+      expect(find.text('Configurar'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'optimizacion de bateria muestra aviso y boton para desactivar ahorro',
+    (tester) async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      final servicio = _ServicioPermisosFalso(bateriaOptimizadaIgnorada: false);
+
+      await tester.pumpWidget(
+        envolver(
+          ajustes: _ajustesDePrueba(),
+          servicioPermisos: servicio,
+          db: db,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Optimizada (el sistema puede silenciar avisos)'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Desactivar ahorro'));
+      await tester.pumpAndSettle();
+
+      expect(servicio.vecesSolicitadoBateria, 1);
+    },
+  );
+
+  testWidgets('muestra tarjeta explicativa de fabricantes agresivos', (
+    tester,
+  ) async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    await tester.pumpWidget(
+      envolver(
+        ajustes: _ajustesDePrueba(),
+        servicioPermisos: _ServicioPermisosFalso(),
+        db: db,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Avisos en Xiaomi, Samsung y otros'), findsOneWidget);
   });
 }
