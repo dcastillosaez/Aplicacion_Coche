@@ -171,12 +171,11 @@ class _ContenidoHistorial extends ConsumerWidget {
       campos.add('${vehiculo.marca} ${vehiculo.modelo}');
     }
 
-    for (final campo in campos) {
-      if (_normalizar(campo).contains(queryNorm)) {
-        return true;
-      }
-    }
-    return false;
+    final palabras = queryNorm.split(' ').where((p) => p.isNotEmpty).toList();
+    if (palabras.isEmpty) return true;
+
+    final textoCompleto = _normalizar(campos.join(' '));
+    return palabras.every((palabra) => textoCompleto.contains(palabra));
   }
 
   @override

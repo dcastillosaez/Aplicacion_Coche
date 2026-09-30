@@ -236,7 +236,11 @@ class _FilaGastoCategoria extends StatelessWidget {
 
   String get _nombreCategoria {
     final cat = gastoCat.categoria;
-    if (cat == null) return 'Reparación puntual';
+    if (cat == null) {
+      return gastoCat.cantidad > 1
+          ? 'Reparaciones puntuales'
+          : 'Reparación puntual';
+    }
     return etiquetasCategoria[cat] ?? cat.name;
   }
 

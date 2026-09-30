@@ -363,6 +363,13 @@ void main() {
     expect(find.text('Aceite y filtro'), findsOneWidget);
     expect(find.text('Pastillas delanteras'), findsNothing);
 
+    // Búsqueda multi-término cruzando concepto y taller ('pastillas paco')
+    await tester.enterText(find.byType(TextField), 'pastillas paco');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pastillas delanteras'), findsOneWidget);
+    expect(find.text('Aceite y filtro'), findsNothing);
+
     // Borrar búsqueda con el botón de clear
     await tester.tap(find.byIcon(Icons.clear));
     await tester.pumpAndSettle();

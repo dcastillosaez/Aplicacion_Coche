@@ -22,24 +22,24 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
-        handleIntent(intent)
+
+        // En arranque en frío, Flutter aún no ha montado la interfaz ni registrado
+        // su handler de método. Guardamos el shortcut para que Flutter lo solicite
+        // mediante getInitialShortcut una vez montado AppShell.
+        val data = intent?.data
+        if (data?.scheme == "carcare") {
+            initialShortcut = data.host
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleIntent(intent)
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        val data = intent?.data
-        val host = if (data?.scheme == "carcare") data.host else null
-        if (host != null) {
-            val ch = channel
-            if (ch != null) {
-                ch.invokeMethod("onShortcut", host)
-            } else {
-                initialShortcut = host
+        val data = intent.data
+        if (data?.scheme == "carcare") {
+            val host = data.host
+            if (host != null) {
+                channel?.invokeMethod("onShortcut", host)
             }
         }
     }
