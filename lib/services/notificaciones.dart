@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -75,6 +76,24 @@ class NotificacionesLocales implements ServicioNotificaciones {
   Future<void> programarAvisos(List<AvisoDeVehiculo> avisos) async {
     await _plugin.cancelAll();
 
+    // Comprueba si el dispositivo permite alarmas exactas (Android 12+).
+    // Si el permiso está concedido (o en versiones de Android < 12 donde
+    // no se requiere), se programa con exactAllowWhileIdle para que la
+    // notificación salte exactamente a las 9:00 sin retrasos por Doze mode.
+    // Si no está concedido, se degrada a inexactAllowWhileIdle para evitar
+    // SecurityException en Android 14+.
+    var usarExacta = false;
+    try {
+      usarExacta = await Permission.scheduleExactAlarm.status.isGranted;
+    } catch (_) {
+      usarExacta = false;
+    }
+
+    final modo = usarExacta
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
+
+    var modoActual = modo;
     final ahora = DateTime.now();
     var id = 0;
     for (final a in avisos) {
@@ -84,14 +103,34 @@ class NotificacionesLocales implements ServicioNotificaciones {
       // programar la alarma no tiene sentido: el plugin la entregaría de
       // inmediato o nunca, según la implementación. Se omite sin más.
       if (instante.isBefore(ahora)) continue;
-      await _plugin.zonedSchedule(
-        id: id++,
-        title: a.nombreVehiculo,
-        body: cuerpoDeAviso(a.aviso),
-        scheduledDate: instante,
-        notificationDetails: _detalles,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      );
+      final idActual = id++;
+      try {
+        await _plugin.zonedSchedule(
+          id: idActual,
+          title: a.nombreVehiculo,
+          body: cuerpoDeAviso(a.aviso),
+          scheduledDate: instante,
+          notificationDetails: _detalles,
+          androidScheduleMode: modoActual,
+        );
+      } catch (_) {
+        // Red de seguridad: si falla en modo exacto (p. ej. restricción de
+        // fabricante en ejecución), degradar a modo inexacto para este y los
+        // avisos restantes para no perder la entrega ni repetir excepciones.
+        if (modoActual == AndroidScheduleMode.exactAllowWhileIdle) {
+          modoActual = AndroidScheduleMode.inexactAllowWhileIdle;
+          await _plugin.zonedSchedule(
+            id: idActual,
+            title: a.nombreVehiculo,
+            body: cuerpoDeAviso(a.aviso),
+            scheduledDate: instante,
+            notificationDetails: _detalles,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          );
+        } else {
+          rethrow;
+        }
+      }
     }
   }
 

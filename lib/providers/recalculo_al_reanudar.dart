@@ -14,6 +14,8 @@ final providersARecalcularAlReanudar = <ProviderOrFamily>[
   vencimientosProvider,
   estadoVehiculoProvider,
   permisoNotificacionesProvider,
+  permisoAlarmasExactasProvider,
+  optimizacionBateriaIgnoradaProvider,
 ];
 
 /// Widget sin apariencia propia que observa el ciclo de vida de la app e

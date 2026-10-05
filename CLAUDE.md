@@ -50,7 +50,7 @@ Toolchain no está en el PATH de la shell, y **Gradle no arranca sin redirigir T
 
 ```powershell
 $env:Path = "F:\dev\flutter\bin;F:\dev\android-sdk\platform-tools;$env:Path"
-$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot'
+$env:JAVA_HOME = 'F:\dev\jdk-17.0.20+8'
 $env:ANDROID_HOME = 'F:\dev\android-sdk'
 $env:TMP = 'F:\dev\tmp'; $env:TEMP = 'F:\dev\tmp'
 ```
@@ -99,4 +99,9 @@ Descubierto en la revisión final de la fase 3, sin fix aplicado porque no hay n
 
 `m.createTable(vehicleSpecifications)` en un paso `if (from < N)` de `onUpgrade` no crea la tabla "tal como era en la versión N": la crea con la definición **actual** de la clase Dart, la que esté en el código en el momento de compilar. Si una fase futura añade una columna a `VehicleSpecifications` (o a cualquier tabla) y sube `schemaVersion`, y el nuevo paso hace `m.addColumn(vehicleSpecifications, vehicleSpecifications.columnaNueva)`, un usuario que actualice desde antes de que existiera la tabla ejecutará primero el `createTable` (que ya trae la columna nueva, porque lee la clase Dart vigente) y después el `addColumn` sobre esa misma columna: `duplicate column name`, migración abortada.
 
-No hay `drift_schemas/` ni esquemas versionados en este proyecto, así que no hay red de seguridad automática. Antes de añadir una columna a `VehicleSpecifications` (o a cualquier tabla creada en un paso `createTable` de una migración anterior), comprobarlo con un test de migración que encadene ambos pasos con datos reales, exactamente como ya se hace para las demás — es donde este problema se vería antes de llegar al móvil del usuario.
+Los esquemas versionados están configurados en `drift_schemas/` (`drift_schema_v1.json` a `drift_schema_v6.json`), con tests automáticos en `test/data/schema_verification_test.dart` usando `SchemaVerifier` de `drift_dev`.
+
+Al subir `schemaVersion`:
+1. Volcar el esquema nuevo: `dart run drift_dev schema dump lib/data/database.dart drift_schemas/drift_schema_vN.json`
+2. Generar el código de verificación: `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`
+3. Probar las migraciones: `flutter test test/data/schema_verification_test.dart` y `test/data/database_migration_test.dart`

@@ -2,7 +2,7 @@
 setlocal
 
 set "Path=F:\dev\flutter\bin;F:\dev\android-sdk\platform-tools;%Path%"
-set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
+set "JAVA_HOME=F:\dev\jdk-17.0.20+8"
 set "ANDROID_HOME=F:\dev\android-sdk"
 set "TMP=F:\dev\tmp"
 set "TEMP=F:\dev\tmp"

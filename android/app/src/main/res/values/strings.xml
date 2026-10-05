@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_historial_short">Historial</string>
+    <string name="shortcut_historial_long">Historial de intervenciones</string>
+    <string name="shortcut_gastos_short">Gastos</string>
+    <string name="shortcut_gastos_long">Resumen de gastos</string>
+</resources>

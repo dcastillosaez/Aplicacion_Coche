@@ -24,6 +24,15 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="carcare"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -50,12 +59,16 @@
         </receiver>
     </application>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <!-- Permite que el plugin reprograme las alarmas al reiniciar el
-         dispositivo: sin él, todas las notificaciones pendientes se
-         pierden en cada reinicio. No se añade ningún permiso de alarma
-         exacta (SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM): el modo sigue
-         siendo inexacto a propósito. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Permite programar alarmas exactas en Android 12+ (API 31+).
+         En Android 14+ (API 34+), se verifica en tiempo de ejecución para usar
+         modo exacto si está disponible o degradar limpiamente a inexacto sin
+         lanzar SecurityException. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Permite solicitar la exclusión del ahorro de batería agresivo del sistema
+         (esencial en fabricantes como Xiaomi, Samsung o Huawei para no silenciar
+         avisos de ITV y mantenimientos en segundo plano). -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
